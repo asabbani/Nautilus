@@ -139,7 +139,7 @@ class Main:
         self.console.config(state = NORMAL)
         self.console.insert(END, time + string + "\n")
         self.console.config(state = DISABLED)
-	        
+            
     def init_calibrate_frame(self): 
         self.calibrate_frame = Frame(self.bot_frame, height = BOT_FRAME_HEIGHT, width = 350, bd = 1, relief = SUNKEN)
         self.calibrate_frame.pack( fill = Y, padx = PADX, pady = PADY, side = LEFT, expand = NO)
@@ -232,8 +232,8 @@ class Main:
         self.master.destroy()
         sys.exit()
     def update(self):
-	self.master.update_idletasks()
-	self.master.update()
+        self.master.update_idletasks()
+        self.master.update()
 
 # Define the window object.
 root = Tk()

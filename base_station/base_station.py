@@ -1,5 +1,3 @@
-#version 1.0.1
-
 '''
 This class manages the serial connection between the 
 AUV and Base Station along with sending controller 
@@ -9,20 +7,22 @@ import sys
 import os
 
 # Sets the PYTHONPATH to include the components.
-split_path = os.path.abspath(__file__).split('/')
-split_path = split_path[0:len(split_path) - 2]
-components_path = "/".join(split_path) + "/components"
-sys.path.append(components_path)
+#split_path = os.path.abspath(__file__).split('/')
+#split_path = split_path[0:len(split_path) - 2]
+sys.path.append('./api') # Include API folder
+sys.path.append('./gui') # Include API folder
 
-#import main 
+# System imports
 import serial
 import time
 import math
 import argparse
+
+# Custom imports
 from nav import xbox
 from nav import NavController
 from radio import Radio
-from bs_gps import *
+from gps import *
 
 SPEED_CALIBRATION = 10
 IS_MANUAL = True
@@ -41,8 +41,8 @@ class BaseStation:
 
         debug: debugging flag
         '''
-	# Jack Silberman's radio
-	# Yonder's radio
+    # Jack Silberman's radio
+    # Yonder's radio
         #self.test_dict = {'A':10}
         self.radio = Radio(RADIO_PATH)
         self.data_packet = []       
@@ -99,7 +99,7 @@ class BaseStation:
             # Send Calibration Signal To AUV
 #            if self.radio.write(CAL) == -1:
  #               self.main.log("Radios have been physically disconnected. Check USB connection.")
-          	
+              
             self.radio.write(CAL) 
             # Attempt to read from radio
             line = self.radio.readline()
@@ -114,9 +114,9 @@ class BaseStation:
                 self.main.log("Connection timed out, trying again...")
                 self.main.update()
 
-    	self.radio.flush()
+        self.radio.flush()
         self.main.log("Connection established with AUV.")
-	self.main.comms_status_string.set("Comms Status: Connected")
+        self.main.comms_status_string.set("Comms Status: Connected")
     def set_calibrate_flag(self, cal_flag):
         self.cal_flag = cal_flag
 
@@ -190,7 +190,7 @@ class BaseStation:
             if data == DONE:
                 print("data recieved is done, exiting ballasting")
                 reconnected_after_ballasting = True
-	    return
+        return
     def manual_control(self, left, right, front, back):
         print('Set manual control: ', left, right, front, back)
     def ballast(self):

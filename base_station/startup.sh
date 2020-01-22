@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python gui/main.py
+sudo python3 gui/main.py
