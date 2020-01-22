@@ -27,7 +27,7 @@ class GPS(threading.Thread):
                 if new_data:
                     self.data_stream.unpack(new_data)
 
-                    # self.speed = self.data_stream.TPV['speed']
-                    # self.latitude = self.data_stream.TPV['lat']
-                    # self.longitude = self.data_stream.TPV['lon']
-                    # self.altitude = self.data_stream.TPV['alt']
+                    self.speed = self.data_stream.TPV['speed']
+                    self.latitude = self.data_stream.TPV['lat']
+                    self.longitude = self.data_stream.TPV['lon']
+                    self.altitude = self.data_stream.TPV['alt']
