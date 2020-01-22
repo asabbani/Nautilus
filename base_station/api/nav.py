@@ -5,9 +5,6 @@ import struct
 import math
 import os
 
-# Custom API imports
-import xbox
-
 
 class NavController:
 	def __init__(self, joy, button_cb, debug=False):

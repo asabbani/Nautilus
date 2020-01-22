@@ -2,16 +2,12 @@ import sys
 import os
 
 # Set PYTHONPATH to include base station
-split_path = os.path.abspath(__file__).split('/')
-split_path = split_path[0:len(split_path) - 2]
-base_station_path = "/".join(split_path) 
-print("bs_path is: ", base_station_path) 
-sys.path.append(base_station_path)
+sys.path.append('../base_station.py')
 
 from base_station import BaseStation
 import datetime
-import tkMessageBox
-from Tkinter import *
+#import tkMessageBox
+from tkinter import *
 from map import Map
 
 

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 '''
 This class manages the serial connection between the 
 AUV and Base Station along with sending controller 
@@ -6,12 +8,6 @@ commands.
 import sys
 import os
 
-# Sets the PYTHONPATH to include the components.
-#split_path = os.path.abspath(__file__).split('/')
-#split_path = split_path[0:len(split_path) - 2]
-sys.path.append('./api') # Include API folder
-sys.path.append('./gui') # Include API folder
-
 # System imports
 import serial
 import time
@@ -19,10 +15,7 @@ import math
 import argparse
 
 # Custom imports
-from nav import xbox
-from nav import NavController
-from radio import Radio
-from gps import *
+import api
 
 SPEED_CALIBRATION = 10
 IS_MANUAL = True
