@@ -1,10 +1,9 @@
-#!/usr/bin/env python3
-
 '''
 This class manages the serial connection between the 
 AUV and Base Station along with sending controller 
 commands.
 '''
+
 import sys
 import os
 
@@ -15,7 +14,7 @@ import math
 import argparse
 
 # Custom imports
-import api
+from api import *
 
 SPEED_CALIBRATION = 10
 IS_MANUAL = True
@@ -45,7 +44,7 @@ class BaseStation:
         self.debug = debug
         self.cal_flag = NO_CALIBRATION
         self.radio_timer = []
-        self.gpsp = GpsPoller() # create the thread
+        self.gps = GPS() # create the thread
         self.ballast_depth = 0
         self.button_cb = {'MAN':self.manual_control, 'BAL':self.ballast}
 
@@ -66,7 +65,7 @@ class BaseStation:
         while self.joy is None:
             self.main.update()
             try:
-                self.joy = xbox.Joystick()
+                self.joy = Joystick()
             except Exception as e:
                 continue
         self.main.log("Xbox controller is connected")                
@@ -125,7 +124,7 @@ class BaseStation:
 
         #while self.connected_to_auv:
         while True:
-            self.main.log("GPS: {}".format(self.gpsp.gpsd.fix.latitude)) 
+          #  self.main.log("GPS: {}".format(self.gps.gpsd.fix.latitude)) 
             self.navController.handle()
 #             #Get pa0cket
 #             self.data_packet = self.navController.getPacket()
@@ -188,6 +187,7 @@ class BaseStation:
         print('Set manual control: ', left, right, front, back)
     def ballast(self):
         print("Setting ballast")
+
 # TODO: Comment run, find out when auv disconnects.
 def main(): 
 
@@ -198,7 +198,6 @@ def main():
     args = parser.parse_args()
 
     bs = BaseStation(debug=args.debug)
-    
 
 if __name__ == '__main__':
      main()

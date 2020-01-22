@@ -2,7 +2,7 @@ import sys
 import os
 
 # Set PYTHONPATH to include base station
-sys.path.append('../base_station.py')
+sys.path.insert(0, '..')
 
 from base_station import BaseStation
 import datetime
