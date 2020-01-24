@@ -1,50 +1,69 @@
+''' 
+This class manages the GUI framework for the base_station
+user-interface.
+'''
+
+# System imports
 import sys
 import os
-
-# Set PYTHONPATH to include base station
-sys.path.insert(0, '..')
-
-from base_station import BaseStation
 import datetime
-#import tkMessageBox
+from threading import Thread
+
+# Begin custom imports
 from tkinter import *
-from map import Map
+from tkinter import Toplevel
+from tkinter import messagebox
+from .map import Map
 
-
+# Begin Constants
 TOP_FRAME_HEIGHT = 550
 BOT_FRAME_HEIGHT = 30
-
-# Test Constants
+# Font Constants
 FONT = "Courier New"
 HEADING_SIZE = 20
 BUTTON_SIZE  = 11
 STATUS_SIZE  = 12
-
-# frame paddings
+# Main frame paddings
 PADX = 5
 PADY = 5
-
-# calibration paddings
+# Calibration panel paddings
 cPADY = 10
-
-# button paddings
+# Button panel paddings
 bPADX = 10
 bPADY = 2.5
-
-# button width and heigth (in text units) 
+# Button width and heigth (in text units) 
 BUTTON_WIDTH = 17
 BUTTON_HEIGHT = 2
 
-class Main:
-    def __init__(self, master, base_station):
-        self.master = master
-        self.base_station = base_station
-        self.master.title("Yonder Arctic OPS")
+# Main GUI class (threaded) that is (mostly) self-contained
+class Main(Thread):
+    def __init__(self):
+        # Begin initializing the main Tkinter (GUI) framework/root window
+        self.root = Tk()
+      #  self.root.geometry("1400x800") 
 
-        self.top_frame = Frame(self.master, bd = 1) 
+        # Code below is to fix HiDPI-scaling of fonts.
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        developed_res_x = 1920.0
+        developed_res_y = 1080.0
+        multiplier = screen_width / developed_res_x
+        global HEADING_SIZE # Mandate reference to global constant
+        global BUTTON_SIZE  
+        global STATUS_SIZE  
+        HEADING_SIZE = int(HEADING_SIZE / multiplier)
+        BUTTON_SIZE = int(BUTTON_SIZE  / multiplier)
+        STATUS_SIZE = int(STATUS_SIZE  / multiplier)
+        print (str(screen_width) + str(screen_height))
+        self.root.geometry(str(int(1400/multiplier)) + "x" + str(int(800/multiplier))) 
+
+        # Begin defining instance variables
+        self.root.title("Yonder Arctic OPS")
+
+        self.top_frame = Frame(self.root, bd = 1) 
         self.top_frame.pack( fill = BOTH, side = TOP, padx = PADX, pady = PADY, expand = YES)
 
-        self.bot_frame = Frame(self.master, bd = 1)
+        self.bot_frame = Frame(self.root, bd = 1)
         self.bot_frame.pack( fill = BOTH, side = BOTTOM, padx = PADX, pady = PADY, expand = YES)
  
         self.init_function_frame()
@@ -56,6 +75,13 @@ class Main:
         self.create_map(self.map_frame)
         self.create_function_buttons()
 
+        # Call function to properly end the program
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.root.update_idletasks()
+        self.root.update()
+
+        # Begin running GUI loop
+        self.root.mainloop()
     def get_time(self, now):
         return now.strftime("%Y-%m-%d %H:%M:%S: ")
 
@@ -147,31 +173,31 @@ class Main:
 
         self.left_calibrate_button = Button( self.calibrate_frame, text = "LEFT", takefocus = False, #width = 15, height = 3,
                                                 padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), 
-                                                command = lambda: self.base_station.set_calibrate_flag(0) )
+                                               )# command = lambda: self.base_station.set_calibrate_flag(0) )
         
         self.left_calibrate_button.grid(row = 2, column = 0, pady=cPADY)
 
         self.right_calibrate_button = Button(self.calibrate_frame, text = "RIGHT", takefocus = False, #width = 15, height = 3,
                                                 padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), 
-                                                command = lambda: self.base_station.set_calibrate_flag(1) )
+                                              )#  command = lambda: self.base_station.set_calibrate_flag(1) )
  
         self.right_calibrate_button.grid(row = 2, column = 2, pady=cPADY)
 
         self.front_calibrate_button = Button( self.calibrate_frame, text = "FRONT", takefocus = False, #width = 15, height = 3,
                                                 padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), 
-                                                command = lambda: self.base_station.set_calibrate_flag(2) )
+                                             )#   command = lambda: self.base_station.set_calibrate_flag(2) )
         
         self.front_calibrate_button.grid(row=1, column=1, pady=cPADY)
 
         self.calibrate_all_button = Button(self.calibrate_frame, text = "ALL", takefocus = False, #width = 15, height = 3,
                                                 padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), 
-                                                command = lambda: self.base_station.set_calibrate_flag(4) )
+                                              )#  command = lambda: self.base_station.set_calibrate_flag(4) )
 
         self.calibrate_all_button.grid(row=2, column=1, pady=cPADY)
 
         self.back_calibrate_button = Button( self.calibrate_frame, text = "Back", takefocus = False,# width = 15, height = 3,
                                                 padx = bPADX, pady = bPADY, font = (FONT, BUTTON_SIZE), 
-                                                command = lambda: self.base_station.set_calibrate_flag(3) )
+                                               )# command = lambda: self.base_station.set_calibrate_flag(3) )
         
         self.back_calibrate_button.grid(row=3, column=1, pady=cPADY)
 
@@ -181,7 +207,7 @@ class Main:
         self.config_frame.pack_propagate(0)
 
     def abort_mission(self):
-        ans = tkMessageBox.askquestion("Abort Mission", "Are you sure you want to abort the mission")
+        ans = messagebox.askquestion("Abort Mission", "Are you sure you want to abort the mission")
         if ans == 'yes':
             message = "Mission aborted"
             self.log( message )
@@ -224,15 +250,15 @@ class Main:
         self.zoom_out_button.place( relx = 1, rely = 0.06, anchor = NE)
 
     def on_closing(self):
-        self.map.on_close()
-        self.master.destroy()
+    #    self.map.on_close()
+        self.root.destroy()
         sys.exit()
     def update(self):
-        self.master.update_idletasks()
-        self.master.update()
+        self.root.update_idletasks()
+        self.root.update()
 
 # Define the window object.
-root = Tk()
+'''root = Tk()
 root.geometry("1400x800") 
 
 # To fix HiDPI-scaling of fonts.
@@ -244,25 +270,14 @@ multiplier = screen_width / developed_res_x
 HEADING_SIZE = int(HEADING_SIZE / multiplier)
 BUTTON_SIZE  = int(BUTTON_SIZE  / multiplier)
 STATUS_SIZE  = int(STATUS_SIZE  / multiplier)
-# End fixing HiDPI-scaling of fonts.
  
-bs = BaseStation()
 # Create the main window.
 Main = Main(root, bs)
-bs.set_main( Main )
 # Call function to properly end the program
 root.protocol("WM_DELETE_WINDOW", Main.on_closing)
-#bs.calibrate_controller() 
 root.update_idletasks()
 root.update()
 radio_connected = False
 
-while bs.joy is None:
-    bs.calibrate_controller()
-
-while not bs.connected_to_auv:
-    bs.calibrate_communication()
-    
-print("controller connected, starting run()")
-bs.run()
-#root.mainloop()
+root.mainloop()
+'''

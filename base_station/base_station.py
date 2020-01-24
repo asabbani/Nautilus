@@ -12,20 +12,28 @@ import serial
 import time
 import math
 import argparse
+import threading # => Yes, we are multithreading.
 
 # Custom imports
-from api import *
+from api import Radio
+from api import Joystick
+from api import NavController
+from api import GPS
+from gui import Main
 
+
+# Constants
 SPEED_CALIBRATION = 10
+NO_CALIBRATION = 9
+DELAY = 0.08
 IS_MANUAL = True
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
-NO_CALIBRATION = 9
 CAL = 'CAL\n'
 REC = 'REC\n'
 DONE = "DONE\n"
-DELAY = 0.08
-#Hey we're using spaces
-class BaseStation:
+
+# Base station class that acts as the brain for the entire base station.
+class BaseStation(threading.Thread):
     def __init__(self, debug=False):
 
         '''
@@ -33,10 +41,8 @@ class BaseStation:
 
         debug: debugging flag
         '''
-    # Jack Silberman's radio
-    # Yonder's radio
-        #self.test_dict = {'A':10}
-        self.radio = Radio(RADIO_PATH)
+        # Instance variables
+        self.radio = None
         self.data_packet = []       
         self.joy = None 	
         self.connected_to_auv = False
@@ -47,9 +53,12 @@ class BaseStation:
         self.gps = GPS() # create the thread
         self.ballast_depth = 0
         self.button_cb = {'MAN':self.manual_control, 'BAL':self.ballast}
-
         
-       # self.test = json.dumps(self.test_dict)
+        # Try to assign radio
+        try:
+            self.radio = Radio(RADIO_PATH)
+        except: # Generic exception catching
+            print("Cannot find radio device. Ensure RADIO_PATH is correct.") 
 
     def set_main(self, Main):
         self.main = Main 
@@ -65,7 +74,7 @@ class BaseStation:
         while self.joy is None:
             self.main.update()
             try:
-                self.joy = Joystick()
+                self.joy = xbox.Joystick()
             except Exception as e:
                 continue
         self.main.log("Xbox controller is connected")                
@@ -190,14 +199,18 @@ class BaseStation:
 
 # TODO: Comment run, find out when auv disconnects.
 def main(): 
-
+    # Parse arguments for debuging
     parser = argparse.ArgumentParser()
-
     parser.add_argument('--debug', action='store_true')
-
     args = parser.parse_args()
 
-    bs = BaseStation(debug=args.debug)
+    # Create a BS (base station) and GUI object thread.
+    bs_thread = threading.Thread(target=BaseStation, args=(args.debug, ))
+ #   gui_thread = threading.Thread(target=Main)
 
+   # gui_thread.setDaemon(True)
+    bs_thread.start()
+  #  gui_thread.start()
+    gui = Main()
 if __name__ == '__main__':
      main()

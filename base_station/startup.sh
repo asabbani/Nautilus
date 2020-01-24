@@ -1,3 +1,4 @@
 #!/bin/bash
 
-sudo python3 gui/main.py
+# Startup the main base_station file.
+sudo python3 base_station.py

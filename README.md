@@ -2,11 +2,16 @@
 Repository for the [YonderDeep](https://www.yonderdeep.org/) 2019-2020 Origin AUV (Autonomous Underwater Vehicle) developed in the MESOM Laboratory at the Scripps Institution of Oceanography, UC San Diego for the research and study of global anthropogenic climate change.
 
 
-
 ## Basics
 The codebase is split among two machines: 
   * a base station (a macOS / Linux machine)
   * Origin (an AUV with a Raspberry Pi 3 running Raspbian)
+
+## Development / Style Guidlines
+Development will be done in Python3.
+  * Indention will be mandated to 4 spaces, not tabs.
+  * All files and methods need a descriptive header.
+  * Else, follow the [PEP8](https://pep8.org) style guidelines.
 
 # Base Station
 This machine communicates with the AUV using radio communication. Its main role is selecting and beginning missions for the AUV. It also receives data wirelessly from the AUV and outputs to an in-house Python GUI.
@@ -24,6 +29,7 @@ This machine communicates with the AUV using radio communication. Its main role 
     Tkinter
     Matplotlib
     pyserial
+    gps3
 
 # Origin (the AUV)
 A practical, 3D-printed multi-mission modular AUV, housing many sensors including pressure, audio (hydrophones), and GPS. However, it can also be adapted to implement Sonar, salinity, PH, and temperature sensors.

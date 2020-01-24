@@ -1,3 +1,5 @@
+
+# Begin imports for MatplotLib
 import matplotlib
 import matplotlib.axes
 matplotlib.use('TkAgg')
@@ -5,7 +7,9 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from matplotlib.pyplot import scatter
-from Tkinter import *
+
+# Begin imports for tkinter
+from tkinter import *
 
 # Object & Map Constants
 DEFAULT_FIGURE_SIZE =  30 # Window Size
@@ -169,7 +173,7 @@ class Map:
         print("Opening remove-waypoint prompt.")
         prompt_window = Toplevel(self.window)
         prompt_window.title("Remove Waypoint \""+ str(waypoint[2]) + "\"?");
-        prompt_window.wm_attributes('-type', 'dialog')
+        prompt_window.wm_attributes('-notify')
         prompt_submit = Button(prompt_window, text="Yes, I want to remove waypoint \""+str(waypoint[2])+"\"",
                                command=lambda:
                                [
@@ -192,7 +196,7 @@ class Map:
         print("Opening new-waypoint prompt.")
         prompt_window = Toplevel(self.window)
         prompt_window.title("New Waypoint");
-        prompt_window.wm_attributes('-type', 'dialog')
+        prompt_window.wm_attributes('-notify')
         Label(prompt_window, text = "Name").grid(row = 0)
         Label(prompt_window, text = "X").grid(row = 1)
         Label(prompt_window, text = "Y").grid(row = 2)
