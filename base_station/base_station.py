@@ -13,7 +13,7 @@ import time
 import math
 import argparse
 import threading # => Yes, we are multithreading.
-
+from queue import Queue
 # Custom imports
 from api import Radio
 from api import Joystick
@@ -34,7 +34,7 @@ DONE = "DONE\n"
 
 # Base station class that acts as the brain for the entire base station.
 class BaseStation(threading.Thread):
-    def __init__(self, debug=False):
+    def __init__(self, debug=False, in_q=None):
 
         '''
         Initialize Serial Port and Class Variables
@@ -203,14 +203,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true')
     args = parser.parse_args()
+    q = Queue()
 
     # Create a BS (base station) and GUI object thread.
-    bs_thread = threading.Thread(target=BaseStation, args=(args.debug, ))
- #   gui_thread = threading.Thread(target=Main)
-
-   # gui_thread.setDaemon(True)
+    bs_thread = threading.Thread(target=BaseStation, args=(args.debug, q, ))
     bs_thread.start()
-  #  gui_thread.start()
-    gui = Main()
+
+    gui = Main(q_out=q)
 if __name__ == '__main__':
      main()

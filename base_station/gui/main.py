@@ -13,6 +13,7 @@ from threading import Thread
 from tkinter import *
 from tkinter import Toplevel
 from tkinter import messagebox
+from tkinter.ttk import Combobox
 from .map import Map
 
 # Begin Constants
@@ -37,11 +38,10 @@ BUTTON_HEIGHT = 2
 
 # Main GUI class (threaded) that is (mostly) self-contained
 class Main(Thread):
-    def __init__(self):
+    def __init__(self, q_out):
         # Begin initializing the main Tkinter (GUI) framework/root window
         self.root = Tk()
       #  self.root.geometry("1400x800") 
-
         # Code below is to fix HiDPI-scaling of fonts.
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
@@ -59,7 +59,7 @@ class Main(Thread):
 
         # Begin defining instance variables
         self.root.title("Yonder Arctic OPS")
-
+        self.q_out = q_out
         self.top_frame = Frame(self.root, bd = 1) 
         self.top_frame.pack( fill = BOTH, side = TOP, padx = PADX, pady = PADY, expand = YES)
 
@@ -71,7 +71,7 @@ class Main(Thread):
         self.init_status_frame()
         self.init_calibrate_frame()
         self.init_log_frame()
-        self.init_config_frame()
+        self.init_mission_frame()
         self.create_map(self.map_frame)
         self.create_function_buttons()
 
@@ -201,10 +201,14 @@ class Main(Thread):
         
         self.back_calibrate_button.grid(row=3, column=1, pady=cPADY)
 
-    def init_config_frame(self):
-        self.config_frame = Frame(self.bot_frame, height = BOT_FRAME_HEIGHT, width = 400, bd = 1, relief = SUNKEN)
-        self.config_frame.pack( fill = Y, padx = PADX, pady = PADY, side = LEFT, expand = NO)
-        self.config_frame.pack_propagate(0)
+    def init_mission_frame(self):
+        self.mission_frame = Frame(self.bot_frame, height = BOT_FRAME_HEIGHT, width = 400, bd = 1, relief = SUNKEN)
+        self.mission_frame.pack( fill = Y, padx = PADX, pady = PADY, side = LEFT, expand = NO)
+        self.mission_frame.pack_propagate(0)
+        missions = ["Sound Tracking", "temp"]
+        #mission_list = Combobox(self.mission.frame, missions)
+        #self.mission_list.bind("<<ComboboxSelected>>", lambda _ : out_q.put(missions.index(self_mission_list.get())))
+
 
     def abort_mission(self):
         ans = messagebox.askquestion("Abort Mission", "Are you sure you want to abort the mission")
