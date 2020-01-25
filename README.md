@@ -22,7 +22,7 @@ This machine communicates with the AUV using radio communication. Its main role 
     Xbox 360 Controller
 
 ## System Dependencies:
-    Python 3.7+ with pip
+    Python 3+ with pip
     xboxdrv (Xbox Controller Driver)
 
 ## Python Packages:
