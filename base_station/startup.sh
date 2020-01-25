@@ -1,4 +1,4 @@
 #!/bin/bash
 
-# Startup the main base_station file.
-sudo python3 base_station.py
+# Startup the main base_station file, using -B to prevent bytecode.
+sudo python3 -B base_station.py
