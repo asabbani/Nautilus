@@ -58,7 +58,7 @@ class BaseStation(threading.Thread):
         try:
             self.radio = Radio(RADIO_PATH)
         except: # Generic exception catching
-            print("Cannot find radio device. Ensure RADIO_PATH is correct.") 
+            print("Warning: Cannot find radio device. Ensure RADIO_PATH is correct.") 
 
     def set_main(self, Main):
         self.main = Main 

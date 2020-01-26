@@ -18,11 +18,10 @@ class GPS(threading.Thread):
 
         # Try to connect to GPSD socket
         try:
-        #    self.gps_socket = gps3.GPSDSocket()    # => There is an Error here... IDK how to fix
-        #    self.data_stream = gps3.DataStream()
-            pass
+            self.gps_socket = gps3.GPSDSocket()    # => There is an Error here... IDK how to fix
+            self.data_stream = gps3.DataStream()
         except:
-            print ("Cannot access GPSD service.")
+            print ("Warning: Cannot access GPSD service.")
 
         if (self.gps_socket != None):
             self.gps_socket.connect()

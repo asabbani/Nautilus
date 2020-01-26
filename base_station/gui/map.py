@@ -144,8 +144,8 @@ class Map:
     
     def on_release(self, mouse):
         self.mouse_pressing = False
-        if mouse.xdata != None and mouse.xdata - self.press_position[0] == 0: # Same x as the press.
-            if mouse.ydata != None and mouse.ydata - self.press_position[1] == 0: # Same y as the press.
+        if mouse.xdata != None and mouse.xdata - self.press_position[0] == 0: # Ensuring we didnt drag mouse in x.
+            if mouse.ydata != None and mouse.ydata - self.press_position[1] == 0: # Ensuring we didnt drag mouse in y.
                 self.on_map_click(mouse)
     
     def on_map_click(self, mouse):
