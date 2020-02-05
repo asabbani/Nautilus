@@ -30,6 +30,8 @@ This machine communicates with the AUV using radio communication. Its main role 
     Matplotlib
     pyserial
     gps3
+    screeninfo
+    pyOBjus
     autopep8 (optional)
 
 # Origin (the AUV)

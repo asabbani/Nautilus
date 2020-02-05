@@ -12,6 +12,7 @@ from tkinter import Toplevel
 from tkinter import messagebox
 from tkinter.ttk import Combobox
 from .map import Map
+from screeninfo import get_monitors, Enumerator
 
 # Begin Constants
 WIDTH = 1400
@@ -24,11 +25,17 @@ DEV_HEIGHT = 1080.0
 # Frame heights
 TOP_FRAME_HEIGHT = 550
 BOT_FRAME_HEIGHT = 30
+# Panel Constants
+FUNC_FRAME_WIDTH = 150
+STATUS_FRAME_WIDTH = 350
+CALIBRATE_FRAME_WIDTH = 350
+MISSION_FRAME_WIDTH = 400
+LOG_FRAME_WIDTH = 700
 # Font Constants
 FONT = "Courier New"
-HEADING_SIZE = 20
-BUTTON_SIZE = 14
-STATUS_SIZE = 14
+HEADING_SIZE = 18
+BUTTON_SIZE = 12
+STATUS_SIZE = 12
 # Main frame paddings
 MAIN_PAD_X = 5
 MAIN_PAD_Y = 5
@@ -54,26 +61,35 @@ class Main():
         # Begin initializing the main Tkinter (GUI) framework/root window
         self.root = Tk()
 
-        # Code below is to fix HiDPI-scaling of fonts.
-        screen_width = self.root.winfo_screenwidth()
-        screen_height = self.root.winfo_screenheight()
-        developed_res_x = DEV_WIDTH
-        developed_res_y = DEV_HEIGHT
-        multiplier = screen_width / developed_res_x
+        # ~Code below is to fix HiDPI-scaling of fonts.~
+        screen_width = get_monitors(Enumerator.OSX)[0].width
+        screen_height = get_monitors(Enumerator.OSX)[0].height
+        self.multiplier_x = screen_width / DEV_WIDTH
+        self.multiplier_y = screen_height / DEV_HEIGHT
         global HEADING_SIZE  # Mandate reference to global constant
         global BUTTON_SIZE
         global STATUS_SIZE
-        HEADING_SIZE = int(HEADING_SIZE / multiplier)
-        BUTTON_SIZE = int(BUTTON_SIZE / multiplier)
-        STATUS_SIZE = int(STATUS_SIZE / multiplier)
-        print(str(screen_width) + str(screen_height))
-        self.root.geometry(str(int(WIDTH/multiplier)) +
-                           "x" + str(int(HEIGHT/multiplier)))
+        HEADING_SIZE = int(HEADING_SIZE * self.multiplier_y)
+        BUTTON_SIZE = int(BUTTON_SIZE * self.multiplier_y)
+        STATUS_SIZE = int(STATUS_SIZE * self.multiplier_y)
+        print(str(screen_width) + "x" + str(screen_height))
+        global WIDTH, HEIGHT, TOP_FRAME_HEIGHT, BOT_FRAME_HEIGHT, FUNC_FRAME_WIDTH, STATUS_FRAME_WIDTH, CALIBRATE_FRAME_WIDTH, MISSION_FRAME_WIDTH, LOG_FRAME_WIDTH
+        WIDTH = int(WIDTH * self.multiplier_x)
+        HEIGHT = int(HEIGHT * self.multiplier_y)
+        TOP_FRAME_HEIGHT = int(TOP_FRAME_HEIGHT * self.multiplier_y)
+        BOT_FRAME_HEIGHT = int(BOT_FRAME_HEIGHT * self.multiplier_y)
+        FUNC_FRAME_WIDTH = int(FUNC_FRAME_WIDTH * self.multiplier_x)
+        STATUS_FRAME_WIDTH = int(STATUS_FRAME_WIDTH * self.multiplier_x)
+        CALIBRATE_FRAME_WIDTH = int(CALIBRATE_FRAME_WIDTH * self.multiplier_x)
+        MISSION_FRAME_WIDTH = int(MISSION_FRAME_WIDTH * self.multiplier_x)
+        LOG_FRAME_WIDTH = int(LOG_FRAME_WIDTH * self.multiplier_x)
+        # End screen scaling for fonts
 
         # Begin defining instance variables
         self.root.title("Yonder Arctic OPS")
         self.in_q = in_q  # Messages sent here from base_station.py
         self.out_q = out_q  # Messages sent to base_station.py
+
         self.top_frame = Frame(self.root, bd=1)
         self.top_frame.pack(fill=BOTH, side=TOP,
                             padx=MAIN_PAD_X, pady=MAIN_PAD_Y, expand=YES)
@@ -115,7 +131,7 @@ class Main():
     def init_function_frame(self):
         """ Creates the frame for all UI functions. """
         self.functions_frame = Frame(
-            self.top_frame, height=TOP_FRAME_HEIGHT, width=150, bd=1, relief=SUNKEN)
+            self.top_frame, height=TOP_FRAME_HEIGHT, width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
         self.functions_frame.pack(
             padx=MAIN_PAD_X, pady=MAIN_PAD_Y, side=LEFT, fill=Y, expand=NO)
         self.functions_frame.pack_propagate(0)
@@ -125,13 +141,13 @@ class Main():
 
         self.map_frame = Frame(self.top_frame, height=TOP_FRAME_HEIGHT,
                                width=TOP_FRAME_HEIGHT, bd=1, relief=SUNKEN)
-        self.map_frame.pack(fill=BOTH, padx=MAIN_PAD_X,
+        self.map_frame.pack(fill=X, padx=MAIN_PAD_X,
                             pady=MAIN_PAD_Y, side=LEFT, expand=YES)
         self.map_frame.pack_propagate(0)
 
     def init_status_frame(self):
         self.status_frame = Frame(
-            self.top_frame, height=TOP_FRAME_HEIGHT, width=350, bd=1, relief=SUNKEN)
+            self.top_frame, height=TOP_FRAME_HEIGHT, width=STATUS_FRAME_WIDTH, bd=1, relief=SUNKEN)
         self.status_frame.pack(fill=BOTH, padx=MAIN_PAD_X,
                                pady=MAIN_PAD_Y, side=LEFT, expand=NO)
         self.status_frame.pack_propagate(0)
@@ -178,20 +194,20 @@ class Main():
         # self.calibrate_xbox_button           = Button(self.status_frame, text = "Calibrate Controller", takefocus = False, width = BUTTON_WIDTH + 10, height = BUTTON_HEIGHT,
         #                                      padx = BUTTON_PAD_X, pady = BUTTON_PAD_Y, font = (FONT, BUTTON_SIZE), command = self.base_station.calibrate_controller )
         # self.calibrate_xbox_button.pack()
-        #self.calibrate_xbox_button.place(relx = 0.05, rely = 0.80);
+        # self.calibrate_xbox_button.place(relx = 0.05, rely = 0.80);
         # self.establish_comm_button           = Button(self.status_frame, text = "Connect to AUV", takefocus = False, width = BUTTON_WIDTH, height = BUTTON_HEIGHT,
         #                                       padx = BUTTON_PAD_X, pady = BUTTON_PAD_Y, font = (FONT, BUTTON_SIZE), command = self.base_station.calibrate_communication )
         # self.establish_comm_button.pack()
-        #self.establish_comm_button.place(relx = 0.05, rely = 0.90);
+        # self.establish_comm_button.place(relx = 0.05, rely = 0.90);
 
     def init_log_frame(self):
         self.log_frame = Frame(
-            self.bot_frame, height=BOT_FRAME_HEIGHT, width=700, bd=1, relief=SUNKEN)
+            self.bot_frame, height=BOT_FRAME_HEIGHT, width=LOG_FRAME_WIDTH, bd=1, relief=SUNKEN)
         self.log_frame.pack(fill=BOTH, padx=MAIN_PAD_X,
                             pady=MAIN_PAD_Y, side=LEFT, expand=YES)
         self.log_frame.pack_propagate(0)
         self.console = Text(self.log_frame, font=(
-            FONT, BUTTON_SIZE), state=DISABLED, width=700)
+            FONT, BUTTON_SIZE), state=DISABLED, width=LOG_FRAME_WIDTH)
 
         self.scrollbar = Scrollbar(self.log_frame)
         self.console.configure(yscrollcommand=self.scrollbar.set)
@@ -206,7 +222,7 @@ class Main():
 
     def init_calibrate_frame(self):
         self.calibrate_frame = Frame(
-            self.bot_frame, height=BOT_FRAME_HEIGHT, width=350, bd=1, relief=SUNKEN)
+            self.bot_frame, height=BOT_FRAME_HEIGHT, width=CALIBRATE_FRAME_WIDTH, bd=1, relief=SUNKEN)
         self.calibrate_frame.pack(
             fill=Y, padx=MAIN_PAD_X, pady=MAIN_PAD_Y, side=LEFT, expand=NO)
         self.calibrate_frame.pack_propagate(0)
@@ -252,14 +268,14 @@ class Main():
 
     def init_mission_frame(self):
         self.mission_frame = Frame(
-            self.bot_frame, height=BOT_FRAME_HEIGHT, width=400, bd=1, relief=SUNKEN)
+            self.bot_frame, height=BOT_FRAME_HEIGHT, width=MISSION_FRAME_WIDTH, bd=1, relief=SUNKEN)
         self.mission_frame.pack(fill=Y, padx=COMBO_PAD_X,
                                 pady=COMBO_PAD_Y, side=LEFT, expand=NO)
         self.mission_frame.pack_propagate(0)
 
         self.mission_list = Combobox(self.mission_frame, values=MISSIONS)
         self.mission_list.pack(expand=YES, fill=X, pady=COMBO_PAD_Y)
-        #self.mission_list.bind("<<ComboboxSelected>>", lambda _ : out_q.put(missions.index(self_mission_list.get())))
+        # self.mission_list.bind("<<ComboboxSelected>>", lambda _ : out_q.put(missions.index(self_mission_list.get())))
 
     def abort_mission(self):
         ans = messagebox.askquestion(
