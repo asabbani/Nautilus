@@ -3,8 +3,9 @@ The radio class enables communication over wireless serial radios.
 """
 import serial
 
+
 class Radio:
-    def __init__(self, serial_path, baudrate = 115200):
+    def __init__(self, serial_path, baudrate=115200):
         """
         Initializes the radio object.
 
@@ -13,30 +14,24 @@ class Radio:
 
         # Establish connection to the serial radio.
         self.ser = serial.Serial(serial_path,
-                                baudrate = baudrate, parity = serial.PARITY_NONE,
-                                stopbits = serial.STOPBITS_ONE, bytesize = serial.EIGHTBITS,
-                                timeout = 2
-                                )
-    def write(self,message):
+                                 baudrate=baudrate, parity=serial.PARITY_NONE,
+                                 stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS,
+                                 timeout=2
+                                 )
+
+    def write(self, message):
         """
         Sends provided message over serial connection.
 
         message: A string message that is sent over seral connection.
         """
-        #try:
         self.ser.write(message)
-         #    return 1
-        #except Exception as e:
-         #    return -1
 
     def readline(self):
         """
         Returns a string from the serial connection.
         """
-        #try:
         return self.ser.readline()
-        #except Exception as e:
-         #    return -1
 
     def isOpen(self):
         """

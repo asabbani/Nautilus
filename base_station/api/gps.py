@@ -1,41 +1,42 @@
-# TODO, someone needs to fix this. 
+# TODO, someone needs to fix this.
 
 import threading
 from gps3 import gps3  # https://pypi.org/project/gps3/
 
-# Class for basic GPS functionality
+
 class GPS(threading.Thread):
+    """ Class for basic GPS functionality """
+
     def __init__(self):
-        threading.Thread.__init__(self) # Threading studd
+        # Call the threading super-class constructor (inheritance)
+        threading.Thread.__init__(self)
 
-        self.gps_socket  = None
+        self.gps_socket = None
         self.data_stream = None
-        self.running     = False
-        self.speed       = 0
-        self.latitude    = 0
-        self.longitude   = 0
-        self.altitude    = 0
+        self.running = False
+        self.speed = 0
+        self.latitude = 0
+        self.longitude = 0
+        self.altitude = 0
 
-        # Try to connect to GPSD socket
+        # Try to connect to GPSD socket (if gpsd is not installed, this will error)
         try:
-        #    self.gps_socket = gps3.GPSDSocket()    # => There is an Error here... IDK how to fix
-        #    self.data_stream = gps3.DataStream()
-            pass
+            self.gps_socket = gps3.GPSDSocket()
+            self.data_stream = gps3.DataStream()
         except:
-            print ("Cannot access GPSD service.")
+            print("Warning: Cannot access GPSD service.")
 
-        if (self.gps_socket != None):
+        if (self.gps_socket is not None):
             self.gps_socket.connect()
             self.gps_socket.watch()
 
-    # Start running GPS data
-    def startGPS():
+    def start_GPS():
+        """ Begins running the GPS"""
         self.running = True
 
-    # Runs continuously on new thread
     def run(self):
         if self.running:
-            for new_data in self.gps_socket: # Wait for new data on gps socket
+            for new_data in self.gps_socket:  # Wait for new data on gps socket
                 if new_data:
                     self.data_stream.unpack(new_data)
 

@@ -7,11 +7,11 @@ The codebase is split among two machines:
   * a base station (a macOS / Linux machine)
   * Origin (an AUV with a Raspberry Pi 3 running Raspbian)
 
-## Development / Style Guidlines
-Development will be done in Python3.
-  * Indention will be mandated to 4 spaces, not tabs.
-  * All files and methods need a descriptive header.
-  * Else, follow the [PEP8](https://pep8.org) style guidelines.
+## Style Guidlines
+Development will be done in Python3 using the [PEP8](https://pep8.org) style guidelines.
+  * Uses indententation instead of spaces.
+  * Utilizes the [autopep8](https://pypi.org/project/autopep8/0.8/extension) for automatic formatting.
+Feel free to use the included settings.json file for VSCode development
 
 # Base Station
 This machine communicates with the AUV using radio communication. Its main role is selecting and beginning missions for the AUV. It also receives data wirelessly from the AUV and outputs to an in-house Python GUI.
@@ -24,12 +24,17 @@ This machine communicates with the AUV using radio communication. Its main role 
 ## System Dependencies:
     Python 3+ with pip
     xboxdrv (Xbox Controller Driver)
+    gpsd
+    gpsd-clients (for cgps, optional)
 
 ## Python Packages:
     Tkinter
     Matplotlib
     pyserial
     gps3
+    screeninfo
+    pyOBjus
+    autopep8 (optional)
 
 # Origin (the AUV)
 A practical, 3D-printed multi-mission modular AUV, housing many sensors including pressure, audio (hydrophones), and GPS. However, it can also be adapted to implement Sonar, salinity, PH, and temperature sensors.
@@ -48,6 +53,9 @@ Note that this does NOT include specialized YonderDeep PCBs, PDMs, batteries, or
 
 ## System Dependencies:
     Python 3.7+ with pip
+    gpsd
+    gpsd-clients
+    IMU Library/Drivers
     and many more...
 This will continue to be updated as development continues.
 
