@@ -136,7 +136,7 @@ class Main():
         """ Evaluates the commands/tasks given to us in the in-queue. These commands are
         Passed as basic string objects. """
         while (self.in_q.empty() is False):
-            eval(self.in_q.get())
+            eval("self." + self.in_q.get())
 
         self.root.after(REFRESH_TIME, self.check_tasks)
 
@@ -244,13 +244,13 @@ class Main():
         self.calibrate_frame.pack_propagate(0)
 
         self.calibrate_label = Label(
-            self.calibrate_frame, text = "Motor Calibration", takefocus = False, font = (FONT, HEADING_SIZE))
+            self.calibrate_frame, text = "Motor Testing", takefocus = False, font = (FONT, HEADING_SIZE))
         self.calibrate_label.grid(row = 0, columnspan = 3, sticky = W+E)
 
         self.left_calibrate_button = Button(self.calibrate_frame, text = "LEFT", takefocus = False,  # width = 15, height = 3,
                                             padx = BUTTON_PAD_X, pady = BUTTON_PAD_Y, font = (
                                                 FONT, BUTTON_SIZE),
-                                            )  # command = lambda: self.base_station.set_calibrate_flag(0) )
+                                              command = lambda: self.out_q.put("testMotor('LEFT')") )
 
         self.left_calibrate_button.grid(row = 2, column = 0, pady = CALIBRATE_PAD_Y)
 
@@ -337,6 +337,7 @@ class Main():
 
     def on_closing(self):
         #    self.map.on_close()
+        self.out_q.put("close()")
         self.root.destroy()
         sys.exit()
 

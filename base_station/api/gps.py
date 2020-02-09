@@ -8,7 +8,8 @@ class GPS(threading.Thread):
     """ Class for basic GPS functionality """
 
     def __init__(self):
-        threading.Thread.__init__(self)  # Threading studd
+        # Call the threading super-class constructor (inheritance)
+        threading.Thread.__init__(self)
 
         self.gps_socket = None
         self.data_stream = None
@@ -18,9 +19,8 @@ class GPS(threading.Thread):
         self.longitude = 0
         self.altitude = 0
 
-        # Try to connect to GPSD socket
+        # Try to connect to GPSD socket (if gpsd is not installed, this will error)
         try:
-            # => There is an Error here... IDK how to fix
             self.gps_socket = gps3.GPSDSocket()
             self.data_stream = gps3.DataStream()
         except:
