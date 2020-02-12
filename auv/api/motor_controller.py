@@ -7,7 +7,7 @@ import time
 
 # Custom Imports
 import pigpio
-from motor import Motor
+from api import Motor
 import RPi.GPIO as io
 
 LEFT_GPIO_PIN = 4  # 18
