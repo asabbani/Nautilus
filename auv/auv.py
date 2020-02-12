@@ -11,20 +11,34 @@ import threading
 from api import Radio
 from api import IMU
 from api import PressureSensor
+from api import MotorController
+
+RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 
 
-class AUV(threading.Thread):
+class AUV():
+    """ Class for the AUV object. Acts as the main file for the AUV. """
+
     def __init__(self):
-        # Call super class constructor (inheritance)
-        threading.Thread.__init__(self)
+        """ Constructor for the AUV """
 
         self.radio = None
+        self.mc = MotorController()
+
         try:
-            self.radio = Radio()
+            self.radio = Radio(RADIO_PATH)
+        except:
+            print("Radio device is not connected to AUV on RADIO_PATH")
+
+        self.main_loop()
+
+    def main_loop():
+        """ Main connection loop for the AUV. """
+        pass
 
 
-# Main function that is run upon execution of auv.py
 def main():
+    """ Main function that is run upon execution of auv.py """
     auv = AUV()
 
 

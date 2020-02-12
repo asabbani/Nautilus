@@ -12,6 +12,7 @@ import math
 import argparse
 import threading
 from queue import Queue
+
 # Custom imports
 from api import Radio
 from api import Joystick
@@ -22,6 +23,7 @@ from gui import Main
 # Constants
 SPEED_CALIBRATION = 10
 NO_CALIBRATION = 9
+CONNECTION_WAIT_TIME = 3
 THREAD_SLEEP_DELAY = 0.3
 IS_MANUAL = True
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
@@ -167,16 +169,26 @@ class BaseStation(threading.Thread):
                             "Radio device has been found on RADIO_PATH.")
 
             # If we have a Radio object device, but we aren't connected to the AUV
-            elif (self.connected_to_auv is False):
-                self.log("Pinging AUV to attempt a Radio connection...")
-                # Send out a connection ping, and wait for response.
+            else:
                 self.radio.write(BS_PING)
-                line = self.radio.readline()
+                self.log("Attempting connection to AUV.")
+                time.sleep(CONNECTION_WAIT_TIME)
 
-                if (line == AUV_PING):
-                    self.log(
-                        "Return ping recieved from AUV. Connection ensured.")
-                    self.connected_to_auv = True
+                # Try to read line from radio.
+                try:
+                    line = self.radio.readline()
+                except:
+                    self.radio.close()
+                    self.radio = None
+                    self.log("Radio has been disconnected from computer.")
+                    continue
+
+                self.connected_to_auv = (line == AUV_PING)
+
+                if (self.connected_to_auv):
+                    self.log("Connection to AUV verified.")
+                else:
+                    self.log("Connection to AUV failed.")
 
             time.sleep(THREAD_SLEEP_DELAY)
 
