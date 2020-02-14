@@ -236,6 +236,12 @@ class Main():
         self.console.insert(END, time + string + "\n")
         self.console.config(state = DISABLED)
 
+    def setConnection(self, status):
+        if (status):
+            self.comms_status_string.set("Comms Status: Connected.")
+        else:
+            self.comms_status_string.set("Comms Status: Not connected.")
+    
     def init_calibrate_frame(self):
         self.calibrate_frame = Frame(
             self.bot_frame, height = BOT_FRAME_HEIGHT, width = CALIBRATE_FRAME_WIDTH, bd = 1, relief = SUNKEN)
