@@ -179,7 +179,7 @@ class Map:
         print("Opening remove-waypoint prompt.")
         prompt_window = Toplevel(self.window)
         prompt_window.title("Remove Waypoint \"" + str(waypoint[2]) + "\"?")
-        prompt_window.wm_attributes('-notify')
+        prompt_window.wm_attributes('-topmost')
         prompt_submit = Button(prompt_window, text="Yes, I want to remove waypoint \""+str(waypoint[2])+"\"",
                                command=lambda:
                                [
@@ -210,7 +210,7 @@ class Map:
 
         prompt_window.resizable(False, False)
         prompt_window.title("New Waypoint")
-        prompt_window.wm_attributes('-notify')
+        prompt_window.wm_attributes('-topmost')
         Label(prompt_window, text="Name").grid(row=0)
         Label(prompt_window, text="X").grid(row=1)
         Label(prompt_window, text="Y").grid(row=2)

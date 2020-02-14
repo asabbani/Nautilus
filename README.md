@@ -24,6 +24,8 @@ This machine communicates with the AUV using radio communication. Its main role 
 ## System Dependencies:
     Python 3+ with pip
     xboxdrv (Xbox Controller Driver)
+    gpsd
+    gpsd-clients (for cgps, optional)
 
 ## Python Packages:
     Tkinter
@@ -51,6 +53,9 @@ Note that this does NOT include specialized YonderDeep PCBs, PDMs, batteries, or
 
 ## System Dependencies:
     Python 3.7+ with pip
+    gpsd
+    gpsd-clients
+    IMU Library/Drivers
     and many more...
 This will continue to be updated as development continues.
 

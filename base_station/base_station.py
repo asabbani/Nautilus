@@ -1,5 +1,5 @@
-""" This class manages the serial connection between the 
-AUV and Base Station along with sending controller 
+""" This class manages the serial connection between the
+AUV and Base Station along with sending controller
 commands. """
 
 import sys
@@ -12,6 +12,7 @@ import math
 import argparse
 import threading
 from queue import Queue
+
 # Custom imports
 from api import Radio
 from api import Joystick
@@ -22,11 +23,12 @@ from gui import Main
 # Constants
 SPEED_CALIBRATION = 10
 NO_CALIBRATION = 9
-DELAY = 0.08
+CONNECTION_WAIT_TIME = 3
+THREAD_SLEEP_DELAY = 0.3
 IS_MANUAL = True
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
-CAL = 'CAL\n'
-REC = 'REC\n'
+BS_PING = 'BS_PING\n'
+AUV_PING = 'AUV_PING\n'
 DONE = "DONE\n"
 
 
@@ -37,6 +39,9 @@ class BaseStation(threading.Thread):
         """ Initialize Serial Port and Class Variables
         debug: debugging flag """
 
+        # Call super-class constructor
+        threading.Thread.__init__(self)
+
         # Instance variables
         self.radio = None
         self.data_packet = []
@@ -46,15 +51,29 @@ class BaseStation(threading.Thread):
         self.debug = debug
         self.cal_flag = NO_CALIBRATION
         self.radio_timer = []
-        self.gps = GPS()  # create the thread
+        self.gps = None  # create the thread
         self.ballast_depth = 0
         self.button_cb = {'MAN': self.manual_control, 'BAL': self.ballast}
+        self.in_q = in_q
+        self.out_q = out_q
 
-        # Try to assign radio
+        # Convert out PING unicode strings to bytes.
+        global BS_PING, AUV_PING
+        BS_PING = str.encode(BS_PING)
+        AUV_PING = str.encode(AUV_PING)
+
+        # Try to assign our radio object
         try:
             self.radio = Radio(RADIO_PATH)
-        except:  # Generic exception catching
-            print("Warning: Cannot find radio device. Ensure RADIO_PATH is correct.")
+        except:
+            self.log(
+                "Warning: Cannot find radio device. Ensure RADIO_PATH is correct.")
+
+        # Try to assign our GPS object connection to GPSD
+        try:
+            self.gps = GPS()
+        except:
+            self.log("Warning: Cannot find a gpsd socket.")
 
     def set_main(self, Main):
         self.main = Main
@@ -110,21 +129,69 @@ class BaseStation(threading.Thread):
         self.main.log("Connection established with AUV.")
         self.main.comms_status_string.set("Comms Status: Connected")
 
-    def set_calibrate_flag(self, cal_flag):
-        self.cal_flag = cal_flag
+    def check_tasks(self):
+        while(self.in_q.empty() is False):
+            task = self.in_q.get()
+            print("Found task: " + task)
+            eval("self." + task)
+
+    def testMotor(self, motor):
+        """ Attempts to send the AUV a signal to test a given motor. """
+        if (self.connected_to_auv is False):
+            self.log("Cannot test " + motor +
+                     " motor(s) because there is no connection to the AUV.")
+        else:
+            self.radio.write(str.encode("testMotor('" + motor + "')"))
 
     def run(self):
-        """ Runs the controller loop for the AUV. """
+        """ Main threaded loop for the base station. """
 
+        # Begin our main loop for this thread.
         while True:
-            if self.radio is not None:  # If we cannot find a radio
+            self.check_tasks()
+
+            # If we cannot find a radio device, or the object we have is closed.
+            if (self.radio is None or self.radio.isOpen() is False):
+
+                # If we have a radio object, but no serial connnect (disconnected after).
+                if(self.radio is not None and self.radio.isOpen() is False):
+                    self.log("Radio device has been disconnected.")
+                    self.radio.close()
+
+                # Try to assign us a new Radio object
                 try:
                     self.radio = Radio(RADIO_PATH)
-                    print("Radio device has been found.")
                 except:
                     pass
+                finally:
+                    if (self.radio is not None):
+                        self.log(
+                            "Radio device has been found on RADIO_PATH.")
+
+            # If we have a Radio object device, but we aren't connected to the AUV
             else:
-                pass
+                self.radio.write(BS_PING)
+                self.log("Attempting connection to AUV.")
+                time.sleep(CONNECTION_WAIT_TIME)
+
+                # Try to read line from radio.
+                try:
+                    line = self.radio.readline()
+                except:
+                    self.radio.close()
+                    self.radio = None
+                    self.log("Radio has been disconnected from computer.")
+                    continue
+
+                self.connected_to_auv = (line == AUV_PING)
+
+                if (self.connected_to_auv):
+                    self.log("Connection to AUV verified.")
+                else:
+                    self.log("Connection to AUV failed.")
+
+            time.sleep(THREAD_SLEEP_DELAY)
+
          # try:
          # Start Control Loop
         self.radio.write(chr(SPEED_CALIBRATION))
@@ -174,15 +241,15 @@ class BaseStation(threading.Thread):
 #             time.sleep(DELAY)
         # except (KeyboardInterrupt, SystemExit, Exception): #when you press ctrl+c
            # print "\nKilling Thread..."
-            #self.gpsp.running = False
+            # self.gpsp.running = False
             # self.gpsp.join() # wait for the thread to finish what it's doing
         # print("Done.\nExiting.")
 
     def log(self, message):
-        pass
+        self.out_q.put("log('" + str(message) + "')")
 
     def enter_ballast_state(self):
-        #print("ballaststate packet", self.data_packet)
+        # print("ballaststate packet", self.data_packet)
         # self.radio.write(self.data_packet)
         print("self.ballast_depth is: ", self.ballast_depth)
         reconnected_after_ballasting = False
@@ -199,6 +266,9 @@ class BaseStation(threading.Thread):
     def ballast(self):
         print("Setting ballast")
 
+    def close(self):
+        sys.exit()
+
 
 def main():
     """ Main method responsible for developing the main objects used during runtime
@@ -214,9 +284,8 @@ def main():
     to_BS = Queue()
 
     # Create a BS (base station) and GUI object thread.
-    bs_thread = threading.Thread(
-        target=BaseStation, args=(args.debug, to_BS, to_GUI, ))
-    bs_thread.start()
+    threaded_bs = BaseStation(args.debug, to_BS, to_GUI)
+    threaded_bs.start()
 
     # Create main GUI object
     gui = Main(to_GUI, to_BS)
