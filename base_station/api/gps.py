@@ -21,7 +21,8 @@ class GPS(threading.Thread):
 
         # Try to connect to GPSD socket (if gpsd is not installed, this will error)
         try:
-            self.gps_socket = gps3.GPSDSocket(host=localhost)
+            # TODO something happens here on OSX i guess?
+            self.gps_socket = gps3.GPSDSocket()
             self.data_stream = gps3.DataStream()
 
             print("DEBUG")
