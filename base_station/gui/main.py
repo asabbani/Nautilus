@@ -21,7 +21,7 @@ HEIGHT = 800
 REFRESH_TIME = 500
 # Development resolution constants (used for proper screen scaling)
 DEV_WIDTH = 1920.0
-DEV_HEIGHT = 1080.0
+DEV_HEIGHT = 1200.0
 # Frame heights
 TOP_FRAME_HEIGHT = 550
 BOT_FRAME_HEIGHT = 30
@@ -141,7 +141,7 @@ class Main():
 
         self.map_frame = Frame(self.top_frame, height=TOP_FRAME_HEIGHT,
                                width=TOP_FRAME_HEIGHT, bd=1, relief=SUNKEN)
-        self.map_frame.pack(fill=X, padx=MAIN_PAD_X,
+        self.map_frame.pack(fill=X, padx=MAIN_PAD_X, #fill=X at beginning
                             pady=MAIN_PAD_Y, side=LEFT, expand=YES)
         self.map_frame.pack_propagate(0)
 
