@@ -252,6 +252,23 @@ class Main():
         else:
             self.comms_status_string.set("Comms Status: Not connected.")
 
+    def set_vehicle(self, status):
+        if (status):
+            self.vehicle_status_string.set("Vehicle Status: Manual Control")
+        else:
+            self.vehicle_status_string.set(
+                "Vehicle Status: Autonomous Control")
+
+    def set_battery_voltage(self, voltage):
+        self.battery_status_string.set("Battery Voltage: " + voltage)
+
+    def set_heading(self, direction):
+        self.heading_label_string.set("Heading: " + direction)
+
+    def set_position(self, xPos, yPos):
+        self.position_label_string.set(
+            "Position \n \tX: " + xPos + "\t Y: " + yPos)
+
     def init_calibrate_frame(self):
         self.calibrate_frame = Frame(
             self.bot_frame, height=BOT_FRAME_HEIGHT, width=CALIBRATE_FRAME_WIDTH, bd=1, relief=SUNKEN)
