@@ -33,6 +33,7 @@ class AUV():
 
         try:
             self.radio = Radio(RADIO_PATH)
+            print("Radio device has been found")
         except:
             print("Radio device is not connected to AUV on RADIO_PATH")
 
@@ -44,15 +45,15 @@ class AUV():
 
     def main_loop(self):
         """ Main connection loop for the AUV. """
+
+        print("Starting main connection loop.")
         while(True):
             if (self.radio is None or self.radio.isOpen() is False):
                 try:
                     self.radio = Radio(RADIO_PATH)
+                    print("Radio device has been found!")
                 except:
                     pass
-                finally:
-                    if (self.radio is not None):
-                        print("Radio device has been found!")
             else:
                 try:
                     line = self.radio.readline()
@@ -70,14 +71,14 @@ class AUV():
 
                 if (self.connected_to_bs):
                     # If there was a status change, print out updated
-                    if (self.before is not self.connect_to_bs):
+                    if (self.before is not self.connected_to_bs):
                         print("Connected to BS verified. Returning ping.")
 
                     self.radio.write(AUV_PING)
                     time.sleep(CONNECTION_WAIT_TIME)
                 else:
                     # If there was a status change, print out updated
-                    if (self.before is not self.connect_to_bs):
+                    if (self.before is not self.connected_to_bs):
                         print("Connected to BS failed. Line read was: " + str(line))
 
             time.sleep(THREAD_SLEEP_DELAY)
