@@ -32,6 +32,7 @@ class GPS(threading.Thread):
 
         # TODO testing
         if (self.gps_socket is not None):
+            print("THIS EXECUTED")
             self.gps_socket.connect()
             self.gps_socket.watch()
 
