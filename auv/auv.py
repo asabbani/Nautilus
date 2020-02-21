@@ -31,6 +31,9 @@ class AUV():
         self.mc = MotorController()
         self.connected_to_bs = False
 
+        # Get all non-default callable methods in this class
+        self.methods = [ m for m in dir(AUV) if not m.startswith('__')]
+
         try:
             self.radio = Radio(RADIO_PATH)
             print("Radio device has been found")
@@ -42,9 +45,20 @@ class AUV():
         AUV_PING = str.encode(AUV_PING)
 
         self.main_loop()
+    
+    def test_motor(self, motor):
+        if motor is "LEFT":
+            self.mc.test_left()
+        elif motor is "RIGHT":
+            self.mc.test_right()
+        elif motor is "FRONT":
+            self.mc.test_front()
+        elif motor is "BACK":
+            self.mc.test_back()
 
     def main_loop(self):
         """ Main connection loop for the AUV. """
+        self.test_motor("LEFT")
 
         print("Starting main connection loop.")
         while(True):

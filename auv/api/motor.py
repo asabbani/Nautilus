@@ -6,7 +6,7 @@ import pigpio
 
 CENTER_PWM_RANGE = 400
 CENTER_PWM_VALUE = 1500
-MAX_SPEED = 100
+MAX_SPEED = 150
 
 class Motor:
     def __init__(self, gpio_pin, pi):
@@ -17,7 +17,7 @@ class Motor:
         pi:       Raspberry Pi GPIO object
         """
         self.pin = gpio_pin
-        self.pi  = pi
+        self.pi  = pi 
 
     def set_speed(self, speed):
         """
@@ -36,18 +36,20 @@ class Motor:
         # Change speed of motor.
         self.pi.set_servo_pulsewidth(self.pin, pwm_speed)
 
-    def calibrate_motor(self):
+    def test_motor(self):
         """
-        Calibrates the motor by setting speed values between time intervals.
+        Test the motor by setting speed values between time intervals.
         """
-        print('Calibrating Motor')
-        self.set_speed(0)
-     #   time.sleep(2)
-        self.set_speed(MAX_SPEED / 2)
+
+        print('Testing motor with speed: ', MAX_SPEED / 5)
+        self.set_speed(MAX_SPEED / 5)
         time.sleep(1)
         self.set_speed(0)
-        time.sleep (1)
-        self.set_speed(0)
-        print('Finished Calibrating the Motor')
-     #   time.sleep(2)
-   #     time.sleep(1)
+        print('Finished testing the motor: ', MAX_SPEED / 5)
+
+
+def main():
+    motor = Motor(4, pigpio.pi())
+    motor.test_motor()
+if __name__ == '__main__':
+    main()
