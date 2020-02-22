@@ -8,6 +8,7 @@ CENTER_PWM_RANGE = 400
 CENTER_PWM_VALUE = 1500
 MAX_SPEED = 150
 
+
 class Motor:
     def __init__(self, gpio_pin, pi):
         """
@@ -17,7 +18,8 @@ class Motor:
         pi:       Raspberry Pi GPIO object
         """
         self.pin = gpio_pin
-        self.pi  = pi 
+        self.pi = pi
+        self.speed = 0
 
     def set_speed(self, speed):
         """
@@ -25,6 +27,9 @@ class Motor:
 
         speed: double value specifying the speed that the motor should be set to.
         """
+
+        self.speed = speed
+
         # Threshold for positive or negative speed.
         if speed > MAX_SPEED:
             speed -= MAX_SPEED
@@ -41,15 +46,16 @@ class Motor:
         Test the motor by setting speed values between time intervals.
         """
 
-        print('Testing motor with speed: ', MAX_SPEED / 5)
-        self.set_speed(MAX_SPEED / 5)
+        print('Testing motor at pin: ', self.pin)
+        self.set_speed(MAX_SPEED / 6)
         time.sleep(1)
         self.set_speed(0)
-        print('Finished testing the motor: ', MAX_SPEED / 5)
 
 
 def main():
     motor = Motor(4, pigpio.pi())
     motor.test_motor()
+
+
 if __name__ == '__main__':
     main()

@@ -7,32 +7,38 @@ import time
 
 # Custom Imports
 import pigpio
-from api import Motor
 import RPi.GPIO as io
+from motor import Motor
 
+# GPIO Pin numbers for Motors
 LEFT_GPIO_PIN = 4  # 18
 RIGHT_GPIO_PIN = 11  # 24
 FRONT_GPIO_PIN = 18  # 4
 BACK_GPIO_PIN = 24  # 11
 
-# Define pin numbers for PI
+# Define pin numbers for PI (Not the same as GPIO?)
 LEFT_PI_PIN = 7
 RIGHT_PI_PIN = 23
 FRONT_PI_PIN = 12
 BACK_PI_PIN = 18
 
-
+# Indices for motor array
 LEFT_MOTOR_INDEX = 0
 RIGHT_MOTOR_INDEX = 1
 FRONT_MOTOR_INDEX = 2
 BACK_MOTOR_INDEX = 3
+
+# Constants
 BALLAST = 4
 MAX_PITCH = 30
-
 MAX_CORRECTION_MOTOR_SPEED = 25  # Max turning speed during pid correction
 
 
 class MotorController:
+    """
+    Object that contains all interactions with the motor array for the AUV
+    """
+
     def __init__(self):
         """
         Initializes MotorController object and individual motor objects
@@ -44,9 +50,11 @@ class MotorController:
         # Motor object definitions.
         self.motor_pins = [LEFT_GPIO_PIN, RIGHT_GPIO_PIN,
                            FRONT_GPIO_PIN, BACK_GPIO_PIN]
+
         self.pi_pins = [LEFT_PI_PIN, RIGHT_PI_PIN, FRONT_PI_PIN, BACK_PI_PIN]
 
-        self.motors = [Motor(gpio_pin=pin, pi=self.pi) for pin in self.motor_pins]
+        self.motors = [Motor(gpio_pin=pin, pi=self.pi)
+                       for pin in self.motor_pins]
 
         self.left_speed = 0
         self.right_speed = 0
@@ -56,7 +64,8 @@ class MotorController:
 
     def update_motor_speeds(self, data):
         """
-        Sets motor speeds to each individual motor.
+        Sets motor speeds to each individual motor. This is for manual control when the
+        radio sends a data packet of size 4 (old code).
 
         data: String read from the serial connection containing motor speed values.
         """
@@ -87,7 +96,7 @@ class MotorController:
         else:
             self.left_speed = self.calculate_pid_new_speed(-pid_feedback)
             self.right_speed = self.calculate_pid_new_speed(pid_feedback)
-        
+
 #        print('[PID_MOTOR] %7.2f %7.2f' %
  #             (self.left_speed, self.right_speed), end='\n')
 
@@ -147,12 +156,9 @@ class MotorController:
         """
         Calibrates each individual motor.
         """
-        ct = 0
         for motor in self.motors:
-            ct += 1
-            print("Calibrating motor ", ct)
             motor.test_motor()
-            time.sleep(2)
+            time.sleep(1)
 
     def test_left(self):
         print('Testing left motor...')
@@ -171,6 +177,7 @@ class MotorController:
         self.motors[BACK_MOTOR_INDEX].test_motor()
 
     def check_gpio_pins(self):
+        """ This function might be deprecated... """
         io.setmode(io.BOARD)
         for pins in self.pi_pins:
             io.setup(pins, io.IN)
@@ -184,9 +191,11 @@ class MotorController:
         else:
             return min(feedback, MAX_CORRECTION_MOTOR_SPEED)
 
+
 def main():
     mc = MotorController()
     mc.test_left()
+
 
 if __name__ == '__main__':
     main()

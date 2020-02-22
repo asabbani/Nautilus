@@ -32,7 +32,7 @@ class AUV():
         self.connected_to_bs = False
 
         # Get all non-default callable methods in this class
-        self.methods = [ m for m in dir(AUV) if not m.startswith('__')]
+        self.methods = [m for m in dir(AUV) if not m.startswith('__')]
 
         try:
             self.radio = Radio(RADIO_PATH)
@@ -45,7 +45,7 @@ class AUV():
         AUV_PING = str.encode(AUV_PING)
 
         self.main_loop()
-    
+
     def test_motor(self, motor):
         if motor is "LEFT":
             self.mc.test_left()
@@ -58,7 +58,6 @@ class AUV():
 
     def main_loop(self):
         """ Main connection loop for the AUV. """
-        self.test_motor("LEFT")
 
         print("Starting main connection loop.")
         while(True):
@@ -89,6 +88,31 @@ class AUV():
                         print("Connected to BS verified. Returning ping.")
 
                     self.radio.write(AUV_PING)
+
+                    # Start attempting to parse commands from radio buffer.
+                    try:
+                        line = self.radio.readline()
+                    except:
+                        self.radio.close()
+                        self.radio = None
+                        print("Radio is disconnected from pi!")
+                        continue
+
+                    # Attempt to convert line to a command string
+                    # EX: line  = "command arg1 arg2 arg3..."
+                    #     cmdArray = [ "command", "arg1", "arg2" ]
+                    cmdArray = str(line).split(" ")
+
+                    if len(cmdArray) > 0 and cmdArray[0] is in self.methods:
+                        # set command to  "command(arg1, arg2)"
+                        cmd = cmdArray[0] + "("
+                        for i in range(1, len(cmdArray)):
+                            cmd += cmdArray[i] + ","
+                        cmd += ")"
+
+                        # Attempt to evaluate command.
+                        eval(cmd)
+
                     time.sleep(CONNECTION_WAIT_TIME)
                 else:
                     # If there was a status change, print out updated
