@@ -290,7 +290,7 @@ class Main():
         self.right_calibrate_button = Button(self.calibrate_frame, text="RIGHT", takefocus=False,  # width = 15, height = 3,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                  FONT, BUTTON_SIZE),
-                                             )  # command = lambda: self.base_station.set_calibrate_flag(1) )
+                                             command=lambda: self.out_q.put("testMotor('RIGHT')") )
 
         self.right_calibrate_button.grid(row=2, column=2, pady=CALIBRATE_PAD_Y)
 
