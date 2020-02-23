@@ -135,13 +135,13 @@ class BaseStation(threading.Thread):
             print("Found task: " + task)
             eval("self." + task)
 
-    def testMotor(self, motor):
+    def test_motor(self, motor):
         """ Attempts to send the AUV a signal to test a given motor. """
         if (self.connected_to_auv is False):
             self.log("Cannot test " + motor +
                      " motor(s) because there is no connection to the AUV.")
         else:
-            self.radio.write(str.encode("testMotor('" + motor + "')\n"))
+            self.radio.write(str.encode("test_motor '" + motor + "'\n"))
 
     def run(self):
         """ Main threaded loop for the base station. """
@@ -190,11 +190,11 @@ class BaseStation(threading.Thread):
 
                 if (self.connected_to_auv):
                     if (self.before is not self.connected_to_auv):
-                        self.out_q.put("setConnection(True)")
+                        self.out_q.put("set_connection(True)")
                         self.log("Connection to AUV verified.")
                 else:
                     if (self.before is not self.connected_to_auv):
-                        self.out_q.put("setConnection(False)")
+                        self.out_q.put("set_connection(False)")
                         self.log("Connection to AUV failed.")
 
             time.sleep(THREAD_SLEEP_DELAY)

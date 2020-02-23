@@ -283,35 +283,35 @@ class Main():
         self.left_calibrate_button = Button(self.calibrate_frame, text="LEFT", takefocus=False,  # width = 15, height = 3,
                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                 FONT, BUTTON_SIZE),
-                                            command=lambda: self.out_q.put("testMotor('LEFT')"))
+                                            command=lambda: self.out_q.put("test_motor('LEFT')"))
 
         self.left_calibrate_button.grid(row=2, column=0, pady=CALIBRATE_PAD_Y)
 
         self.right_calibrate_button = Button(self.calibrate_frame, text="RIGHT", takefocus=False,  # width = 15, height = 3,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                  FONT, BUTTON_SIZE),
-                                             command=lambda: self.out_q.put("testMotor('RIGHT')"))
+                                             command=lambda: self.out_q.put("test_motor('RIGHT')"))
 
         self.right_calibrate_button.grid(row=2, column=2, pady=CALIBRATE_PAD_Y)
 
         self.front_calibrate_button = Button(self.calibrate_frame, text="FRONT", takefocus=False,  # width = 15, height = 3,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                  FONT, BUTTON_SIZE),
-                                             command=lambda: self.out_q.put("testMotor('FRONT')"))
+                                             command=lambda: self.out_q.put("test_motor('FRONT')"))
 
         self.front_calibrate_button.grid(row=1, column=1, pady=CALIBRATE_PAD_Y)
 
         self.calibrate_all_button = Button(self.calibrate_frame, text="ALL", takefocus=False,  # width = 15, height = 3,
                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                FONT, BUTTON_SIZE),
-                                           command=lambda: self.out_q.put("testMotor('ALL')"))
+                                           command=lambda: self.out_q.put("test_motor('ALL')"))
 
         self.calibrate_all_button.grid(row=2, column=1, pady=CALIBRATE_PAD_Y)
 
         self.back_calibrate_button = Button(self.calibrate_frame, text="BACK", takefocus=False,  # width = 15, height = 3,
                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                 FONT, BUTTON_SIZE),
-                                            command=lambda: self.out_q.put("testMotor('BACK')"))
+                                            command=lambda: self.out_q.put("test_motor('BACK')"))
 
         self.back_calibrate_button.grid(row=3, column=1, pady=CALIBRATE_PAD_Y)
 
