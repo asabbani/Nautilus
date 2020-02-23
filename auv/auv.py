@@ -103,7 +103,7 @@ class AUV():
                     #     cmdArray = [ "command", "arg1", "arg2" ]
                     cmdArray = str(line).split(" ")
 
-                    if len(cmdArray) > 0 and cmdArray[0] is in self.methods:
+                    if len(cmdArray) > 0 and cmdArray[0] in self.methods:
                         # set command to  "command(arg1, arg2)"
                         cmd = cmdArray[0] + "("
                         for i in range(1, len(cmdArray)):
