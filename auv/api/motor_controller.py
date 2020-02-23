@@ -8,7 +8,7 @@ import time
 # Custom Imports
 import pigpio
 import RPi.GPIO as io
-from motor import Motor
+from api import Motor
 
 # GPIO Pin numbers for Motors
 LEFT_GPIO_PIN = 4  # 18
@@ -156,6 +156,7 @@ class MotorController:
         """
         Calibrates each individual motor.
         """
+        print('Testing all motors...')
         for motor in self.motors:
             motor.test_motor()
             time.sleep(1)

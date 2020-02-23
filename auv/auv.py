@@ -55,6 +55,8 @@ class AUV():
             self.mc.test_front()
         elif motor is "BACK":
             self.mc.test_back()
+        elif motor is "ALL":
+            self.mc.test_all()
 
     def main_loop(self):
         """ Main connection loop for the AUV. """
@@ -85,39 +87,32 @@ class AUV():
                 if (self.connected_to_bs):
                     # If there was a status change, print out updated
                     if (self.before is not self.connected_to_bs):
-                        print("Connected to BS verified. Returning ping.")
+                        print("Connection to BS verified. Returning ping.")
 
                     self.radio.write(AUV_PING)
-
-                    # Start attempting to parse commands from radio buffer.
-                    try:
-                        line = self.radio.readline()
-                    except:
-                        self.radio.close()
-                        self.radio = None
-                        print("Radio is disconnected from pi!")
-                        continue
-
-                    # Attempt to convert line to a command string
-                    # EX: line  = "command arg1 arg2 arg3..."
-                    #     cmdArray = [ "command", "arg1", "arg2" ]
-                    cmdArray = str(line).split(" ")
-
-                    if len(cmdArray) > 0 and cmdArray[0] in self.methods:
-                        # set command to  "command(arg1, arg2)"
-                        cmd = cmdArray[0] + "("
-                        for i in range(1, len(cmdArray)):
-                            cmd += cmdArray[i] + ","
-                        cmd += ")"
-
-                        # Attempt to evaluate command.
-                        eval(cmd)
-
                     time.sleep(CONNECTION_WAIT_TIME)
                 else:
                     # If there was a status change, print out updated
                     if (self.before is not self.connected_to_bs):
-                        print("Connected to BS failed. Line read was: " + str(line))
+                        print("Possible command found. Line read was: " + str(line))
+                
+                
+                if len(line) > 0:
+                    # Attempt to convert line to a command string after decoding to UTF-8
+                    # EX: line  = "command arg1 arg2 arg3..."
+                    #     cmdArray = [ "command", "arg1", "arg2" ]
+                    cmdArray = line.decode('utf-8').split(" ")		
+                
+                    if len(cmdArray) > 0 and cmdArray[0] in self.methods:
+                        # set command to  "command(arg1, arg2)"
+                        cmd = "self." + cmdArray[0] + "("
+                        for i in range(1, len(cmdArray)):
+                            cmd += cmdArray[i] + ","
+                        cmd += ")"
+                
+                        print("Evaluating command", cmd)
+                        # Attempt to evaluate command.
+                        eval(cmd)
 
             time.sleep(THREAD_SLEEP_DELAY)
 
