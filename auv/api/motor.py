@@ -46,7 +46,6 @@ class Motor:
         Test the motor by setting speed values between time intervals.
         """
 
-        print('Testing motor at pin: ', self.pin)
         self.set_speed(MAX_SPEED / 6)
         time.sleep(1)
         self.set_speed(0)
