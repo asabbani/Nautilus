@@ -58,6 +58,7 @@ class AUV():
         elif motor is "ALL":
             self.mc.test_all()
 
+
     def main_loop(self):
         """ Main connection loop for the AUV. """
 
