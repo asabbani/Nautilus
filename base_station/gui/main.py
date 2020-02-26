@@ -66,7 +66,7 @@ class Main():
         # os_enumerator = Enumerator.OSX  # TODO testing things
 
         # https://stackoverflow.com/questions/446209/possible-values-from-sys-platform
-        if "linux" in sys.platform:  # Linux designated as "linux" or "linux2"
+        if "linux" in sys.platform:  # Linux designated as "linux"
             os_enumerator = Enumerator.Xinerama
         elif "darwin" in sys.platform:  # Mac OS X designated as "darwin"
             os_enumerator = Enumerator.OSX

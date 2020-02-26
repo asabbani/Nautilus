@@ -33,7 +33,7 @@ class GPS(threading.Thread):
         # TODO testing
         if (self.gps_socket is not None):
             self.gps_socket.connect()
-            self.gps_socket.watch()
+            # self.gps_socket.watch()
 
     def start_GPS():
         """ Begins running the GPS"""
