@@ -55,7 +55,7 @@ class AUV():
             self.mc.test_front()
         elif motor is "BACK":
             self.mc.test_back()
-        elif motor is "ALL2":
+        elif motor is "ALL":
             self.mc.test_all()
 
     def main_loop(self):
@@ -95,21 +95,20 @@ class AUV():
                     # If there was a status change, print out updated
                     if (self.before is not self.connected_to_bs):
                         print("Possible command found. Line read was: " + str(line))
-                
-                
+
                 if len(line) > 0:
                     # Attempt to convert line to a command string after decoding to UTF-8
                     # EX: line  = "command arg1 arg2 arg3..."
                     #     cmdArray = [ "command", "arg1", "arg2" ]
-                    cmdArray = line.decode('utf-8').split(" ")		
-                
+                    cmdArray = line.decode('utf-8').split(" ")
+
                     if len(cmdArray) > 0 and cmdArray[0] in self.methods:
                         # set command to  "command(arg1, arg2)"
                         cmd = "self." + cmdArray[0] + "("
                         for i in range(1, len(cmdArray)):
                             cmd += cmdArray[i] + ","
                         cmd += ")"
-                
+
                         print("Evaluating command", cmd)
                         # Attempt to evaluate command.
                         eval(cmd)
