@@ -142,6 +142,27 @@ class BaseStation(threading.Thread):
                      " motor(s) because there is no connection to the AUV.")
         else:
             self.radio.write(str.encode("test_motor '" + motor + "'\n"))
+            self.log("Sending task: test_motor \"" + motor + "\"")
+
+    def abort_mission(self):
+        """ Attempts to abort the mission for the AUV."""
+
+        if (self.connected_to_auv is False):
+            self.log(
+                "Cannot abort mission because there is no connection to the AUV.")
+        else:
+            self.radio.write(str.encode("abort_mission\n"))
+            self.log("Sending task: abort_mission")
+
+    def start_mission(self, mission):
+        """  Attempts to start a mission and send to AUV. """
+
+        if (self.connected_to_auv is False):
+            self.log("Cannot start mission: " + mission +
+                     " because there is no connection to the AUV.")
+        else:
+            self.radio.write(str.encode("start_mission '" + mission + "'\n"))
+            self.log("Sending task: start_mission \"" + mission + "\"")
 
     def run(self):
         """ Main threaded loop for the base station. """
@@ -161,19 +182,15 @@ class BaseStation(threading.Thread):
                 # Try to assign us a new Radio object
                 try:
                     self.radio = Radio(RADIO_PATH)
+                    self.log(
+                        "Radio device has been found on RADIO_PATH.")
                 except:
                     pass
-                finally:
-                    if (self.radio is not None):
-                        self.log(
-                            "Radio device has been found on RADIO_PATH.")
 
             # If we have a Radio object device, but we aren't connected to the AUV
             else:
                 # Add newline character to distinguish packet
                 self.radio.write(BS_PING)
-                #self.log("Attempting connection to AUV.")
-               # time.sleep(CONNECTION_WAIT_TIME)
 
                 # Try to read line from radio.
                 try:
@@ -201,14 +218,14 @@ class BaseStation(threading.Thread):
 
          # try:
          # Start Control Loop
-        self.radio.write(chr(SPEED_CALIBRATION))
+#        self.radio.write(chr(SPEED_CALIBRATION))
         # self.gpsp.start()
-        curr_time = time.time()
+#        curr_time = time.time()
 
         # while self.connected_to_auv:
-        while True:
+#        while True:
           #  self.main.log("GPS: {}".format(self.gps.gpsd.fix.latitude))
-            self.navController.handle()
+#            self.navController.handle()
 #             #Get pa0cket
 #             self.data_packet = self.navController.getPacket()
 #             self.data_packet = self.data_packet + chr(self.cal_flag) + '\n'
