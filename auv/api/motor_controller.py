@@ -152,7 +152,7 @@ class MotorController:
         for motor in self.motors:
             motor.set_speed(0)
 
-    def test_all_motors(self):
+    def test_all(self):
         """
         Calibrates each individual motor.
         """
