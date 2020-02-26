@@ -6,6 +6,7 @@ the Origin AUV. The "mind and brain" of the mission.
 import os
 import sys
 import threading
+import time
 
 # Custom imports
 from api import Radio
@@ -14,6 +15,10 @@ from api import PressureSensor
 from api import MotorController
 
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
+BS_PING = "BS_PING\n"
+AUV_PING = "AUV_PING\n"
+THREAD_SLEEP_DELAY = 0.3
+CONNECTION_WAIT_TIME = 0.5
 
 
 class AUV():
@@ -24,17 +29,92 @@ class AUV():
 
         self.radio = None
         self.mc = MotorController()
+        self.connected_to_bs = False
+
+        # Get all non-default callable methods in this class
+        self.methods = [m for m in dir(AUV) if not m.startswith('__')]
 
         try:
             self.radio = Radio(RADIO_PATH)
+            print("Radio device has been found")
         except:
             print("Radio device is not connected to AUV on RADIO_PATH")
 
+        global BS_PING, AUV_PING
+        BS_PING = str.encode(BS_PING)
+        AUV_PING = str.encode(AUV_PING)
+
         self.main_loop()
 
-    def main_loop():
+    def test_motor(self, motor):
+        if motor is "LEFT":
+            self.mc.test_left()
+        elif motor is "RIGHT":
+            self.mc.test_right()
+        elif motor is "FRONT":
+            self.mc.test_front()
+        elif motor is "BACK":
+            self.mc.test_back()
+        elif motor is "ALL":
+            self.mc.test_all()
+
+    def main_loop(self):
         """ Main connection loop for the AUV. """
-        pass
+
+        print("Starting main connection loop.")
+        while(True):
+            if (self.radio is None or self.radio.isOpen() is False):
+                try:
+                    self.radio = Radio(RADIO_PATH)
+                    print("Radio device has been found!")
+                except:
+                    pass
+            else:
+                try:
+                    line = self.radio.readline()
+                except:
+                    self.radio.close()
+                    self.radio = None
+                    print("Radio is disconnected from pi!")
+                    continue
+
+                # Save previous connection status
+                self.before = self.connected_to_bs
+
+                # Updated connection status
+                self.connected_to_bs = (line == BS_PING)
+
+                if (self.connected_to_bs):
+                    # If there was a status change, print out updated
+                    if (self.before is not self.connected_to_bs):
+                        print("Connection to BS verified. Returning ping.")
+
+                    self.radio.write(AUV_PING)
+                    time.sleep(CONNECTION_WAIT_TIME)
+                else:
+                    # If there was a status change, print out updated
+                    if (self.before is not self.connected_to_bs):
+                        print("Possible command found. Line read was: " + str(line))
+                
+                
+                if len(line) > 0:
+                    # Attempt to convert line to a command string after decoding to UTF-8
+                    # EX: line  = "command arg1 arg2 arg3..."
+                    #     cmdArray = [ "command", "arg1", "arg2" ]
+                    cmdArray = line.decode('utf-8').split(" ")		
+                
+                    if len(cmdArray) > 0 and cmdArray[0] in self.methods:
+                        # set command to  "command(arg1, arg2)"
+                        cmd = "self." + cmdArray[0] + "("
+                        for i in range(1, len(cmdArray)):
+                            cmd += cmdArray[i] + ","
+                        cmd += ")"
+                
+                        print("Evaluating command", cmd)
+                        # Attempt to evaluate command.
+                        eval(cmd)
+
+            time.sleep(THREAD_SLEEP_DELAY)
 
 
 def main():

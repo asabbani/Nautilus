@@ -246,6 +246,29 @@ class Main():
         self.console.insert(END, time + string + "\n")
         self.console.config(state=DISABLED)
 
+    def set_connection(self, status):
+        if (status):
+            self.comms_status_string.set("Comms Status: Connected.")
+        else:
+            self.comms_status_string.set("Comms Status: Not connected.")
+
+    def set_vehicle(self, status):
+        if (status):
+            self.vehicle_status_string.set("Vehicle Status: Manual Control")
+        else:
+            self.vehicle_status_string.set(
+                "Vehicle Status: Autonomous Control")
+
+    def set_battery_voltage(self, voltage):
+        self.battery_status_string.set("Battery Voltage: " + voltage)
+
+    def set_heading(self, direction):
+        self.heading_label_string.set("Heading: " + direction)
+
+    def set_position(self, xPos, yPos):
+        self.position_label_string.set(
+            "Position \n \tX: " + xPos + "\t Y: " + yPos)
+
     def init_calibrate_frame(self):
         self.calibrate_frame = Frame(
             self.bot_frame, height=BOT_FRAME_HEIGHT, width=CALIBRATE_FRAME_WIDTH, bd=1, relief=SUNKEN)
@@ -260,35 +283,35 @@ class Main():
         self.left_calibrate_button = Button(self.calibrate_frame, text="LEFT", takefocus=False,  # width = 15, height = 3,
                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                 FONT, BUTTON_SIZE),
-                                            command=lambda: self.out_q.put("testMotor('LEFT')"))
+                                            command=lambda: self.out_q.put("test_motor('LEFT')"))
 
         self.left_calibrate_button.grid(row=2, column=0, pady=CALIBRATE_PAD_Y)
 
         self.right_calibrate_button = Button(self.calibrate_frame, text="RIGHT", takefocus=False,  # width = 15, height = 3,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                  FONT, BUTTON_SIZE),
-                                             )  # command = lambda: self.base_station.set_calibrate_flag(1) )
+                                             command=lambda: self.out_q.put("test_motor('RIGHT')"))
 
         self.right_calibrate_button.grid(row=2, column=2, pady=CALIBRATE_PAD_Y)
 
         self.front_calibrate_button = Button(self.calibrate_frame, text="FRONT", takefocus=False,  # width = 15, height = 3,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                  FONT, BUTTON_SIZE),
-                                             )  # command = lambda: self.base_station.set_calibrate_flag(2) )
+                                             command=lambda: self.out_q.put("test_motor('FRONT')"))
 
         self.front_calibrate_button.grid(row=1, column=1, pady=CALIBRATE_PAD_Y)
 
         self.calibrate_all_button = Button(self.calibrate_frame, text="ALL", takefocus=False,  # width = 15, height = 3,
                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                FONT, BUTTON_SIZE),
-                                           )  # command = lambda: self.base_station.set_calibrate_flag(4) )
+                                           command=lambda: self.out_q.put("test_motor('ALL')"))
 
         self.calibrate_all_button.grid(row=2, column=1, pady=CALIBRATE_PAD_Y)
 
-        self.back_calibrate_button = Button(self.calibrate_frame, text="Back", takefocus=False,  # width = 15, height = 3,
+        self.back_calibrate_button = Button(self.calibrate_frame, text="BACK", takefocus=False,  # width = 15, height = 3,
                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                 FONT, BUTTON_SIZE),
-                                            )  # command = lambda: self.base_station.set_calibrate_flag(3) )
+                                            command=lambda: self.out_q.put("test_motor('BACK')"))
 
         self.back_calibrate_button.grid(row=3, column=1, pady=CALIBRATE_PAD_Y)
 

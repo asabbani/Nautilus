@@ -135,13 +135,13 @@ class BaseStation(threading.Thread):
             print("Found task: " + task)
             eval("self." + task)
 
-    def testMotor(self, motor):
+    def test_motor(self, motor):
         """ Attempts to send the AUV a signal to test a given motor. """
         if (self.connected_to_auv is False):
             self.log("Cannot test " + motor +
                      " motor(s) because there is no connection to the AUV.")
         else:
-            self.radio.write(str.encode("testMotor('" + motor + "')"))
+            self.radio.write(str.encode("test_motor '" + motor + "'\n"))
 
     def run(self):
         """ Main threaded loop for the base station. """
@@ -170,9 +170,10 @@ class BaseStation(threading.Thread):
 
             # If we have a Radio object device, but we aren't connected to the AUV
             else:
+                # Add newline character to distinguish packet
                 self.radio.write(BS_PING)
-                self.log("Attempting connection to AUV.")
-                time.sleep(CONNECTION_WAIT_TIME)
+                #self.log("Attempting connection to AUV.")
+               # time.sleep(CONNECTION_WAIT_TIME)
 
                 # Try to read line from radio.
                 try:
@@ -183,12 +184,18 @@ class BaseStation(threading.Thread):
                     self.log("Radio has been disconnected from computer.")
                     continue
 
+                self.before = self.connected_to_auv
+
                 self.connected_to_auv = (line == AUV_PING)
 
                 if (self.connected_to_auv):
-                    self.log("Connection to AUV verified.")
+                    if (self.before is not self.connected_to_auv):
+                        self.out_q.put("set_connection(True)")
+                        self.log("Connection to AUV verified.")
                 else:
-                    self.log("Connection to AUV failed.")
+                    if (self.before is not self.connected_to_auv):
+                        self.out_q.put("set_connection(False)")
+                        self.log("Connection to AUV failed.")
 
             time.sleep(THREAD_SLEEP_DELAY)
 
