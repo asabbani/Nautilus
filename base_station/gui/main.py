@@ -323,18 +323,48 @@ class Main():
                                 pady=COMBO_PAD_Y, side=LEFT, expand=NO)
         self.mission_frame.pack_propagate(0)
 
-        self.mission_list = Combobox(self.mission_frame, values=MISSIONS)
+        self.mission_list = Combobox(
+            self.mission_frame, state="readonly", values=MISSIONS)
+        self.mission_list.set("Select Mission...")
         self.mission_list.pack(expand=YES, fill=X, pady=COMBO_PAD_Y)
         # self.mission_list.bind("<<ComboboxSelected>>", lambda _ : out_q.put(missions.index(self_mission_list.get())))
 
+        self.start_mission_button = Button(self.mission_frame, text="START MISSION", takefocus=False,
+                                           width=BUTTON_WIDTH, height=BUTTON_HEIGHT, padx=BUTTON_PAD_X,
+                                           pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.confirm_mission)
+        self.start_mission_button.pack(expand=YES)  # TODO
+
+    def confirm_mission(self):
+        # TODO messages
+        mission = self.mission_list.get()
+
+        if mission == "Select Mission...":
+            # Prevent mission from starting if a mission was not properly selected
+            messagebox.showerror(
+                "Mission Select", "Please select a mission before starting.")
+        else:
+            # Prompt mission start
+            prompt = "Start mission: " + mission + "?"
+            ans = messagebox.askquestion("Mission Select", prompt)
+            if ans == 'yes':
+                message = "Starting mission: " + mission
+                self.log(message)
+                # TODO send command to auv or something to start mission by out_q
+                self.out_q("start_mission")
+            else:
+                message = "mission select cancelled"
+                self.log(message)
+
     def abort_mission(self):
         ans = messagebox.askquestion(
-            "Abort Mission", "Are you sure you want to abort the mission")
-        if ans is 'yes':
-            message = "Mission aborted"
+            "Abort Mission", "Are you sure you want to abort the mission?")
+        if ans == 'yes':
+            message = "Mission Aborted"
             self.log(message)
+            # TODO send command to auv to abort mission by out_q
+            self.out_q("test_motor")
         else:
-            message = "Clicked mission abort; continuing mission though"
+            message = "Continuing Mission"
             self.log(message)
 
     def create_function_buttons(self):
