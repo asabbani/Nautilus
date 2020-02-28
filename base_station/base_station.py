@@ -212,7 +212,7 @@ class BaseStation(threading.Thread):
                     message = line.decode('utf-8').split("|")
 
                     # Ensure the bytes we read are not corrupt, and indeed came from AUV.
-                    if len(message) > 1 and message[0] is "AUV":
+                    if len(message) > 1 and message[0] == "AUV":
                         self.log("AUV returned message: " + message[1])
 
                 elif(self.before):
