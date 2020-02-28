@@ -108,7 +108,7 @@ class AUV():
                             cmd += cmdArray[i] + ","
                         cmd += ")"
 
-                        print("Evaluating command", cmd)
+                        print("Evaluating command: ", cmd)
 
                         try:
                             # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter

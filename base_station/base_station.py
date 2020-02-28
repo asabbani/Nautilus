@@ -65,6 +65,7 @@ class BaseStation(threading.Thread):
         # Try to assign our radio object
         try:
             self.radio = Radio(RADIO_PATH)
+            self.log("Successfully found radio device on RADIO_PATH.")
         except:
             self.log(
                 "Warning: Cannot find radio device. Ensure RADIO_PATH is correct.")
@@ -209,11 +210,13 @@ class BaseStation(threading.Thread):
                         self.log("Connection to AUV verified.")
                 elif len(line) > 0:
                     # Line is greater than 0, but not equal to our AUV_PING
-                    message = line.decode('utf-8').split("|")
+                    message = line.decode('utf-8').replace("\n", "").split("|")
 
-                    # Ensure the bytes we read are not corrupt, and indeed came from AUV.
-                    if len(message) > 1 and message[0] is "AUV":
-                        self.log("AUV returned message: " + message[1])
+                    # Ensure the bytes we read indeed came from AUV.
+                    if len(message) > 1 and message[0] == "AUV_MESSAGE":
+                        # Replace all ' characters with double quotes backslashed.
+                        message[1] = message[1].replace("'", "\"")
+                        self.log(message[1])
 
                 elif(self.before):
                     # We are NOT connected to AUV, but we previously ('before') were. Status has changed to failed.
