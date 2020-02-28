@@ -60,6 +60,7 @@ class Main():
     def __init__(self, in_q=None, out_q=None):
         # Begin initializing the main Tkinter (GUI) framework/root window
         self.root = Tk()
+        self.root.resizable(False, False)
 
         # ~Code below is to fix HiDPI-scaling of fonts.~
         os_enumerator = None
