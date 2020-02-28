@@ -1,5 +1,5 @@
 '''
-This class acts as the main functionality file for 
+This class acts as the main functionality file for
 the Origin AUV. The "mind and brain" of the mission.
 '''
 # System imports
@@ -71,6 +71,8 @@ class AUV():
                     pass
             else:
                 try:
+                    # Always send a connection verification packet and attempt to read one.
+                    self.radio.write(AUV_PING)
                     line = self.radio.readline()
                 except:
                     self.radio.close()
@@ -86,32 +88,41 @@ class AUV():
 
                 if (self.connected_to_bs):
                     # If there was a status change, print out updated
-                    if (self.before is not self.connected_to_bs):
+                    if (self.before is False):
                         print("Connection to BS verified. Returning ping.")
 
                     self.radio.write(AUV_PING)
                     time.sleep(CONNECTION_WAIT_TIME)
-                else:
-                    # If there was a status change, print out updated
-                    if (self.before is not self.connected_to_bs):
+                elif len(line) > 0:
                         print("Possible command found. Line read was: " + str(line))
 
-                if len(line) > 0:
-                    # Attempt to convert line to a command string after decoding to UTF-8
-                    # EX: line  = "command arg1 arg2 arg3..."
-                    #     cmdArray = [ "command", "arg1", "arg2" ]
-                    cmdArray = line.decode('utf-8').split(" ")
+                        # Attempt to split line into a string array after decoding it to UTF-8.
+                        # EX: line  = "command arg1 arg2 arg3..."
+                        #     cmdArray = [ "command", "arg1", "arg2" ]
+                        cmdArray = line.decode('utf-8').split(" ")
 
-                    if len(cmdArray) > 0 and cmdArray[0] in self.methods:
-                        # set command to  "command(arg1, arg2)"
-                        cmd = "self." + cmdArray[0] + "("
-                        for i in range(1, len(cmdArray)):
-                            cmd += cmdArray[i] + ","
-                        cmd += ")"
+                        if len(cmdArray) > 0 and cmdArray[0] in self.methods:
+                            # build the 'cmd' string (using the string array) to: "self.command(arg1, arg2)"
+                            cmd = "self." + cmdArray[0] + "("
+                            for i in range(1, len(cmdArray)):
+                                cmd += cmdArray[i] + ","
+                            cmd += ")"
 
-                        print("Evaluating command", cmd)
-                        # Attempt to evaluate command.
-                        eval(cmd)
+                            print("Evaluating command", cmd)
+
+                            try:
+                                # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
+                                eval(cmd)
+                                self.radio.write(str.encode(
+                                    "AUV|Successfully evaluated task: " + cmd + "\n"))
+                            except:
+                                # Send verification of command back to base station.
+                                self.radio.write(str.encode(
+                                    "AUV|Failed to evaluate task: " + cmd + "\n"))
+
+                    elif(self.before):
+                        # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
+                        print("Connection verification to BS failed.")
 
             time.sleep(THREAD_SLEEP_DELAY)
 

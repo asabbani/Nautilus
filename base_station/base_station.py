@@ -189,11 +189,9 @@ class BaseStation(threading.Thread):
 
             # If we have a Radio object device, but we aren't connected to the AUV
             else:
-                # Add newline character to distinguish packet
-                self.radio.write(BS_PING)
-
                 # Try to read line from radio.
                 try:
+                    self.radio.write(BS_PING)
                     line = self.radio.readline()
                 except:
                     self.radio.close()
@@ -205,14 +203,22 @@ class BaseStation(threading.Thread):
 
                 self.connected_to_auv = (line == AUV_PING)
 
-                if (self.connected_to_auv):
-                    if (self.before is not self.connected_to_auv):
+                if self.connected_to_auv:
+                    if self.before is False:
                         self.out_q.put("set_connection(True)")
                         self.log("Connection to AUV verified.")
-                else:
-                    if (self.before is not self.connected_to_auv):
-                        self.out_q.put("set_connection(False)")
-                        self.log("Connection to AUV failed.")
+                elif len(line) > 0:
+                    # Line is greater than 0, but not equal to our AUV_PING
+                    message = line.decode('utf-8').split("|")
+
+                    # Ensure the bytes we read are not corrupt, and indeed came from AUV.
+                    if len(message) > 1 and message[0] is "AUV":
+                        self.log("AUV returned message: " + message[1])
+
+                elif(self.before):
+                    # We are NOT connected to AUV, but we previously ('before') were. Status has changed to failed.
+                    self.out_q.put("set_connection(False)")
+                    self.log("Connection verification to AUV failed.")
 
             time.sleep(THREAD_SLEEP_DELAY)
 

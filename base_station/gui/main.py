@@ -362,7 +362,7 @@ class Main():
             message = "Mission Aborted"
             self.log(message)
             # TODO send command to auv to abort mission by out_q
-            self.out_q("test_motor")
+            self.out_q("abort_mission")
         else:
             message = "Continuing Mission"
             self.log(message)
