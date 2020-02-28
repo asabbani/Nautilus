@@ -86,14 +86,13 @@ class AUV():
                 # Updated connection status
                 self.connected_to_bs = (line == BS_PING)
 
-                if (self.connected_to_bs):
+                if self.connected_to_bs:
                     # If there was a status change, print out updated
-                    if (self.before is False):
+                    if self.before is False:
                         print("Connection to BS verified. Returning ping.")
 
-                    self.radio.write(AUV_PING)
-                    time.sleep(CONNECTION_WAIT_TIME)
                 elif len(line) > 0:
+                    # Line was read, but it was not equal to a BS_PING
                     print("Possible command found. Line read was: " + str(line))
 
                     # Attempt to split line into a string array after decoding it to UTF-8.
