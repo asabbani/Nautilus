@@ -47,15 +47,15 @@ class AUV():
         self.main_loop()
 
     def test_motor(self, motor):
-        if motor is "LEFT":
+        if motor == "LEFT":
             self.mc.test_left()
-        elif motor is "RIGHT":
+        elif motor == "RIGHT":
             self.mc.test_right()
-        elif motor is "FRONT":
+        elif motor == "FRONT":
             self.mc.test_front()
-        elif motor is "BACK":
+        elif motor == "BACK":
             self.mc.test_back()
-        elif motor is "ALL":
+        elif motor == "ALL":
             self.mc.test_all()
 
     def main_loop(self):
@@ -86,43 +86,43 @@ class AUV():
                 # Updated connection status
                 self.connected_to_bs = (line == BS_PING)
 
-                if (self.connected_to_bs):
+                if self.connected_to_bs:
                     # If there was a status change, print out updated
-                    if (self.before is False):
+                    if self.before is False:
                         print("Connection to BS verified. Returning ping.")
 
-                    self.radio.write(AUV_PING)
-                    time.sleep(CONNECTION_WAIT_TIME)
                 elif len(line) > 0:
-                        print("Possible command found. Line read was: " + str(line))
+                    # Line was read, but it was not equal to a BS_PING
+                    print("Possible command found. Line read was: " + str(line))
 
-                        # Attempt to split line into a string array after decoding it to UTF-8.
-                        # EX: line  = "command arg1 arg2 arg3..."
-                        #     cmdArray = [ "command", "arg1", "arg2" ]
-                        cmdArray = line.decode('utf-8').split(" ")
+                    # Attempt to split line into a string array after decoding it to UTF-8.
+                    # EX: line  = "command arg1 arg2 arg3..."
+                    #     cmdArray = [ "command", "arg1", "arg2" ]
+                    cmdArray = line.decode(
+                        'utf-8').replace("\n", "").split(" ")
 
-                        if len(cmdArray) > 0 and cmdArray[0] in self.methods:
-                            # build the 'cmd' string (using the string array) to: "self.command(arg1, arg2)"
-                            cmd = "self." + cmdArray[0] + "("
-                            for i in range(1, len(cmdArray)):
-                                cmd += cmdArray[i] + ","
-                            cmd += ")"
+                    if len(cmdArray) > 0 and cmdArray[0] in self.methods:
+                        # build the 'cmd' string (using the string array) to: "self.command(arg1, arg2)"
+                        cmd = "self." + cmdArray[0] + "("
+                        for i in range(1, len(cmdArray)):
+                            cmd += cmdArray[i] + ","
+                        cmd += ")"
 
-                            print("Evaluating command", cmd)
+                        print("Evaluating command: ", cmd)
 
-                            try:
-                                # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
-                                eval(cmd)
-                                self.radio.write(str.encode(
-                                    "AUV|Successfully evaluated task: " + cmd + "\n"))
-                            except:
-                                # Send verification of command back to base station.
-                                self.radio.write(str.encode(
-                                    "AUV|Failed to evaluate task: " + cmd + "\n"))
+                        try:
+                            # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
+                            eval(cmd)
+                            self.radio.write(str.encode(
+                                "AUV|Successfully evaluated task: " + cmd + "\n"))
+                        except:
+                            # Send verification of command back to base station.
+                            self.radio.write(str.encode(
+                                "AUV|Failed to evaluate task: " + cmd + "\n"))
 
-                    elif(self.before):
-                        # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
-                        print("Connection verification to BS failed.")
+                elif self.before:
+                    # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
+                    print("Connection verification to BS failed.")
 
             time.sleep(THREAD_SLEEP_DELAY)
 
