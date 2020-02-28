@@ -47,15 +47,15 @@ class AUV():
         self.main_loop()
 
     def test_motor(self, motor):
-        if motor is "LEFT":
+        if motor == "LEFT":
             self.mc.test_left()
-        elif motor is "RIGHT":
+        elif motor == "RIGHT":
             self.mc.test_right()
-        elif motor is "FRONT":
+        elif motor == "FRONT":
             self.mc.test_front()
-        elif motor is "BACK":
+        elif motor == "BACK":
             self.mc.test_back()
-        elif motor is "ALL":
+        elif motor == "ALL":
             self.mc.test_all()
 
     def main_loop(self):
@@ -89,6 +89,7 @@ class AUV():
                 if self.connected_to_bs:
                     # If there was a status change, print out updated
                     if self.before is False:
+                        # TODO
                         print("Connection to BS verified. Returning ping.")
 
                 elif len(line) > 0:
@@ -98,7 +99,7 @@ class AUV():
                     # Attempt to split line into a string array after decoding it to UTF-8.
                     # EX: line  = "command arg1 arg2 arg3..."
                     #     cmdArray = [ "command", "arg1", "arg2" ]
-                    cmdArray = line.decode('utf-8').split(" ")
+                    cmdArray = line.decode('utf-8').replace("\n", "").split(" ")
 
                     if len(cmdArray) > 0 and cmdArray[0] in self.methods:
                         # build the 'cmd' string (using the string array) to: "self.command(arg1, arg2)"
@@ -113,7 +114,7 @@ class AUV():
                             # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
                             eval(cmd)
                             self.radio.write(str.encode(
-                                "AUV|Successfully evaluated task: " + cmd + "\n"))
+                                "AUV_MESSAGE|Successfully evaluated task: " + cmd + "\n"))
                         except:
                             # Send verification of command back to base station.
                             self.radio.write(str.encode(
