@@ -350,7 +350,7 @@ class Main():
                 message = "Starting mission: " + mission
                 self.log(message)
                 # TODO send command to auv or something to start mission by out_q
-                self.out_q("start_mission")
+                self.out_q.put("start_mission(\"" + mission + "\")")
             else:
                 message = "mission select cancelled"
                 self.log(message)
@@ -362,7 +362,7 @@ class Main():
             message = "Mission Aborted"
             self.log(message)
             # TODO send command to auv to abort mission by out_q
-            self.out_q("abort_mission")
+            self.out_q.put("abort_mission()")
         else:
             message = "Continuing Mission"
             self.log(message)
