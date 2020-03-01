@@ -15,8 +15,9 @@ from api import PressureSensor
 from api import MotorController
 
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
-BS_PING = "BS_PING\n"
-AUV_PING = "AUV_PING\n"
+#BS_PING = "BS_PING\n"
+#AUV_PING = "AUV_PING\n"
+PING = b'PING\n'
 THREAD_SLEEP_DELAY = 0.3
 CONNECTION_WAIT_TIME = 0.5
 
@@ -40,9 +41,9 @@ class AUV():
         except:
             print("Radio device is not connected to AUV on RADIO_PATH")
 
-        global BS_PING, AUV_PING
-        BS_PING = str.encode(BS_PING)
-        AUV_PING = str.encode(AUV_PING)
+       # global BS_PING, AUV_PING
+        #BS_PING = str.encode(BS_PING)
+        #AUV_PING = str.encode(AUV_PING)
 
         self.main_loop()
 
@@ -72,7 +73,8 @@ class AUV():
             else:
                 try:
                     # Always send a connection verification packet and attempt to read one.
-                    self.radio.write(AUV_PING)
+                    # self.radio.write(AUV_PING)
+                    self.radio.write(PING)
                     line = self.radio.readline()
                 except:
                     self.radio.close()
@@ -84,7 +86,7 @@ class AUV():
                 self.before = self.connected_to_bs
 
                 # Updated connection status
-                self.connected_to_bs = (line == BS_PING)
+                self.connected_to_bs = (line == PING)
 
                 if self.connected_to_bs:
                     # If there was a status change, print out updated
@@ -99,7 +101,8 @@ class AUV():
                     # Attempt to split line into a string array after decoding it to UTF-8.
                     # EX: line  = "command arg1 arg2 arg3..."
                     #     cmdArray = [ "command", "arg1", "arg2" ]
-                    cmdArray = line.decode('utf-8').replace("\n", "").split(" ")
+                    cmdArray = line.decode(
+                        'utf-8').replace("\n", "").split(" ")
 
                     if len(cmdArray) > 0 and cmdArray[0] in self.methods:
                         # build the 'cmd' string (using the string array) to: "self.command(arg1, arg2)"
