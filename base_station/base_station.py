@@ -27,9 +27,7 @@ CONNECTION_WAIT_TIME = 3
 THREAD_SLEEP_DELAY = 0.3
 IS_MANUAL = True
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
-BS_PING = 'BS_PING\n'
-AUV_PING = 'AUV_PING\n'
-DONE = "DONE\n"
+PING = b'PING\n'
 
 
 class BaseStation(threading.Thread):
@@ -56,11 +54,6 @@ class BaseStation(threading.Thread):
         self.button_cb = {'MAN': self.manual_control, 'BAL': self.ballast}
         self.in_q = in_q
         self.out_q = out_q
-
-        # Convert out PING unicode strings to bytes.
-        global BS_PING, AUV_PING
-        BS_PING = str.encode(BS_PING)
-        AUV_PING = str.encode(AUV_PING)
 
         # Try to assign our radio object
         try:
@@ -134,7 +127,12 @@ class BaseStation(threading.Thread):
         while(self.in_q.empty() is False):
             task = self.in_q.get()
             print("Found task: " + task)
-            eval("self." + task)
+
+            # Try to evaluate the task in the in_q.
+            try:
+                eval("self." + task)
+            except:
+                print("Could not evaluate task: ", task)
 
     def test_motor(self, motor):
         """ Attempts to send the AUV a signal to test a given motor. """
@@ -192,7 +190,7 @@ class BaseStation(threading.Thread):
             else:
                 # Try to read line from radio.
                 try:
-                    self.radio.write(BS_PING)
+                    self.radio.write(PING)
                     line = self.radio.readline()
                 except:
                     self.radio.close()
@@ -202,7 +200,7 @@ class BaseStation(threading.Thread):
 
                 self.before = self.connected_to_auv
 
-                self.connected_to_auv = (line == AUV_PING)
+                self.connected_to_auv = (line == PING)
 
                 if self.connected_to_auv:
                     if self.before is False:
