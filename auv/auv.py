@@ -15,8 +15,6 @@ from api import PressureSensor
 from api import MotorController
 
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
-#BS_PING = "BS_PING\n"
-#AUV_PING = "AUV_PING\n"
 PING = b'PING\n'
 THREAD_SLEEP_DELAY = 0.3
 CONNECTION_WAIT_TIME = 0.5
@@ -40,10 +38,6 @@ class AUV():
             print("Radio device has been found")
         except:
             print("Radio device is not connected to AUV on RADIO_PATH")
-
-       # global BS_PING, AUV_PING
-        #BS_PING = str.encode(BS_PING)
-        #AUV_PING = str.encode(AUV_PING)
 
         self.main_loop()
 
@@ -117,11 +111,11 @@ class AUV():
                             # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
                             eval(cmd)
                             self.radio.write(str.encode(
-                                "AUV_MESSAGE|Successfully evaluated task: " + cmd + "\n"))
+                                "log(\"Successfully evaluated task: " + cmd + "\")\n"))
                         except:
                             # Send verification of command back to base station.
                             self.radio.write(str.encode(
-                                "AUV|Failed to evaluate task: " + cmd + "\n"))
+                                "log(\"Failed to evaluate task: " + cmd + "\")\n"))
 
                 elif self.before:
                     # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
