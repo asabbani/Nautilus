@@ -120,11 +120,11 @@ class AUV():
                             # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
                             eval(cmd)
                             self.radio.write(str.encode(
-                                "log(\"Successfully evaluated task: " + cmd + "\")\n"))
+                                "log \"Successfully evaluated task: " + cmd + "\"\n"))
                         except:
                             # Send verification of command back to base station.
                             self.radio.write(str.encode(
-                                "log(\"Failed to evaluate task: " + cmd + "\")\n"))
+                                "log \"Failed to evaluate task: " + cmd + "\"\n"))
 
                 elif self.before:
                     # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.

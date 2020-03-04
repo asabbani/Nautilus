@@ -55,6 +55,9 @@ class BaseStation(threading.Thread):
         self.in_q = in_q
         self.out_q = out_q
 
+        # Get all non-default callable methods in this class
+        self.methods = [m for m in dir(AUV) if not m.startswith('__')]
+
         # Try to assign our radio object
         try:
             self.radio = Radio(RADIO_PATH)
@@ -207,14 +210,47 @@ class BaseStation(threading.Thread):
                         self.out_q.put("set_connection(True)")
                         self.log("Connection to AUV verified.")
                 elif len(line) > 0:
-                    # Line is greater than 0, but not equal to our AUV_PING
-                    message = line.decode('utf-8').replace("\n", "").split("|")
+                    # # Line is greater than 0, but not equal to our AUV_PING
+                    # message = line.decode('utf-8').replace("\n", "").split("|")
 
-                    # Ensure the bytes we read indeed came from AUV.
-                    if len(message) > 1 and message[0] == "AUV_MESSAGE":
-                        # Replace all ' characters with double quotes backslashed.
-                        message[1] = message[1].replace("'", "\"")
-                        self.log(message[1])
+                    # # Ensure the bytes we read indeed came from AUV.
+                    # if len(message) > 1 and message[0] == "AUV_MESSAGE":
+                    #     # Replace all ' characters with double quotes backslashed.
+                    #     message[1] = message[1].replace("'", "\"")
+                    #     self.log(message[1])
+                    ####################################################################
+                    # Line was read, but it was not equal to a BS_PING
+                    print("Possible command found. Line read was: " + str(line))
+
+                    # Attempt to split line into a string array after decoding it to UTF-8.
+                    # EX: line  = "command arg1 arg2 arg3..."
+                    #     cmdArray = [ "command", "arg1", "arg2" ]
+                    message = line.decode(
+                        'utf-8').replace("\n", "").split("|")
+
+                    if len(message) > 0 and message[0] in self.methods:
+                        dummy = True
+                        # build the 'msg' string (using the string array) to: "self.command(arg1, arg2)"
+                        msg = "self." + message[0] + "("
+                        for i in range(1, len(message)):
+                            msg += message[i]
+                            if "\'" in message[i]:
+                                dummy = not dummy
+                            if dummy is True:
+                                msg += ","
+                            else:
+                                msg += " "
+                        msg += ")"
+
+                        print("Evaluating command: ", msg)
+
+                        try:
+                            # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
+                            eval(msg)
+                        except:
+                            # Send verification of command back to base station.
+                            self.log("Evaluation of task  " +
+                                     msg + "  failed.")
 
                 elif(self.before):
                     # We are NOT connected to AUV, but we previously ('before') were. Status has changed to failed.
