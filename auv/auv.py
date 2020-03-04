@@ -106,10 +106,10 @@ class AUV():
                         cmd = "self." + cmdArray[0] + "("
                         for i in range(1, len(cmdArray)):
                             cmd += cmdArray[i]
-                            if dummy is True:
-                                cmd += ","
                             if "\'" in cmdArray[i]:
                                 dummy = not dummy
+                            if dummy is True:
+                                cmd += ","
                         cmd += ")"
 
                         print("Evaluating command: ", cmd)
