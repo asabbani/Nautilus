@@ -110,6 +110,8 @@ class AUV():
                                 dummy = not dummy
                             if dummy is True:
                                 cmd += ","
+                            else:
+                                cmd += " "
                         cmd += ")"
 
                         print("Evaluating command: ", cmd)
