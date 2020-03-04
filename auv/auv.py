@@ -117,6 +117,7 @@ class AUV():
                         print("Evaluating command: ", cmd)
 
                         try:
+                            print("THIS WORKED")
                             # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
                             eval(cmd)
                             self.radio.write(str.encode(
