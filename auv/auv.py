@@ -30,6 +30,8 @@ class AUV():
         self.mc = MotorController()
         self.connected_to_bs = False
 
+        self.current_mission = ""
+
         # Get all non-default callable methods in this class
         self.methods = [m for m in dir(AUV) if not m.startswith('__')]
 
@@ -122,6 +124,10 @@ class AUV():
                     print("Connection verification to BS failed.")
 
             time.sleep(THREAD_SLEEP_DELAY)
+
+    def start_mission(self, mission):
+        print(mission)  # test stuff
+        self.current_mission = mission
 
 
 def main():
