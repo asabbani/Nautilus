@@ -101,10 +101,15 @@ class AUV():
                         'utf-8').replace("\n", "").split(" ")
 
                     if len(cmdArray) > 0 and cmdArray[0] in self.methods:
+                        dummy = True
                         # build the 'cmd' string (using the string array) to: "self.command(arg1, arg2)"
                         cmd = "self." + cmdArray[0] + "("
                         for i in range(1, len(cmdArray)):
-                            cmd += cmdArray[i] + ","
+                            cmd += cmdArray[i]
+                            if dummy is True:
+                                cmd += ","
+                            if "\'" in cmdArray[i]:
+                                dummy = not dummy
                         cmd += ")"
 
                         print("Evaluating command: ", cmd)
