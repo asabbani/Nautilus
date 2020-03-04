@@ -12,6 +12,7 @@ import math
 import argparse
 import threading
 from queue import Queue
+
 # Custom imports
 from api import Radio
 from api import Joystick
@@ -22,12 +23,11 @@ from gui import Main
 # Constants
 SPEED_CALIBRATION = 10
 NO_CALIBRATION = 9
+CONNECTION_WAIT_TIME = 3
 THREAD_SLEEP_DELAY = 0.3
 IS_MANUAL = True
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
-BS_PING = 'BS_PING\n'
-AUV_PING = 'AUV_PING\n'
-DONE = "DONE\n"
+PING = b'PING\n'
 
 
 class BaseStation(threading.Thread):
@@ -55,14 +55,13 @@ class BaseStation(threading.Thread):
         self.in_q = in_q
         self.out_q = out_q
 
-        # Convert out PING unicode strings to bytes.
-        global BS_PING, AUV_PING
-        BS_PING = str.encode(BS_PING)
-        AUV_PING = str.encode(AUV_PING)
+        # Get all non-default callable methods in this class
+        self.methods = [m for m in dir(AUV) if not m.startswith('__')]
 
         # Try to assign our radio object
         try:
             self.radio = Radio(RADIO_PATH)
+            self.log("Successfully found radio device on RADIO_PATH.")
         except:
             self.log(
                 "Warning: Cannot find radio device. Ensure RADIO_PATH is correct.")
@@ -131,15 +130,41 @@ class BaseStation(threading.Thread):
         while(self.in_q.empty() is False):
             task = self.in_q.get()
             print("Found task: " + task)
-            eval("self." + task)
 
-    def testMotor(self, motor):
+            # Try to evaluate the task in the in_q.
+            try:
+                eval("self." + task)
+            except:
+                print("Could not evaluate task: ", task)
+
+    def test_motor(self, motor):
         """ Attempts to send the AUV a signal to test a given motor. """
         if (self.connected_to_auv is False):
             self.log("Cannot test " + motor +
                      " motor(s) because there is no connection to the AUV.")
         else:
-            self.radio.write(str.encode("testMotor('" + motor + "')"))
+            self.radio.write(str.encode("test_motor '" + motor + "'\n"))
+            self.log("Sending task: test_motor \"" + motor + "\"")
+
+    def abort_mission(self):
+        """ Attempts to abort the mission for the AUV."""
+
+        if (self.connected_to_auv is False):
+            self.log(
+                "Cannot abort mission because there is no connection to the AUV.")
+        else:
+            self.radio.write(str.encode("abort_mission\n"))
+            self.log("Sending task: abort_mission")
+
+    def start_mission(self, mission):
+        """  Attempts to start a mission and send to AUV. """
+
+        if (self.connected_to_auv is False):
+            self.log("Cannot start mission: " + mission +
+                     " because there is no connection to the AUV.")
+        else:
+            self.radio.write(str.encode("start_mission '" + mission + "'\n"))
+            self.log("Sending task: start_mission \"" + mission + "\"")
 
     def run(self):
         """ Main threaded loop for the base station. """
@@ -159,37 +184,91 @@ class BaseStation(threading.Thread):
                 # Try to assign us a new Radio object
                 try:
                     self.radio = Radio(RADIO_PATH)
+                    self.log(
+                        "Radio device has been found on RADIO_PATH.")
                 except:
                     pass
-                finally:
-                    if (self.radio is not None):
-                        self.log(
-                            "Radio device has been found on RADIO_PATH.")
 
             # If we have a Radio object device, but we aren't connected to the AUV
-            elif (self.connected_to_auv is False):
-                self.log("Pinging AUV to attempt a Radio connection...")
-                # Send out a connection ping, and wait for response.
-                self.radio.write(BS_PING)
-                line = self.radio.readline()
+            else:
+                # Try to read line from radio.
+                try:
+                    self.radio.write(PING)
+                    line = self.radio.readline()
+                except:
+                    self.radio.close()
+                    self.radio = None
+                    self.log("Radio has been disconnected from computer.")
+                    continue
 
-                if (line == AUV_PING):
-                    self.log(
-                        "Return ping recieved from AUV. Connection ensured.")
-                    self.connected_to_auv = True
+                self.before = self.connected_to_auv
+
+                self.connected_to_auv = (line == PING)
+
+                if self.connected_to_auv:
+                    if self.before is False:
+                        self.out_q.put("set_connection(True)")
+                        self.log("Connection to AUV verified.")
+                elif len(line) > 0:
+                    # # Line is greater than 0, but not equal to our AUV_PING
+                    # message = line.decode('utf-8').replace("\n", "").split("|")
+
+                    # # Ensure the bytes we read indeed came from AUV.
+                    # if len(message) > 1 and message[0] == "AUV_MESSAGE":
+                    #     # Replace all ' characters with double quotes backslashed.
+                    #     message[1] = message[1].replace("'", "\"")
+                    #     self.log(message[1])
+                    ####################################################################
+                    # Line was read, but it was not equal to a BS_PING
+                    print("Possible command found. Line read was: " + str(line))
+
+                    # Attempt to split line into a string array after decoding it to UTF-8.
+                    # EX: line  = "command arg1 arg2 arg3..."
+                    #     cmdArray = [ "command", "arg1", "arg2" ]
+                    message = line.decode(
+                        'utf-8').replace("\n", "").split("|")
+
+                    if len(message) > 0 and message[0] in self.methods:
+                        dummy = True
+                        # build the 'msg' string (using the string array) to: "self.command(arg1, arg2)"
+                        msg = "self." + message[0] + "("
+                        for i in range(1, len(message)):
+                            msg += message[i]
+                            if "\'" in message[i]:
+                                dummy = not dummy
+                            if dummy is True:
+                                msg += ","
+                            else:
+                                msg += " "
+                        msg += ")"
+
+                        print("Evaluating command: ", msg)
+
+                        try:
+                            # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
+                            eval(msg)
+                        except:
+                            # Send verification of command back to base station.
+                            self.log("Evaluation of task  " +
+                                     msg + "  failed.")
+
+                elif(self.before):
+                    # We are NOT connected to AUV, but we previously ('before') were. Status has changed to failed.
+                    self.out_q.put("set_connection(False)")
+                    self.log("Connection verification to AUV failed.")
 
             time.sleep(THREAD_SLEEP_DELAY)
 
          # try:
          # Start Control Loop
-        self.radio.write(chr(SPEED_CALIBRATION))
+#        self.radio.write(chr(SPEED_CALIBRATION))
         # self.gpsp.start()
-        curr_time = time.time()
+#        curr_time = time.time()
 
         # while self.connected_to_auv:
-        while True:
+#        while True:
           #  self.main.log("GPS: {}".format(self.gps.gpsd.fix.latitude))
-            self.navController.handle()
+#            self.navController.handle()
 #             #Get pa0cket
 #             self.data_packet = self.navController.getPacket()
 #             self.data_packet = self.data_packet + chr(self.cal_flag) + '\n'
