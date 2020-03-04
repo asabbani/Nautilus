@@ -75,6 +75,7 @@ class MotorController:
         self.right_speed = data[RIGHT_MOTOR_INDEX]
         self.front_speed = data[FRONT_MOTOR_INDEX]
         # This is grabbing speed from the DATA packet which is index 2
+        # TODO is this supposed to be front?
         self.back_speed = data[FRONT_MOTOR_INDEX]
 
         print("motors is: ", self.motors)
