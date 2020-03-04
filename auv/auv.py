@@ -96,17 +96,17 @@ class AUV():
 
                     # Attempt to split line into a string array after decoding it to UTF-8.
                     # EX: line  = "command arg1 arg2 arg3..."
-                    #     cmdArray = [ "command", "arg1", "arg2" ]
-                    cmdArray = line.decode(
+                    #     cmd_array = [ "command", "arg1", "arg2" ]
+                    cmd_array = line.decode(
                         'utf-8').replace("\n", "").split(" ")
 
-                    if len(cmdArray) > 0 and cmdArray[0] in self.methods:
+                    if len(cmd_array) > 0 and cmd_array[0] in self.methods:
                         dummy = True
                         # build the 'cmd' string (using the string array) to: "self.command(arg1, arg2)"
-                        cmd = "self." + cmdArray[0] + "("
-                        for i in range(1, len(cmdArray)):
-                            cmd += cmdArray[i]
-                            if "\'" in cmdArray[i]:
+                        cmd = "self." + cmd_array[0] + "("
+                        for i in range(1, len(cmd_array)):
+                            cmd += cmd_array[i]
+                            if "\'" in cmd_array[i]:
                                 dummy = not dummy
                             if dummy is True:
                                 cmd += ","
@@ -117,7 +117,7 @@ class AUV():
                         print("Evaluating command: ", cmd)
 
                         try:
-                            print("THIS WORKED")
+                            print("THIS WORKED")  # TODO
                             # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
                             eval(cmd)
                             self.radio.write(str.encode(
