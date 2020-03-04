@@ -364,9 +364,8 @@ class Main():
             self.log(message)
             self.out_q.put("abort_mission()")
         else:
-            *
             #message = "Continuing Mission"
-           self.log(message)
+            self.log(message)
 
     def create_function_buttons(self):
         self.origin_button = Button(self.functions_frame, text="Set Origin", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
