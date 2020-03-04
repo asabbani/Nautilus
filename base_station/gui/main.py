@@ -350,9 +350,9 @@ class Main():
             if ans == 'yes':
                 message = "Starting mission: " + mission
                 self.log(message)
-                # TODO send command to auv or something to start mission by out_q
                 self.out_q.put("start_mission(\"" + mission + "\")")
             else:
+                # TODO on message
                 message = "mission select cancelled"
                 self.log(message)
 
@@ -362,11 +362,11 @@ class Main():
         if ans == 'yes':
             message = "Mission Aborted"
             self.log(message)
-            # TODO send command to auv to abort mission by out_q
             self.out_q.put("abort_mission()")
         else:
-            message = "Continuing Mission"
-            self.log(message)
+            *
+            #message = "Continuing Mission"
+           self.log(message)
 
     def create_function_buttons(self):
         self.origin_button = Button(self.functions_frame, text="Set Origin", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
