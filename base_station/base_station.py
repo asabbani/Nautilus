@@ -201,7 +201,7 @@ class BaseStation(threading.Thread):
         self.out_q.put("log('" + str(message) + "')")
 
     def close(self):
-        sys.exit()
+        os._exit(1)  # => Force-exit the process immediately.
 
 
 def main():
