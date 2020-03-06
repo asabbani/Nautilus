@@ -56,7 +56,7 @@ class BaseStation(threading.Thread):
         self.out_q = out_q
 
         # Get all non-default callable methods in this class
-        self.methods = [m for m in dir(AUV) if not m.startswith('__')]
+        self.methods = [m for m in dir(BaseStation) if not m.startswith('__')]
 
         # Try to assign our radio object
         try:
