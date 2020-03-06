@@ -40,7 +40,7 @@ class Radio:
         """
         Returns a boolean if the serial connection is open.
         """
-        return self.ser.is_open()
+        return self.ser.is_open
 
     def flush(self):
         """

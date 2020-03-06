@@ -133,11 +133,20 @@ class BaseStation(threading.Thread):
         while True:
             self.check_tasks()
 
+
+<< << << < HEAD
             # This executes if we never had a radio object, or it got disconnected.
             if (self.radio is None or not self.radio.is_open()):
 
                 # This executes if we HAD a radio object, but it got disconnected.
                 if(self.radio is not None and not self.radio.is_open()):
+== == == =
+            # If we cannot find a radio device, or the object we have is closed.
+            if (self.radio is None or self.radio.is_open() is False):
+
+                # If we have a radio object, but no serial connnect (disconnected after).
+                if(self.radio is not None and self.radio.is_open() is False):
+>>>>>> > 0e8395269224aaf7796c821d37f414b61e86122b
                     self.log("Radio device has been disconnected.")
                     self.radio.close()
 
