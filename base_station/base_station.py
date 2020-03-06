@@ -92,8 +92,10 @@ class BaseStation(threading.Thread):
         while not self.in_q.empty():
             task = "self." + self.in_q.get()
             # Try to evaluate the task in the in_q.
+            print(task)  # TODO debug
             try:
                 eval(task)
+                print("success")
             except:
                 print("Failed to evaluate in_q task: ", task)
 

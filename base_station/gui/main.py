@@ -402,7 +402,7 @@ class Main():
 
     def on_closing(self):
         #    self.map.on_close()
-        self.out_q.put("close()")
+        self.out_q.put("close")  # TODO
         self.root.destroy()
         sys.exit()
 
