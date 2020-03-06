@@ -103,14 +103,14 @@ class AUV():
                         'utf-8').replace("\n", "").split(" ")
 
                     if len(cmd_array) > 2 and cmd_array[0] in self.methods:
-                        dummy = True
+                        is_str_arg = True
                         # build the 'cmd' string (using the string array) to: "self.command(arg1, arg2)"
                         cmd = "self." + cmd_array[0] + "("
                         for i in range(1, len(cmd_array)):
                             cmd += cmd_array[i]
                             if "\'" in cmd_array[i]:
-                                dummy = not dummy
-                            if dummy is True:
+                                is_str_arg = not is_str_arg
+                            if is_str_arg is True:
                                 cmd += ","
                             else:
                                 cmd += " "
@@ -136,6 +136,7 @@ class AUV():
             time.sleep(THREAD_SLEEP_DELAY)
 
     def start_mission(self, mission):
+        """ Method that uses the mission selected and begin that mission """
         print(mission)  # test stuff
         self.current_mission = mission
 
