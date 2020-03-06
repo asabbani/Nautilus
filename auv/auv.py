@@ -18,6 +18,7 @@ RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Contr
 PING = b'PING\n'
 THREAD_SLEEP_DELAY = 0.3
 CONNECTION_WAIT_TIME = 0.5
+MIN_FUNC_LEN = 3
 
 
 class AUV():
@@ -102,7 +103,7 @@ class AUV():
                     cmd_array = line.decode(
                         'utf-8').replace("\n", "").split(" ")
 
-                    if len(cmd_array) > 2 and cmd_array[0] in self.methods:
+                    if len(cmd_array) >= MIN_FUNC_LEN and cmd_array[0] in self.methods:
                         is_str_arg = True
                         # build the 'cmd' string (using the string array) to: "self.command(arg1, arg2)"
                         cmd = "self." + cmd_array[0] + "("
