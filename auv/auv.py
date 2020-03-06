@@ -44,6 +44,8 @@ class AUV():
         self.main_loop()
 
     def test_motor(self, motor):
+        """ Method to test all 4 motors on the AUV """
+
         if motor == "LEFT":
             self.mc.test_left()
         elif motor == "RIGHT":
@@ -60,7 +62,7 @@ class AUV():
 
         print("Starting main connection loop.")
         while(True):
-            if (self.radio is None or self.radio.isOpen() is False):
+            if (self.radio is None or self.radio.is_open() is False):
                 try:
                     self.radio = Radio(RADIO_PATH)
                     print("Radio device has been found!")
@@ -100,7 +102,7 @@ class AUV():
                     cmd_array = line.decode(
                         'utf-8').replace("\n", "").split(" ")
 
-                    if len(cmd_array) > 0 and cmd_array[0] in self.methods:
+                    if len(cmd_array) > 2 and cmd_array[0] in self.methods:
                         dummy = True
                         # build the 'cmd' string (using the string array) to: "self.command(arg1, arg2)"
                         cmd = "self." + cmd_array[0] + "("
