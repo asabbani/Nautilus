@@ -102,22 +102,21 @@ class AUV():
                     #     cmd_array = [ "command", "arg1", "arg2" ]
                     message = line.decode('utf-8').replace("\n", "")
 
-                    if len(message) > 2 and "(" in message and ")" in message:
-                        # build the 'cmd' string (using the string array) to: "self.command(arg1, arg2)"
-                        cmd = message[0:message.find("(")]
-
-                        print("Evaluating command: ", cmd)
-
-                        try:
-                            print("THIS WORKED")  # TODO
-                            # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
-                            eval(cmd)
-                            self.radio.write(str.encode(
-                                "log \"Successfully evaluated task: " + cmd + "\"\n"))
-                        except:
-                            # Send verification of command back to base station.
-                            self.radio.write(str.encode(
-                                "log \"Failed to evaluate task: " + cmd + "\"\n"))
+                    if len(cmd_array) >= MIN_FUNC_LEN and cmd_array[0] in self.methods:
+                        if len(message) > 2 and "(" in message and ")" in message:
+                            # Get possible function name
+                        possible_func_name = message[0:message.find("(")]
+                        if possible_func_name in self.methods:
+                            self.log("Received command from AUV: " + message)
+                            try:
+                                # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
+                                eval(message)
+                                self.log(
+                                    "Successfully evaluated command: " + message)
+                            except:
+                                # Send verification of command back to base station.
+                                self.log("Evaluation of command  " +
+                                         message + "  failed.")
 
                 elif self.before:
                     # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
