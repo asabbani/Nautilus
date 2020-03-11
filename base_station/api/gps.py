@@ -24,15 +24,11 @@ class GPS(threading.Thread):
             # TODO something happens here on OSX i guess?
             self.gps_socket = gps3.GPSDSocket()
             self.data_stream = gps3.DataStream()
-
-            print("DEBUG")
-            print(self.gps_socket)
         except:
-            print("Warning: Cannot access GPSD service.")
+            pass  # TODO
 
         # TODO testing
         if (self.gps_socket is not None):
-            print("THIS EXECUTED")
             self.gps_socket.connect()
             # self.gps_socket.watch()
 

@@ -75,12 +75,6 @@ class Main():
         elif "win32" in sys.platform or "cygwin" in sys.platform or "msys" in sys.platform:
             os_enumerator = Enumerator.Windows
 
-        print("DEBUG STATEMENTS")
-        print(sys.platform)
-        print(os_enumerator)
-        print("--END DEBUG--")
-        # exit()
-
         if os_enumerator is None:
             print("Error: Operating system " +
                   sys.platform + " is not supported.")
@@ -97,7 +91,6 @@ class Main():
         HEADING_SIZE = int(HEADING_SIZE * self.multiplier_y)
         BUTTON_SIZE = int(BUTTON_SIZE * self.multiplier_y)
         STATUS_SIZE = int(STATUS_SIZE * self.multiplier_y)
-        print(str(screen_width) + "x" + str(screen_height))
         global WIDTH, HEIGHT, TOP_FRAME_HEIGHT, BOT_FRAME_HEIGHT, FUNC_FRAME_WIDTH, STATUS_FRAME_WIDTH, CALIBRATE_FRAME_WIDTH, MISSION_FRAME_WIDTH, LOG_FRAME_WIDTH, BUTTON_HEIGHT, BUTTON_WIDTH
         WIDTH = int(WIDTH * self.multiplier_x)
         HEIGHT = int(HEIGHT * self.multiplier_y)

@@ -61,7 +61,6 @@ class BaseStation(threading.Thread):
             self.log(
                 "Warning: Cannot find radio device. Ensure RADIO_PATH is correct.")
 
-        print(self.methods)
         # Try to assign our GPS object connection to GPSD
         try:
             self.gps = GPS()
@@ -92,10 +91,8 @@ class BaseStation(threading.Thread):
         while not self.in_q.empty():
             task = "self." + self.in_q.get()
             # Try to evaluate the task in the in_q.
-            print(task)  # TODO debug
             try:
                 eval(task)
-                print("success")
             except:
                 print("Failed to evaluate in_q task: ", task)
 
@@ -105,7 +102,7 @@ class BaseStation(threading.Thread):
             self.log("Cannot test " + motor +
                      " motor(s) because there is no connection to the AUV.")
         else:
-            self.radio.write(str.encode("test_motor('" + motor + "')\n"))
+            self.radio.write(str.encode('test_motor("' + motor + '")\n'))
             self.log('Sending task: test_motor("' + motor + '")')
 
     def abort_mission(self):
@@ -183,15 +180,8 @@ class BaseStation(threading.Thread):
                         possible_func_name = message[0:message.find("(")]
                         if possible_func_name in self.methods:
                             self.log("Received command from AUV: " + message)
-                            try:
-                                # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
-                                eval(message)
-                                self.log(
-                                    "Successfully evaluated command: " + message)
-                            except:
-                                # Send verification of command back to base station.
-                                self.log("Evaluation of command  " +
-                                         message + "  failed.")
+                            # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
+                            self.in_q.put(message)
 
                 elif self.before:
                     # We are NOT connected to AUV, but we previously ('before') were. Status has changed to failed.
@@ -201,7 +191,7 @@ class BaseStation(threading.Thread):
             time.sleep(THREAD_SLEEP_DELAY)
 
     def log(self, message):
-        self.out_q.put("log('" + str(message) + "')")
+        self.out_q.put("log('" + message + "')")
 
     def close(self):
         os._exit(1)  # => Force-exit the process immediately.
