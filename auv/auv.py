@@ -108,9 +108,7 @@ class AUV():
                         possible_func_name = message[0:message.find("(")]
 
                         if possible_func_name in self.methods:
-                            m = str.encode(
-                                "log(\"Successfully evaluated task: " + message + "\")\n")
-                            self.radio.write(m)
+                            print("Recieved command from base station: " + message)
                             try:
                                 # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
                                 eval(message)
