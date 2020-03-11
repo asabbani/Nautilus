@@ -106,17 +106,18 @@ class AUV():
                         # Get possible function name
                         possible_func_name = message[0:message.find("(")]
                         if possible_func_name in self.methods:
-                            self.log(
-                                "Received command from AUV: " + message)
+                            m = str.encode(
+                                "Successfully evaluated task: " + message)
+                            self.radio.write(m)
                             try:
                                 # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
                                 eval(message)
-                                self.log(
-                                    "Successfully evaluated command: " + message)
+                                self.radio.write(str.encode(
+                                    "Successfully evaluated command: " + message))
                             except:
                                 # Send verification of command back to base station.
-                                self.log("Evaluation of command  " +
-                                         message + "  failed.")
+                                self.radio.write(str.encode("Evaluation of command " +
+                                                            message + " failed."))
 
                 elif self.before:
                     # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
