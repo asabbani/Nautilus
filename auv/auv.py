@@ -101,23 +101,25 @@ class AUV():
                     # EX: line  = "command arg1 arg2 arg3..."
                     #     cmd_array = [ "command", "arg1", "arg2" ]
                     message = line.decode('utf-8').replace("\n", "")
+                    print(message)
 
                     if len(message) > 2 and "(" in message and ")" in message:
                         # Get possible function name
                         possible_func_name = message[0:message.find("(")]
+
                         if possible_func_name in self.methods:
                             m = str.encode(
-                                "Successfully evaluated task: " + message)
+                                "log(Successfully evaluated task: " + message + ")")
                             self.radio.write(m)
                             try:
                                 # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
                                 eval(message)
                                 self.radio.write(str.encode(
-                                    "Successfully evaluated command: " + message))
+                                    "log(Successfully evaluated command: " + message + ")"))
                             except:
                                 # Send verification of command back to base station.
-                                self.radio.write(str.encode("Evaluation of command " +
-                                                            message + " failed."))
+                                self.radio.write(str.encode("log(Evaluation of command " +
+                                                            message + " failed.)"))
 
                 elif self.before:
                     # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
