@@ -1,3 +1,3 @@
 #!/bin/bash
-echo "\n *** IF first time running startup.sh, exit and start again. *** \n"
+echo "*** IF first time running startup.sh, exit and start again. ***"
 sudo python3 -B auv.py
