@@ -62,8 +62,8 @@ class AUV():
         """ Main connection loop for the AUV. """
 
         print("Starting main connection loop.")
-        while(True):
-            if (self.radio is None or self.radio.is_open() is False):
+        while True:
+            if self.radio is None or self.radio.is_open() is False:
                 try:
                     self.radio = Radio(RADIO_PATH)
                     print("Radio device has been found!")
@@ -100,22 +100,11 @@ class AUV():
                     # Attempt to split line into a string array after decoding it to UTF-8.
                     # EX: line  = "command arg1 arg2 arg3..."
                     #     cmd_array = [ "command", "arg1", "arg2" ]
-                    cmd_array = line.decode(
-                        'utf-8').replace("\n", "").split(" ")
+                    message = line.decode('utf-8').replace("\n", "")
 
-                    if len(cmd_array) >= MIN_FUNC_LEN and cmd_array[0] in self.methods:
-                        is_str_arg = True
+                    if len(message) > 2 and "(" in message and ")" in message:
                         # build the 'cmd' string (using the string array) to: "self.command(arg1, arg2)"
-                        cmd = "self." + cmd_array[0] + "("
-                        for i in range(1, len(cmd_array)):
-                            cmd += cmd_array[i]
-                            if "\'" in cmd_array[i]:
-                                is_str_arg = not is_str_arg
-                            if is_str_arg is True:
-                                cmd += ","
-                            else:
-                                cmd += " "
-                        cmd += ")"
+                        cmd = message[0:message.find("(")]
 
                         print("Evaluating command: ", cmd)
 

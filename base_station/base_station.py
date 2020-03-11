@@ -136,10 +136,10 @@ class BaseStation(threading.Thread):
             self.check_tasks()
 
             # This executes if we never had a radio object, or it got disconnected.
-            if (self.radio is None or not self.radio.is_open()):
+            if self.radio is None or not self.radio.is_open():
 
                 # This executes if we HAD a radio object, but it got disconnected.
-                if(self.radio is not None and not self.radio.is_open()):
+                if self.radio is not None and not self.radio.is_open():
                     self.log("Radio device has been disconnected.")
                     self.radio.close()
 
@@ -171,6 +171,7 @@ class BaseStation(threading.Thread):
                     if self.before is False:
                         self.out_q.put("set_connection(True)")
                         self.log("Connection to AUV verified.")
+
                 elif len(line) > 0:
                     # Line is greater than 0, but not equal to the AUV_PING
                     # which means a possible command was found.
@@ -192,7 +193,7 @@ class BaseStation(threading.Thread):
                                 self.log("Evaluation of command  " +
                                          message + "  failed.")
 
-                elif(self.before):
+                elif self.before:
                     # We are NOT connected to AUV, but we previously ('before') were. Status has changed to failed.
                     self.out_q.put("set_connection(False)")
                     self.log("Connection verification to AUV failed.")
