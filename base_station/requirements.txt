@@ -1,0 +1,6 @@
+Tkinter
+matplotlib
+pyserial
+gps3
+screeninfo
+pyOBjus
