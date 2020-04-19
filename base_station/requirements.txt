@@ -1,0 +1,6 @@
+cython
+matplotlib
+pyserial
+gps3
+screeninfo
+pyobjus
