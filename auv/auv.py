@@ -18,6 +18,7 @@ RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Contr
 PING = b'PING\n'
 THREAD_SLEEP_DELAY = 0.3
 CONNECTION_WAIT_TIME = 0.5
+MIN_FUNC_LEN = 3
 
 
 class AUV():
@@ -44,6 +45,8 @@ class AUV():
         self.main_loop()
 
     def test_motor(self, motor):
+        """ Method to test all 4 motors on the AUV """
+
         if motor == "LEFT":
             self.mc.test_left()
         elif motor == "RIGHT":
@@ -59,8 +62,8 @@ class AUV():
         """ Main connection loop for the AUV. """
 
         print("Starting main connection loop.")
-        while(True):
-            if (self.radio is None or self.radio.isOpen() is False):
+        while True:
+            if self.radio is None or self.radio.is_open() is False:
                 try:
                     self.radio = Radio(RADIO_PATH)
                     print("Radio device has been found!")
@@ -97,35 +100,24 @@ class AUV():
                     # Attempt to split line into a string array after decoding it to UTF-8.
                     # EX: line  = "command arg1 arg2 arg3..."
                     #     cmd_array = [ "command", "arg1", "arg2" ]
-                    cmd_array = line.decode(
-                        'utf-8').replace("\n", "").split(" ")
+                    message = line.decode('utf-8').replace("\n", "")
+                    print(message)
 
-                    if len(cmd_array) > 0 and cmd_array[0] in self.methods:
-                        dummy = True
-                        # build the 'cmd' string (using the string array) to: "self.command(arg1, arg2)"
-                        cmd = "self." + cmd_array[0] + "("
-                        for i in range(1, len(cmd_array)):
-                            cmd += cmd_array[i]
-                            if "\'" in cmd_array[i]:
-                                dummy = not dummy
-                            if dummy is True:
-                                cmd += ","
-                            else:
-                                cmd += " "
-                        cmd += ")"
+                    if len(message) > 2 and "(" in message and ")" in message:
+                        # Get possible function name
+                        possible_func_name = message[0:message.find("(")]
 
-                        print("Evaluating command: ", cmd)
-
-                        try:
-                            print("THIS WORKED")  # TODO
-                            # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
-                            eval(cmd)
-                            self.radio.write(str.encode(
-                                "log \"Successfully evaluated task: " + cmd + "\"\n"))
-                        except:
-                            # Send verification of command back to base station.
-                            self.radio.write(str.encode(
-                                "log \"Failed to evaluate task: " + cmd + "\"\n"))
+                        if possible_func_name in self.methods:
+                            print("Recieved command from base station: " + message)
+                            try:
+                                # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
+                                eval(message)
+                                self.radio.write(str.encode(
+                                    "log(\"Successfully evaluated command: " + message + "\")\n"))
+                            except:
+                                # Send verification of command back to base station.
+                                self.radio.write(str.encode("log(\"Evaluation of command " +
+                                                            message + " failed.\")\n"))
 
                 elif self.before:
                     # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
@@ -134,6 +126,7 @@ class AUV():
             time.sleep(THREAD_SLEEP_DELAY)
 
     def start_mission(self, mission):
+        """ Method that uses the mission selected and begin that mission """
         print(mission)  # test stuff
         self.current_mission = mission
 

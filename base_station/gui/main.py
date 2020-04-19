@@ -32,10 +32,10 @@ CALIBRATE_FRAME_WIDTH = 350
 MISSION_FRAME_WIDTH = 300
 LOG_FRAME_WIDTH = 650
 # Font Constants
-FONT = "Courier New"
-HEADING_SIZE = 17
-BUTTON_SIZE = 12
-STATUS_SIZE = 11
+FONT = "Arial"
+HEADING_SIZE = 20
+BUTTON_SIZE = 15
+STATUS_SIZE = 17
 # Main frame paddings
 MAIN_PAD_X = 5
 MAIN_PAD_Y = 5
@@ -75,12 +75,6 @@ class Main():
         elif "win32" in sys.platform or "cygwin" in sys.platform or "msys" in sys.platform:
             os_enumerator = Enumerator.Windows
 
-        print("DEBUG STATEMENTS")
-        print(sys.platform)
-        print(os_enumerator)
-        print("--END DEBUG--")
-        # exit()
-
         if os_enumerator is None:
             print("Error: Operating system " +
                   sys.platform + " is not supported.")
@@ -97,7 +91,6 @@ class Main():
         HEADING_SIZE = int(HEADING_SIZE * self.multiplier_y)
         BUTTON_SIZE = int(BUTTON_SIZE * self.multiplier_y)
         STATUS_SIZE = int(STATUS_SIZE * self.multiplier_y)
-        print(str(screen_width) + "x" + str(screen_height))
         global WIDTH, HEIGHT, TOP_FRAME_HEIGHT, BOT_FRAME_HEIGHT, FUNC_FRAME_WIDTH, STATUS_FRAME_WIDTH, CALIBRATE_FRAME_WIDTH, MISSION_FRAME_WIDTH, LOG_FRAME_WIDTH, BUTTON_HEIGHT, BUTTON_WIDTH
         WIDTH = int(WIDTH * self.multiplier_x)
         HEIGHT = int(HEIGHT * self.multiplier_y)
@@ -172,6 +165,7 @@ class Main():
                             pady=MAIN_PAD_Y, side=LEFT, expand=YES)
         self.map_frame.pack_propagate(0)
 
+    # Status Frame (top right)
     def init_status_frame(self):
         self.status_frame = Frame(
             self.top_frame, height=TOP_FRAME_HEIGHT, width=STATUS_FRAME_WIDTH, bd=1, relief=SUNKEN)
@@ -181,7 +175,7 @@ class Main():
         self.status_label = Label(
             self.status_frame, text="Vehicle Stats", font=(FONT, HEADING_SIZE))
         self.status_label.pack()
-        self.status_label.place(relx=0.22, rely=0.02)
+        self.status_label.place(relx=0.22, rely=0.075)
 
         self.position_label_string = StringVar()
         self.position_label = Label(self.status_frame, textvariable=self.position_label_string, font=(
@@ -202,21 +196,21 @@ class Main():
             self.status_frame, textvariable=self.battery_status_string, font=(FONT, STATUS_SIZE))
         self.battery_voltage.pack()
         self.battery_status_string.set("Battery Voltage: ")
-        self.battery_voltage.place(relx=0.05, rely=0.50, anchor='sw')
+        self.battery_voltage.place(relx=0.05, rely=0.55, anchor='sw')
 
         self.vehicle_status_string = StringVar()
         self.vehicle_status = Label(
             self.status_frame, textvariable=self.vehicle_status_string, font=(FONT, STATUS_SIZE))
         self.vehicle_status.pack()
         self.vehicle_status_string.set("Vehicle Status: Manual Control")
-        self.vehicle_status.place(relx=0.05, rely=0.60, anchor='sw')
+        self.vehicle_status.place(relx=0.05, rely=0.70, anchor='sw')
 
         self.comms_status_string = StringVar()
         self.comms_status = Label(
             self.status_frame, textvariable=self.comms_status_string, font=(FONT, STATUS_SIZE))
         self.comms_status.pack()
         self.comms_status_string.set("Comms Status: Not connected")
-        self.comms_status.place(relx=0.05, rely=0.70, anchor='sw')
+        self.comms_status.place(relx=0.05, rely=0.85, anchor='sw')
 
         # self.calibrate_xbox_button           = Button(self.status_frame, text = "Calibrate Controller", takefocus = False, width = BUTTON_WIDTH + 10, height = BUTTON_HEIGHT,
         #                                      padx = BUTTON_PAD_X, pady = BUTTON_PAD_Y, font = (FONT, BUTTON_SIZE), command = self.base_station.calibrate_controller )
@@ -234,7 +228,7 @@ class Main():
                             pady=MAIN_PAD_Y, side=LEFT, expand=YES)
         self.log_frame.pack_propagate(0)
         self.console = Text(self.log_frame, font=(
-            FONT, BUTTON_SIZE), state=DISABLED, width=LOG_FRAME_WIDTH)
+            FONT, BUTTON_SIZE-2), state=DISABLED, width=LOG_FRAME_WIDTH)
 
         self.scrollbar = Scrollbar(self.log_frame)
         self.console.configure(yscrollcommand=self.scrollbar.set)
@@ -281,35 +275,35 @@ class Main():
             self.calibrate_frame, text="Motor Testing", takefocus=False, font=(FONT, HEADING_SIZE))
         self.calibrate_label.grid(row=0, columnspan=3, sticky=W+E)
 
-        self.left_calibrate_button = Button(self.calibrate_frame, text="LEFT", takefocus=False,  # width = 15, height = 3,
+        self.left_calibrate_button = Button(self.calibrate_frame, text="Left", takefocus=False,  # width = 15, height = 3,
                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                 FONT, BUTTON_SIZE),
                                             command=lambda: self.out_q.put("test_motor('LEFT')"))
 
         self.left_calibrate_button.grid(row=2, column=0, pady=CALIBRATE_PAD_Y)
 
-        self.right_calibrate_button = Button(self.calibrate_frame, text="RIGHT", takefocus=False,  # width = 15, height = 3,
+        self.right_calibrate_button = Button(self.calibrate_frame, text="Right", takefocus=False,  # width = 15, height = 3,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                  FONT, BUTTON_SIZE),
                                              command=lambda: self.out_q.put("test_motor('RIGHT')"))
 
         self.right_calibrate_button.grid(row=2, column=2, pady=CALIBRATE_PAD_Y)
 
-        self.front_calibrate_button = Button(self.calibrate_frame, text="FRONT", takefocus=False,  # width = 15, height = 3,
+        self.front_calibrate_button = Button(self.calibrate_frame, text="Front", takefocus=False,  # width = 15, height = 3,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                  FONT, BUTTON_SIZE),
                                              command=lambda: self.out_q.put("test_motor('FRONT')"))
 
         self.front_calibrate_button.grid(row=1, column=1, pady=CALIBRATE_PAD_Y)
 
-        self.calibrate_all_button = Button(self.calibrate_frame, text="ALL", takefocus=False,  # width = 15, height = 3,
+        self.calibrate_all_button = Button(self.calibrate_frame, text="All", takefocus=False,  # width = 15, height = 3,
                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                FONT, BUTTON_SIZE),
                                            command=lambda: self.out_q.put("test_motor('ALL')"))
 
         self.calibrate_all_button.grid(row=2, column=1, pady=CALIBRATE_PAD_Y)
 
-        self.back_calibrate_button = Button(self.calibrate_frame, text="BACK", takefocus=False,  # width = 15, height = 3,
+        self.back_calibrate_button = Button(self.calibrate_frame, text="Back", takefocus=False,  # width = 15, height = 3,
                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                 FONT, BUTTON_SIZE),
                                             command=lambda: self.out_q.put("test_motor('BACK')"))
@@ -325,14 +319,14 @@ class Main():
         self.mission_frame.pack_propagate(0)
 
         self.mission_list = Combobox(
-            self.mission_frame, state="readonly", values=MISSIONS)
+            self.mission_frame, state="readonly", values=MISSIONS, font=(FONT, 14))
         self.mission_list.set("Select Mission...")
         self.mission_list.pack(expand=YES, fill=X, pady=COMBO_PAD_Y)
         # self.mission_list.bind("<<ComboboxSelected>>", lambda _ : out_q.put(missions.index(self_mission_list.get())))
 
-        self.start_mission_button = Button(self.mission_frame, text="START MISSION", takefocus=False,
+        self.start_mission_button = Button(self.mission_frame, text="Start Mission", takefocus=False,
                                            width=BUTTON_WIDTH, height=BUTTON_HEIGHT, padx=BUTTON_PAD_X,
-                                           pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.confirm_mission)
+                                           pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE+5), command=self.confirm_mission)
         self.start_mission_button.pack(expand=YES)  # TODO
 
     def confirm_mission(self):
@@ -388,6 +382,7 @@ class Main():
         self.stop_manual_button.pack(expand=YES)
         self.abort_button.pack(expand=YES)
 
+    # creates map
     def create_map(self, frame):
         self.map = Map(frame, self)
         self.zoom_in_button = Button(self.map_frame, text="+", takefocus=False, width=1, height=1,
@@ -400,7 +395,7 @@ class Main():
 
     def on_closing(self):
         #    self.map.on_close()
-        self.out_q.put("close()")
+        self.out_q.put("close()")  # TODO
         self.root.destroy()
         sys.exit()
 

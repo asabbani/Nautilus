@@ -33,7 +33,7 @@ PING = b'PING\n'
 class BaseStation(threading.Thread):
     """ Base station class that acts as the brain for the entire base station. """
 
-    def __init__(self, debug=False, in_q=None, out_q=None):
+    def __init__(self, in_q=None, out_q=None):
         """ Initialize Serial Port and Class Variables
         debug: debugging flag """
 
@@ -42,21 +42,16 @@ class BaseStation(threading.Thread):
 
         # Instance variables
         self.radio = None
-        self.data_packet = []
         self.joy = None
         self.connected_to_auv = False
-        self.navController = None
-        self.debug = debug
-        self.cal_flag = NO_CALIBRATION
-        self.radio_timer = []
+        self.nav_controller = None
         self.gps = None  # create the thread
-        self.ballast_depth = 0
-        self.button_cb = {'MAN': self.manual_control, 'BAL': self.ballast}
         self.in_q = in_q
         self.out_q = out_q
 
         # Get all non-default callable methods in this class
-        self.methods = [m for m in dir(AUV) if not m.startswith('__')]
+        self.methods = [m for m in dir(BaseStation) if not m.startswith(
+            '__') and not m.startswith('_')]
 
         # Try to assign our radio object
         try:
@@ -69,11 +64,9 @@ class BaseStation(threading.Thread):
         # Try to assign our GPS object connection to GPSD
         try:
             self.gps = GPS()
+            self.log("Successfully connected to gpsd socket.")
         except:
             self.log("Warning: Cannot find a gpsd socket.")
-
-    def set_main(self, Main):
-        self.main = Main
 
     def calibrate_controller(self):
         """ Instantiates a new Xbox Controller Instance and NavigationController """
@@ -86,75 +79,41 @@ class BaseStation(threading.Thread):
                 self.joy = xbox.Joystick()
             except Exception as e:
                 continue
-        self.main.log("Xbox controller is connected")
+        self.main.log("Xbox controller is connected.")
 
         # Instantiate New NavController With Joystick
-        self.navController = NavController(
+        self.nav_controller = NavController(
             self.joy, self.button_cb, self.debug)
 
-        self.main.log("Controller is connected")
-
-    def calibrate_communication(self):
-        """ Ensure communication between AUV and Base Station """
-
-        # Flush the serial connection.
-        self.radio.flush()
-
-        self.main.log("Attempting to establish connection to AUV...")
-        self.main.update()
-
-        # Wait until connection is established.
-        while not self.connected_to_auv:
-            # Send Calibration Signal To AUV
-            #            if self.radio.write(CAL) == -1:
-         #               self.main.log("Radios have been physically disconnected. Check USB connection.")
-
-            self.radio.write(CAL)
-            # Attempt to read from radio
-            line = self.radio.readline()
-            print("line read is: ", line)
-            # If we got an error (returned 0)
-  #          if line == -1:
-            # self.main.log("Radios have been physically disconnected. Check USB connection.")
-   #         else:
-            self.connected_to_auv = (line == CAL) or (line == REC)
-
-            if not self.connected_to_auv:
-                self.main.log("Connection timed out, trying again...")
-
-        self.radio.flush()
-        self.main.log("Connection established with AUV.")
-        self.main.comms_status_string.set("Comms Status: Connected")
+        self.main.log("Controller is connected.")
 
     def check_tasks(self):
-        while(self.in_q.empty() is False):
-            task = self.in_q.get()
-            print("Found task: " + task)
-
+        while not self.in_q.empty():
+            task = "self." + self.in_q.get()
             # Try to evaluate the task in the in_q.
             try:
-                eval("self." + task)
+                eval(task)
             except:
-                print("Could not evaluate task: ", task)
+                print("Failed to evaluate in_q task: ", task)
 
     def test_motor(self, motor):
         """ Attempts to send the AUV a signal to test a given motor. """
-        if (self.connected_to_auv is False):
+        if not self.connected_to_auv:
             self.log("Cannot test " + motor +
                      " motor(s) because there is no connection to the AUV.")
         else:
-            self.radio.write(str.encode("test_motor '" + motor + "'\n"))
-            self.log("Sending task: test_motor \"" + motor + "\"")
+            self.radio.write(str.encode('test_motor("' + motor + '")\n'))
+            self.log('Sending task: test_motor("' + motor + '")')
 
     def abort_mission(self):
         """ Attempts to abort the mission for the AUV."""
 
-        if (self.connected_to_auv is False):
+        if not self.connected_to_auv:
             self.log(
                 "Cannot abort mission because there is no connection to the AUV.")
         else:
-            self.radio.write(str.encode("abort_mission\n"))
-            self.log("Sending task: abort_mission")
+            self.radio.write(str.encode("abort_mission()\n"))
+            self.log("Sending task: abort_mission()")
 
     def start_mission(self, mission):
         """  Attempts to start a mission and send to AUV. """
@@ -163,8 +122,8 @@ class BaseStation(threading.Thread):
             self.log("Cannot start mission: " + mission +
                      " because there is no connection to the AUV.")
         else:
-            self.radio.write(str.encode("start_mission '" + mission + "'\n"))
-            self.log("Sending task: start_mission \"" + mission + "\"")
+            self.radio.write(str.encode("start_mission('" + mission + "')\n"))
+            self.log('Sending task: start_mission("' + mission + '")')
 
     def run(self):
         """ Main threaded loop for the base station. """
@@ -173,11 +132,11 @@ class BaseStation(threading.Thread):
         while True:
             self.check_tasks()
 
-            # If we cannot find a radio device, or the object we have is closed.
-            if (self.radio is None or self.radio.isOpen() is False):
+            # This executes if we never had a radio object, or it got disconnected.
+            if self.radio is None or not self.radio.is_open():
 
-                # If we have a radio object, but no serial connnect (disconnected after).
-                if(self.radio is not None and self.radio.isOpen() is False):
+                # This executes if we HAD a radio object, but it got disconnected.
+                if self.radio is not None and not self.radio.is_open():
                     self.log("Radio device has been disconnected.")
                     self.radio.close()
 
@@ -198,7 +157,7 @@ class BaseStation(threading.Thread):
                 except:
                     self.radio.close()
                     self.radio = None
-                    self.log("Radio has been disconnected from computer.")
+                    self.log("Radio device has been disconnected.")
                     continue
 
                 self.before = self.connected_to_auv
@@ -209,149 +168,45 @@ class BaseStation(threading.Thread):
                     if self.before is False:
                         self.out_q.put("set_connection(True)")
                         self.log("Connection to AUV verified.")
+
                 elif len(line) > 0:
-                    # # Line is greater than 0, but not equal to our AUV_PING
-                    # message = line.decode('utf-8').replace("\n", "").split("|")
+                    # Line is greater than 0, but not equal to the AUV_PING
+                    # which means a possible command was found.
+                    message = line.decode('utf-8').replace("\n", "")
 
-                    # # Ensure the bytes we read indeed came from AUV.
-                    # if len(message) > 1 and message[0] == "AUV_MESSAGE":
-                    #     # Replace all ' characters with double quotes backslashed.
-                    #     message[1] = message[1].replace("'", "\"")
-                    #     self.log(message[1])
-                    ####################################################################
-                    # Line was read, but it was not equal to a BS_PING
-                    print("Possible command found. Line read was: " + str(line))
-
-                    # Attempt to split line into a string array after decoding it to UTF-8.
-                    # EX: line  = "command arg1 arg2 arg3..."
-                    #     cmdArray = [ "command", "arg1", "arg2" ]
-                    message = line.decode(
-                        'utf-8').replace("\n", "").split("|")
-
-                    if len(message) > 0 and message[0] in self.methods:
-                        dummy = True
-                        # build the 'msg' string (using the string array) to: "self.command(arg1, arg2)"
-                        msg = "self." + message[0] + "("
-                        for i in range(1, len(message)):
-                            msg += message[i]
-                            if "\'" in message[i]:
-                                dummy = not dummy
-                            if dummy is True:
-                                msg += ","
-                            else:
-                                msg += " "
-                        msg += ")"
-
-                        print("Evaluating command: ", msg)
-
-                        try:
+                    # Check if message is a possible python function
+                    if len(message) > 2 and "(" in message and ")" in message:
+                        # Get possible function name
+                        possible_func_name = message[0:message.find("(")]
+                        if possible_func_name in self.methods:
+                            self.log("Received command from AUV: " + message)
                             # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
-                            eval(msg)
-                        except:
-                            # Send verification of command back to base station.
-                            self.log("Evaluation of task  " +
-                                     msg + "  failed.")
+                            self.in_q.put(message)
 
-                elif(self.before):
+                elif self.before:
                     # We are NOT connected to AUV, but we previously ('before') were. Status has changed to failed.
                     self.out_q.put("set_connection(False)")
                     self.log("Connection verification to AUV failed.")
 
             time.sleep(THREAD_SLEEP_DELAY)
 
-         # try:
-         # Start Control Loop
-#        self.radio.write(chr(SPEED_CALIBRATION))
-        # self.gpsp.start()
-#        curr_time = time.time()
-
-        # while self.connected_to_auv:
-#        while True:
-          #  self.main.log("GPS: {}".format(self.gps.gpsd.fix.latitude))
-#            self.navController.handle()
-#             #Get pa0cket
-#             self.data_packet = self.navController.getPacket()
-#             self.data_packet = self.data_packet + chr(self.cal_flag) + '\n'
-#             print("Data packet: ", self.data_packet)
-
-#             if IS_MANUAL:
-#                 delta_time = time.time() - curr_time
-#                 self.radio_timer.append( delta_time )
-#                # print("writing json data of: " , json.dumps(self.test_dict) )
-#                 self.radio.write(self.data_packet)
-#                 #self.radio.write(json.dumps(self.test_dict) + '\n')
-#                 curr_time = time.time()
-
-#             #else:
-#                 # Send packet for autonomous movement; Aborting mission, where is home, where is waypoint, start ballast, switch back to manual
-#                 #auto_packet = [ isAborting, home_wp, wp_dest, ballast, is_Manual ]
-
-#             #Reset motor calibration
-#             self.cal_flag = NO_CALIBRATION
-#             if ord(self.data_packet[3]) == 1:
-#                 self.main.log("Entering ballast state.")
-#                 self.enter_ballast_state()
-#                 self.main.log("Finished ballasting.")
-#                 self.radio.write(chr(SPEED_CALIBRATION))
-
-#             # Await response from AUV.
-#             if self.radio.readline() != 'REC\n':
-
-#                 self.connected_to_auv = False
-
-#                 print("WARNING - AUV disconnected. Attempting to reconnect.")
-
-#                 self.calibrate_communication()
-
-# #                data = self.radio.readline()
-
-#             time.sleep(DELAY)
-        # except (KeyboardInterrupt, SystemExit, Exception): #when you press ctrl+c
-           # print "\nKilling Thread..."
-            # self.gpsp.running = False
-            # self.gpsp.join() # wait for the thread to finish what it's doing
-        # print("Done.\nExiting.")
-
     def log(self, message):
-        self.out_q.put("log('" + str(message) + "')")
-
-    def enter_ballast_state(self):
-        # print("ballaststate packet", self.data_packet)
-        # self.radio.write(self.data_packet)
-        print("self.ballast_depth is: ", self.ballast_depth)
-        reconnected_after_ballasting = False
-        while not reconnected_after_ballasting:
-            data = self.radio.readline()
-            if data == DONE:
-                print("data recieved is done, exiting ballasting")
-                reconnected_after_ballasting = True
-        return
-
-    def manual_control(self, left, right, front, back):
-        print('Set manual control: ', left, right, front, back)
-
-    def ballast(self):
-        print("Setting ballast")
+        self.out_q.put("log('" + message + "')")
 
     def close(self):
-        sys.exit()
+        os._exit(1)  # => Force-exit the process immediately.
 
 
 def main():
     """ Main method responsible for developing the main objects used during runtime
     like the BaseStation and Main objects. """
 
-    # Parse arguments for debuging
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--debug', action='store_true')
-    args = parser.parse_args()
-
     # Define Queue data structures in order to communicate between threads.
     to_GUI = Queue()
     to_BS = Queue()
 
     # Create a BS (base station) and GUI object thread.
-    threaded_bs = BaseStation(args.debug, to_BS, to_GUI)
+    threaded_bs = BaseStation(to_BS, to_GUI)
     threaded_bs.start()
 
     # Create main GUI object
