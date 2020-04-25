@@ -74,35 +74,35 @@ The Origin AUV is designed to perform a wide variety of aquatic "missions", many
 Most development takes place at the MESOM Laboratory in the Scripps Institution of Oceanography at the University of California, San Diego. Due to the COVID-19 epidemic, software development will continue remotely for the forseeable future.
 
 # Contributors
-Kevin Medzorian
+Kevin Medzorian,
 Software Team Lead
-Computer Science
-UCSD Graduation: 2022
+* Computer Science
+* UCSD Graduation: 2022
 
-Ryan Xu
+Ryan Xu,
 Software Development
-Computer Science
-UCSD Graduation: 2022
+* Computer Science
+* UCSD Graduation: 2022
 
 
-Travis Davis
+Travis Davis,
 Software Development
-Electrical Engineering
-UCSD Graduation: 2022
+* Electrical Engineering
+* UCSD Graduation: 2022
 
 
-Stephen Boussarov
+Stephen Boussarov,
 Software Development
-Computer Science
-UCSD Graduation: 2022
+* Computer Science
+* UCSD Graduation: 2022
 
 
-Eric Estabaya
+Eric Estabaya,
 Software Development
-Computer Science
-UCSD Graduation: 2022
+* Computer Science
+* UCSD Graduation: 2022
 
-Ethan Lew
+Ethan Lew,
 Software Development
-Mathematics-Computer Science
-UCSD Graduation: 2021
+* Mathematics-Computer Science
+* UCSD Graduation: 2021
