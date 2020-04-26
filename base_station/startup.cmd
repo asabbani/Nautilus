@@ -1,6 +1,6 @@
-#!/bin/bash
+@echo off
 
-# Startup the main base_station file, using -B to prevent bytecode.
+REM Startup the main base_station file, using -B to prevent bytecode.
 
-#command: bash ./windowsStartup.sh
+REM command: startup.cmd
 python3 -B base_station.py
