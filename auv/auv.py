@@ -13,6 +13,7 @@ from api import Radio
 from api import IMU
 from api import PressureSensor
 from api import MotorController
+from missions import *
 
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 PING = b'PING\n'
@@ -31,7 +32,7 @@ class AUV():
         self.mc = MotorController()
         self.connected_to_bs = False
 
-        self.current_mission = ""
+        self.current_mission = None
 
         # Get all non-default callable methods in this class
         self.methods = [m for m in dir(AUV) if not m.startswith('__')]
@@ -131,8 +132,12 @@ class AUV():
     def start_mission(self, mission):
         """ Method that uses the mission selected and begin that mission """
         print(mission)  # test stuff
-        if self.current_mission is None:
+        if(mission == 1):
             self.current_mission = Mission1()
+        # elif(mission == 2):
+        #     self.current_mission = Mission2()
+        # if self.current_mission is None:
+        #     self.current_mission = Mission1()
 
 
 def main():
