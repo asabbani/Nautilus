@@ -123,12 +123,16 @@ class AUV():
                     # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
                     print("Connection verification to BS failed.")
 
+            if(self.current_mission is not None):
+                self.current_mission.loop()
+
             time.sleep(THREAD_SLEEP_DELAY)
 
     def start_mission(self, mission):
         """ Method that uses the mission selected and begin that mission """
         print(mission)  # test stuff
-        self.current_mission = mission
+        if self.current_mission is None:
+            self.current_mission = Mission1()
 
 
 def main():

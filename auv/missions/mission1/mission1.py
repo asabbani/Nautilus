@@ -26,6 +26,8 @@ class Mission1(threading.Thread):
             except:
                 print("Could not evaluate task: ", task)
 
+    def loop(self):
+
     def find_source(self):
 
     def move_to_source(self):
