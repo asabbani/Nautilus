@@ -88,6 +88,8 @@ class BaseStation(threading.Thread):
         self.main.log("Controller is connected.")
 
     def check_tasks(self):
+        """ This checks all of the tasks (given from the GUI thread) in our in_q, and evaluates them. """
+
         while not self.in_q.empty():
             task = "self." + self.in_q.get()
             # Try to evaluate the task in the in_q.
@@ -98,6 +100,7 @@ class BaseStation(threading.Thread):
 
     def test_motor(self, motor):
         """ Attempts to send the AUV a signal to test a given motor. """
+
         if not self.connected_to_auv:
             self.log("Cannot test " + motor +
                      " motor(s) because there is no connection to the AUV.")
@@ -191,9 +194,11 @@ class BaseStation(threading.Thread):
             time.sleep(THREAD_SLEEP_DELAY)
 
     def log(self, message):
+        """ Logs the message to the GUI console by putting the function into the output-queue. """
         self.out_q.put("log('" + message + "')")
 
     def close(self):
+        """ Function that is executed upon the closure of the GUI (passed from input-queue). """
         os._exit(1)  # => Force-exit the process immediately.
 
 

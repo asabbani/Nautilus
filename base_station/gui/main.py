@@ -1,5 +1,5 @@
 """ This class manages the GUI framework for the base_station
-user-interface. """
+user-interface using the built-in python Tkinter user-interface. """
 
 # System imports
 import sys
@@ -19,7 +19,7 @@ WIDTH = 1400
 HEIGHT = 800
 # Refresh time
 REFRESH_TIME = 500
-# Development resolution constants (used for proper screen scaling)
+# Development resolution constraints (used for proper screen scaling)
 DEV_WIDTH = 1920.0
 DEV_HEIGHT = 1200.0
 # Frame heights
@@ -58,11 +58,17 @@ class Main():
     """ Main GUI object that handles all aspects of the User-Interface """
 
     def __init__(self, in_q=None, out_q=None):
+        """ Constructor that handles the initialization of the GUI.
+            in_q - An input queue that holds any tasks given to us 
+        from another thread.
+            out_q - An output queue that it used to push tasks to
+        the other thread. """
+
         # Begin initializing the main Tkinter (GUI) framework/root window
         self.root = Tk()
         self.root.resizable(False, False)
 
-        # ~Code below is to fix HiDPI-scaling of fonts.~
+        # Code below is to fix high resolution screen scaling.~
         os_enumerator = None
         # os_enumerator = Enumerator.OSX  # TODO testing things
 
@@ -103,7 +109,7 @@ class Main():
         LOG_FRAME_WIDTH = int(LOG_FRAME_WIDTH * self.multiplier_x)
         BUTTON_WIDTH = int(BUTTON_WIDTH * self.multiplier_x)
         BUTTON_HEIGHT = int(BUTTON_HEIGHT * self.multiplier_x)
-        # End screen scaling for fonts
+        # End screen scaling
 
         # Begin defining instance variables
         self.root.title("Yonder Arctic OPS")
@@ -146,6 +152,7 @@ class Main():
         self.root.after(REFRESH_TIME, self.check_tasks)
 
     def get_time(self, now):
+        """ Gets the current time in year-months-day hour:minute:second. """
         return now.strftime("%Y-%m-%d %H:%M:%S: ")
 
     def init_function_frame(self):
@@ -165,8 +172,8 @@ class Main():
                             pady=MAIN_PAD_Y, side=LEFT, expand=YES)
         self.map_frame.pack_propagate(0)
 
-    # Status Frame (top right)
     def init_status_frame(self):
+        """ Initializes the status frame (rop right frame). """
         self.status_frame = Frame(
             self.top_frame, height=TOP_FRAME_HEIGHT, width=STATUS_FRAME_WIDTH, bd=1, relief=SUNKEN)
         self.status_frame.pack(padx=MAIN_PAD_X,
@@ -222,6 +229,7 @@ class Main():
         # self.establish_comm_button.place(relx = 0.05, rely = 0.90);
 
     def init_log_frame(self):
+        """ Initializes the log/console frame in the bottom-middle part of the GUI. """
         self.log_frame = Frame(
             self.bot_frame, height=BOT_FRAME_HEIGHT, width=LOG_FRAME_WIDTH, bd=1, relief=SUNKEN)
         self.log_frame.pack(fill=BOTH, padx=MAIN_PAD_X,
@@ -236,18 +244,21 @@ class Main():
         self.console.pack()
 
     def log(self, string):
+        """ Inserts/Logs the message into the console object. """
         time = self.get_time(datetime.datetime.now())
         self.console.config(state=NORMAL)
         self.console.insert(END, time + string + "\n")
         self.console.config(state=DISABLED)
 
     def set_connection(self, status):
+        """ Sets the connection status text in the status frame. """
         if (status):
             self.comms_status_string.set("Comms Status: Connected.")
         else:
             self.comms_status_string.set("Comms Status: Not connected.")
 
     def set_vehicle(self, status):
+        """ Sets the vehicle status text in the status frame. """
         if (status):
             self.vehicle_status_string.set("Vehicle Status: Manual Control")
         else:
@@ -382,7 +393,6 @@ class Main():
         self.stop_manual_button.pack(expand=YES)
         self.abort_button.pack(expand=YES)
 
-    # creates map
     def create_map(self, frame):
         self.map = Map(frame, self)
         self.zoom_in_button = Button(self.map_frame, text="+", takefocus=False, width=1, height=1,
@@ -398,29 +408,3 @@ class Main():
         self.out_q.put("close()")  # TODO
         self.root.destroy()
         sys.exit()
-
-
-# Define the window object.
-'''root = Tk()
-root.geometry("1400x800") 
-
-# To fix HiDPI-scaling of fonts.
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
-developed_res_x = 1920.0
-developed_res_y = 1080.0
-multiplier = screen_width / developed_res_x
-HEADING_SIZE = int(HEADING_SIZE / multiplier)
-BUTTON_SIZE  = int(BUTTON_SIZE  / multiplier)
-STATUS_SIZE  = int(STATUS_SIZE  / multiplier)
- 
-# Create the main window.
-Main = Main(root, bs)
-# Call function to properly end the program
-root.protocol("WM_DELETE_WINDOW", Main.on_closing)
-root.update_idletasks()
-root.update()
-radio_connected = False
-
-root.mainloop()
-'''
