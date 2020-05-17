@@ -1,1 +1,1 @@
-from mission1 import Mission1
+from .mission1.mission1 import Mission1
