@@ -25,11 +25,11 @@ MIN_FUNC_LEN = 3
 class AUV():
     """ Class for the AUV object. Acts as the main file for the AUV. """
 
-    def __init__(self, pressure_sensor, IMU):
+    def __init__(self):
         """ Constructor for the AUV """
-        self.pressure_sensor = pressure_sensor
-        self.IMU = IMU
         self.radio = None
+        self.pressure_sensor = PressureSensor()
+        self.imu = IMU()
         self.mc = MotorController()
         self.connected_to_bs = False
 
@@ -134,7 +134,8 @@ class AUV():
         """ Method that uses the mission selected and begin that mission """
         print(mission)  # test stuff
         if(mission == 1):
-            self.current_mission = Mission1()
+            self.current_mission = Mission1(
+                self.mc, self.imu, self.pressure_sensor)
         # elif(mission == 2):
         #     self.current_mission = Mission2()
         # if self.current_mission is None:
