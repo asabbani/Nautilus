@@ -25,9 +25,10 @@ MIN_FUNC_LEN = 3
 class AUV():
     """ Class for the AUV object. Acts as the main file for the AUV. """
 
-    def __init__(self):
+    def __init__(self, pressure_sensor, IMU):
         """ Constructor for the AUV """
-
+        self.pressure_sensor = pressure_sensor
+        self.IMU = IMU
         self.radio = None
         self.mc = MotorController()
         self.connected_to_bs = False
