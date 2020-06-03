@@ -1,4 +1,3 @@
-from api import motor_controller
 import threading
 
 
@@ -11,8 +10,10 @@ class Mission1(threading.Thread):
         self.IMU = IMU
 
     def loop(self):
+        pass
 
     def find_source(self):
+        pass
 
     def move_to_source(self):
         """ TODO FUNCTION HEADER """
