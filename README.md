@@ -61,6 +61,7 @@ This will continue to be updated as development continues.
 
 ## Python Packages:
     pyserial
+    adafruit-circuitpython-bno055 (our Inertial Measurement Unit)
     and many more...
     
 # Missions

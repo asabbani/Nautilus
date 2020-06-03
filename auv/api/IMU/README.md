@@ -1,3 +1,4 @@
+# WARNING: This folder is deprecated. We are now using the python3 pip package  adafruit-circuitpython-bno055
 # Set up BNO055 on Raspberry Pi
 Detailed guide from [Adafruit](https://cdn-learn.adafruit.com/downloads/pdf/bno055-absolute-orientation-sensor-with-raspberry-pi-and-beaglebone-black.pdf)
 ## Setup UART

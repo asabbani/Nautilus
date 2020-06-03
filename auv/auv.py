@@ -8,6 +8,10 @@ import sys
 import threading
 import time
 
+# Import I2C and SDA+SCL (Signal Data and Signal Clock) for low-level interfacing.
+from busio import I2C
+from board import SDA, SCL
+
 # Custom imports
 from api import Radio
 from api import IMU
@@ -28,6 +32,8 @@ class AUV():
     def __init__(self):
         """ Constructor for the AUV """
         self.radio = None
+        self.i2c = I2C(SCL, SDA)  # Create a new I2C interfacing object.
+        self.imu = IMU(i2c)
         self.pressure_sensor = PressureSensor()
         self.imu = IMU()
         self.mc = MotorController()
