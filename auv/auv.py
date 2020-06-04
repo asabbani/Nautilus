@@ -132,7 +132,7 @@ class AUV():
                                 eval(message)
                                 self.radio.write(str.encode(
                                     "log(\"Successfully evaluated command: " + message + "\")\n"))
-                            except Exception, e:
+                            except Exception as e:
                                 # Print error message
                                 print(e)
                                 # Send verification of command back to base station.
