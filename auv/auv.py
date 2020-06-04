@@ -20,7 +20,7 @@ RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Contr
 IMU_PATH = '/dev/serial0'
 PING = b'PING\n'
 THREAD_SLEEP_DELAY = 0.1
-CONNECTION_TIMEOUT = 4
+CONNECTION_TIMEOUT = 3
 
 
 def log(val):

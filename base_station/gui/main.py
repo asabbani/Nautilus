@@ -374,8 +374,9 @@ class Main():
             # Prompt mission start
             prompt = "Start mission: " + mission + "?"
             ans = messagebox.askquestion("Mission Select", prompt)
-            if ans == 'yes':
-                self.out_q.put("start_mission(\"" + mission + "\")")
+            if ans == 'yes':  # Send index of mission (0, 1, 2, etc...)
+                self.out_q.put(
+                    "start_mission(" + str(self.mission_list.current()) + ")")
 
     def abort_mission(self):
         ans = messagebox.askquestion(

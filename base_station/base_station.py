@@ -24,7 +24,7 @@ from gui import Main
 THREAD_SLEEP_DELAY = 0.1  # Since we are the slave to AUV, we must run faster.
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 PING = b'PING\n'
-CONNECTION_TIMEOUT = 4s
+CONNECTION_TIMEOUT = 4
 
 # AUV Constants (these are also in auv.py)
 MAX_AUV_SPEED = 100
@@ -137,25 +137,26 @@ class BaseStation(threading.Thread):
         else:
             self.radio.write(str.encode("abort_mission()\n"))
             self.log("Sending task: abort_mission()")
-
-    def mission_failed(self, mission):
-        """ Mission return failure from AUV. """
-        if self.mission == 0:  # Echo location
             self.manual_mode = True
-            self.out_q.put("set_vehicle(True)")
-            self.log("Switched back to manual mode.")
 
-        self.log("Mission " + mission + " failed.")
+    def mission_failed(self):
+        """ Mission return failure from AUV. """
+        self.manual_mode = True
+        self.out_q.put("set_vehicle(True)")
+        self.log("Enforced switch to manual mode.")
+
+        self.log("The current mission has failed.")
 
     def start_mission(self, mission):
         """  Attempts to start a mission and send to AUV. """
 
-        if (self.connected_to_auv is False):
-            self.log("Cannot start mission: " + mission +
+        if self.connected_to_auv is False:
+            self.log("Cannot start mission: " + str(mission) +
                      " because there is no connection to the AUV.")
         else:
-            self.radio.write(str.encode("start_mission('" + mission + "')\n"))
-            self.log('Sending task: start_mission("' + mission + '")')
+            self.radio.write(str.encode(
+                "start_mission(" + str(mission) + ")\n"))
+            self.log('Sending task: start_mission(' + str(mission) + ')')
 
     def run(self):
         """ Main threaded loop for the base station. """
@@ -222,6 +223,7 @@ class BaseStation(threading.Thread):
                             self.time_since_last_ping = time.time()
                             if self.connected_to_auv is False:
                                 self.log("Connection to AUV verified.")
+                                self.out_q.put("set_connection(True)")
                                 self.connected_to_auv = True
 
                         elif len(line) > 0:
@@ -235,7 +237,7 @@ class BaseStation(threading.Thread):
                                 possible_func_name = message[0:message.find(
                                     "(")]
                                 if possible_func_name in self.methods:
-                                    if possible_func_name != "auv_data":
+                                    if possible_func_name != "auv_data" and possible_func_name != "log":
                                         self.log(
                                             "Received command from AUV: " + message)
                                     # Put task received into our in_q to be processed later.
@@ -260,7 +262,7 @@ class BaseStation(threading.Thread):
             self.out_q.put("set_vehicle(False)")
             self.log("Switched to autonomous mode.")
 
-        self.log("Successfully started mission " + index)
+        self.log("Successfully started mission " + str(index))
 
     def close(self):
         """ Function that is executed upon the closure of the GUI (passed from input-queue). """
