@@ -21,7 +21,7 @@ from api import GPS
 from gui import Main
 
 # Constants
-THREAD_SLEEP_DELAY = 0.2
+THREAD_SLEEP_DELAY = 0.08  # Since we are the slave to AUV, we must run faster.
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 PING = b'PING\n'
 
@@ -103,8 +103,15 @@ class BaseStation(threading.Thread):
             # Try to evaluate the task in the in_q.
             try:
                 eval(task)
-            except:
+            except Exception as e:
                 print("Failed to evaluate in_q task: ", task)
+                print("\t Error received was: ", str(e))
+
+    def auv_data(self, heading, temperature):
+        self.heading = heading
+        self.temperature = temperature
+        self.out_q.put("set_heading("+str(heading)+")")
+        self.out_q.put("set_temperature("+str(temperature)+")")
 
     def test_motor(self, motor):
         """ Attempts to send the AUV a signal to test a given motor. """
@@ -209,7 +216,9 @@ class BaseStation(threading.Thread):
                         # Get possible function name
                         possible_func_name = message[0:message.find("(")]
                         if possible_func_name in self.methods:
-                            self.log("Received command from AUV: " + message)
+                            if possible_func_name is not "auv_data":
+                                self.log(
+                                    "Received command from AUV: " + message)
                             # Put task received into our in_q to be processed later.
                             self.in_q.put(message)
 

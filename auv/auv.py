@@ -102,29 +102,31 @@ class AUV():
                     continue
 
                 # Save previous connection status
-                self.before=self.connected_to_bs
+                self.before = self.connected_to_bs
 
                 # Updated connection status
-                self.connected_to_bs=(line == PING)
+                self.connected_to_bs = (line == PING)
 
-                if self.connected_to_bs: # This is where we send all auv data
-                    
+                if self.connected_to_bs:  # This is where we send all auv data
+
                     # If there was a status change, print out updated
                     if self.before is False:
                         # TODO
                         print("Connection to BS verified. Returning ping.")
-                    
+
                     # Check if we have an IMU object.
                     if self.imu is not None:
                         try:
                             heading = self.imu.quaternion[0]
                             if heading is not None:
-                                heading = round(abs(heading * 360) * 100.0) / 100.0
-                                self.radio.write(str.encode("set_heading(" + str(heading) + ")\n"))
-                        
-                            temperature = self.imu.temperature
-                            if temperature is not None:
-                                self.radio.write(str.encode("set_temperature(" + str(temperature) + ")\n"))
+                                heading = round(
+                                    abs(heading * 360) * 100.0) / 100.0
+
+                                temperature = self.imu.temperature
+                                # (Heading, Temperature)
+                                if temperature is not None:
+                                    self.radio.write(str.encode(
+                                        "auv_data(" + str(heading) + ", " + str(temperature) + ")\n"))
                         except:
                             pass
 
@@ -133,11 +135,11 @@ class AUV():
                     print("Possible command found. Line read was: " + str(line))
 
                     # Decode into a normal utd-8 encoded string and delete newline character
-                    message=line.decode('utf-8').replace("\n", "")
+                    message = line.decode('utf-8').replace("\n", "")
 
                     if len(message) > 2 and "(" in message and ")" in message:
                         # Get possible function name
-                        possible_func_name=message[0:message.find("(")]
+                        possible_func_name = message[0:message.find("(")]
 
                         if possible_func_name in self.methods:
                             print("Recieved command from base station: " + message)
@@ -166,7 +168,7 @@ class AUV():
         """ Method that uses the mission selected and begin that mission """
         if(mission == 0):  # Echo-location.
             try:  # Try to start mission
-                self.current_mission=Mission1(
+                self.current_mission = Mission1(
                     self.mc, self.imu, self.pressure_sensor)
                 print("Successfully started mission " + mission + ".")
                 self.radio.write(str.encode("mission_started("+mission+")"))
@@ -181,7 +183,7 @@ class AUV():
 
 def main():
     """ Main function that is run upon execution of auv.py """
-    auv=AUV()
+    auv = AUV()
 
 
 if __name__ == '__main__':  # If we are executing this file as main

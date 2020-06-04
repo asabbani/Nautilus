@@ -277,12 +277,12 @@ class Main():
 
     def set_heading(self, direction):
         """ Sets heading text """
-        self.heading_label_string.set("Heading: " + direction)
+        self.heading_label_string.set("Heading: " + str(direction))
 
     def set_temperature(self, temperature):
         """ Sets internal temperature text """
         self.temperature_string.set(
-            "Internal Temperature: " + temperature + "C")
+            "Internal Temperature: " + str(temperature) + "C")
 
     def set_position(self, xPos, yPos):
         self.position_label_string.set(
