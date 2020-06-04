@@ -19,7 +19,7 @@ from missions import *
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 IMU_PATH = '/dev/serial0'
 PING = b'PING\n'
-THREAD_SLEEP_DELAY = 0.1
+THREAD_SLEEP_DELAY = 0.2
 CONNECTION_TIMEOUT = 3
 MIN_FUNC_LEN = 3
 
@@ -95,6 +95,23 @@ class AUV():
                     # Always send a connection verification packet and attempt to read one.
                     # self.radio.write(AUV_PING)
                     self.radio.write(PING)
+                    
+                    if self.connected_to_bs is True: # Send our AUV packet as well.
+                        if self.imu is not None:
+                            try:
+                                heading = self.imu.quaternion[0]
+                                if heading is not None:
+                                    heading = round(
+                                        abs(heading * 360) * 100.0) / 100.0
+
+                                    temperature = self.imu.temperature
+                                    # (Heading, Temperature)
+                                    if temperature is not None:
+                                        self.radio.write(str.encode(
+                                            "auv_data(" + str(heading) + ", " + str(temperature) + ")\n"))
+                            except:
+                                pass 
+
                     line = self.radio.readline()
                 except:
                     self.radio.close()
@@ -141,21 +158,6 @@ class AUV():
                     if self.connected_to_bs == True:
                         print("Lost connection to BS.")
                         self.connected_to_bs = False
-                elif self.connected_to_bs:  # Do whatever we want here.
-                    if self.imu is not None:
-                        try:
-                            heading = self.imu.quaternion[0]
-                            if heading is not None:
-                                heading = round(
-                                    abs(heading * 360) * 100.0) / 100.0
-
-                                temperature = self.imu.temperature
-                                # (Heading, Temperature)
-                                if temperature is not None:
-                                    self.radio.write(str.encode(
-                                        "auv_data(" + str(heading) + ", " + str(temperature) + ")\n"))
-                        except:
-                            pass
 
             if(self.current_mission is not None):
                 self.current_mission.loop()
