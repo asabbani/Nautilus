@@ -21,11 +21,7 @@ from api import GPS
 from gui import Main
 
 # Constants
-SPEED_CALIBRATION = 10
-NO_CALIBRATION = 9
-CONNECTION_WAIT_TIME = 3
-THREAD_SLEEP_DELAY = 0.3
-IS_MANUAL = True
+THREAD_SLEEP_DELAY = 0.2
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 PING = b'PING\n'
 
@@ -48,6 +44,7 @@ class BaseStation(threading.Thread):
         self.gps = None  # create the thread
         self.in_q = in_q
         self.out_q = out_q
+        self.manual_mode = True
 
         # Get all non-default callable methods in this class
         self.methods = [m for m in dir(BaseStation) if not m.startswith(
@@ -60,6 +57,17 @@ class BaseStation(threading.Thread):
         except:
             self.log(
                 "Warning: Cannot find radio device. Ensure RADIO_PATH is correct.")
+
+        # Try to connect our Xbox 360 controller.
+        try:
+            self.joy = Joystick()
+            if (joy.connected()):
+                self.log("Successfuly found Xbox 360 controller.")
+                self.nav_controller = NavController(self.joy)
+                self.log(
+                    "Successfully created a Navigation with Controller object.")
+        except:
+            self.log("Warning: Cannot find Xbox 360 controller.")
 
         # Try to assign our GPS object connection to GPSD
         try:
@@ -110,13 +118,21 @@ class BaseStation(threading.Thread):
 
     def abort_mission(self):
         """ Attempts to abort the mission for the AUV."""
-
         if not self.connected_to_auv:
             self.log(
                 "Cannot abort mission because there is no connection to the AUV.")
         else:
             self.radio.write(str.encode("abort_mission()\n"))
             self.log("Sending task: abort_mission()")
+
+    def mission_failed(self, mission):
+        """ Mission return failure from AUV. """
+        if self.mission == 0:  # Echo location
+            self.manual_mode = True
+            self.out_q.put("set_vehicle(True)")
+            self.log("Switched back to manual mode.")
+
+        self.log("Mission " + mission + " failed.")
 
     def start_mission(self, mission):
         """  Attempts to start a mission and send to AUV. """
@@ -134,6 +150,17 @@ class BaseStation(threading.Thread):
         # Begin our main loop for this thread.
         while True:
             self.check_tasks()
+
+            # Check if we have an Xbox controller
+            if self.joy is None:
+                try:
+                    self.joy = Joystick()
+                except:
+                    pass
+
+            elif not self.joy.connected():
+                self.log("Xbox controller has been disconnected.")
+                self.joy = None
 
             # This executes if we never had a radio object, or it got disconnected.
             if self.radio is None or not self.radio.is_open():
@@ -196,6 +223,15 @@ class BaseStation(threading.Thread):
     def log(self, message):
         """ Logs the message to the GUI console by putting the function into the output-queue. """
         self.out_q.put("log('" + message + "')")
+
+    def mission_started(self, index):
+        """ When AUV sends mission started, switch to mission mode """
+        if index == 0:  # Echo location mission.
+            self.manual_mode = False
+            self.out_q.put("set_vehicle(False)")
+            self.log("Switched to autonomous mode.")
+
+        self.log("Successfully started mission " + index)
 
     def close(self):
         """ Function that is executed upon the closure of the GUI (passed from input-queue). """

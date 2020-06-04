@@ -101,11 +101,16 @@ class AUV():
                     print("Radio is disconnected from pi!")
                     continue
 
+                # Check if we have an IMU object.
+                if self.imu is not None and self.imu.calibrated() is True:
+                    heading = self.imu.quaternion()[0]
+                    self.radio.write("out_q.put('set_heading(" + heading + ')")
+
                 # Save previous connection status
-                self.before = self.connected_to_bs
+                self.before=self.connected_to_bs
 
                 # Updated connection status
-                self.connected_to_bs = (line == PING)
+                self.connected_to_bs=(line == PING)
 
                 if self.connected_to_bs:
                     # If there was a status change, print out updated
@@ -118,11 +123,11 @@ class AUV():
                     print("Possible command found. Line read was: " + str(line))
 
                     # Decode into a normal utd-8 encoded string and delete newline character
-                    message = line.decode('utf-8').replace("\n", "")
+                    message=line.decode('utf-8').replace("\n", "")
 
                     if len(message) > 2 and "(" in message and ")" in message:
                         # Get possible function name
-                        possible_func_name = message[0:message.find("(")]
+                        possible_func_name=message[0:message.find("(")]
 
                         if possible_func_name in self.methods:
                             print("Recieved command from base station: " + message)
@@ -149,10 +154,15 @@ class AUV():
 
     def start_mission(self, mission):
         """ Method that uses the mission selected and begin that mission """
-        print(mission)  # test stuff
-        if(mission == 1):
-            self.current_mission = Mission1(
-                self.mc, self.imu, self.pressure_sensor)
+        if(mission == 0):  # Echo-location.
+            try:  # Try to start mission
+                self.current_mission=Mission1(
+                    self.mc, self.imu, self.pressure_sensor)
+                print("Successfully started mission " + mission + ".")
+                self.radio.write(str.encode("mission_started("+mission+")"))
+            except:
+                raise Exception("Mission " + mission +
+                                " failed to start. Error: " + e)
         # elif(mission == 2):
         #     self.current_mission = Mission2()
         # if self.current_mission is None:
@@ -161,7 +171,7 @@ class AUV():
 
 def main():
     """ Main function that is run upon execution of auv.py """
-    auv = AUV()
+    auv=AUV()
 
 
 if __name__ == '__main__':  # If we are executing this file as main

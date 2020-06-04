@@ -51,7 +51,7 @@ BUTTON_PAD_Y = 3
 BUTTON_WIDTH = 17
 BUTTON_HEIGHT = 3
 # Mission
-MISSIONS = ["Sound Tracking", "Audio Collecting"]
+MISSIONS = ["0: Sound Tracking", "1: Audio Collecting"]
 
 
 class Main():
@@ -180,7 +180,7 @@ class Main():
                                pady=MAIN_PAD_Y, side=LEFT, expand=NO)
         self.status_frame.pack_propagate(0)
         self.status_label = Label(
-            self.status_frame, text="Vehicle Stats", font=(FONT, HEADING_SIZE))
+            self.status_frame, text="AUV Data", font=(FONT, HEADING_SIZE))
         self.status_label.pack()
         self.status_label.place(relx=0.22, rely=0.075)
 
@@ -188,22 +188,29 @@ class Main():
         self.position_label = Label(self.status_frame, textvariable=self.position_label_string, font=(
             FONT, STATUS_SIZE), justify=LEFT)
         self.position_label.pack()
-        self.position_label_string.set("Position \n \tX: \t Y: ")
+        self.position_label_string.set("Position \n \tX: N/A \t Y: N/A")
         self.position_label.place(relx=0.05, rely=0.30, anchor='sw')
 
         self.heading_label_string = StringVar()
         self.heading_label = Label(self.status_frame, textvariable=self.heading_label_string, font=(
             FONT, STATUS_SIZE), justify=LEFT)
         self.heading_label.pack()
-        self.heading_label_string.set("Heading: ")
+        self.heading_label_string.set("Heading: N/A")
         self.heading_label.place(relx=0.05, rely=0.40, anchor='sw')
 
         self.battery_status_string = StringVar()
         self.battery_voltage = Label(
             self.status_frame, textvariable=self.battery_status_string, font=(FONT, STATUS_SIZE))
         self.battery_voltage.pack()
-        self.battery_status_string.set("Battery Voltage: ")
-        self.battery_voltage.place(relx=0.05, rely=0.55, anchor='sw')
+        self.battery_status_string.set("Battery Voltage: N/A")
+        self.battery_voltage.place(relx=0.05, rely=0.50, anchor='sw')
+
+        self.temperature_string = StringVar()
+        self.temperature = Label(
+            self.status_frame, textvariable=self.temperature_string, font=(FONT, STATUS_SIZE))
+        self.temperature.pack()
+        self.temperature_string.set("Internal Temperature: N/A")
+        self.temperature.place(relx=0.05, rely=0.60, anchor='sw')
 
         self.vehicle_status_string = StringVar()
         self.vehicle_status = Label(
@@ -217,7 +224,7 @@ class Main():
             self.status_frame, textvariable=self.comms_status_string, font=(FONT, STATUS_SIZE))
         self.comms_status.pack()
         self.comms_status_string.set("Comms Status: Not connected")
-        self.comms_status.place(relx=0.05, rely=0.85, anchor='sw')
+        self.comms_status.place(relx=0.05, rely=0.80, anchor='sw')
 
         # self.calibrate_xbox_button           = Button(self.status_frame, text = "Calibrate Controller", takefocus = False, width = BUTTON_WIDTH + 10, height = BUTTON_HEIGHT,
         #                                      padx = BUTTON_PAD_X, pady = BUTTON_PAD_Y, font = (FONT, BUTTON_SIZE), command = self.base_station.calibrate_controller )
@@ -257,9 +264,9 @@ class Main():
         else:
             self.comms_status_string.set("Comms Status: Not connected.")
 
-    def set_vehicle(self, status):
+    def set_vehicle(self, manual):
         """ Sets the vehicle status text in the status frame. """
-        if (status):
+        if (manual):
             self.vehicle_status_string.set("Vehicle Status: Manual Control")
         else:
             self.vehicle_status_string.set(
@@ -269,7 +276,13 @@ class Main():
         self.battery_status_string.set("Battery Voltage: " + voltage)
 
     def set_heading(self, direction):
+        """ Sets heading text """
         self.heading_label_string.set("Heading: " + direction)
+
+    def set_temperature(self, temperature):
+        """ Sets internal temperature text """
+        self.temperature_string.set(
+            "Internal Temperature: " + temperature + "C")
 
     def set_position(self, xPos, yPos):
         self.position_label_string.set(
@@ -279,40 +292,41 @@ class Main():
         self.calibrate_frame = Frame(
             self.bot_frame, height=BOT_FRAME_HEIGHT, width=CALIBRATE_FRAME_WIDTH, bd=1, relief=SUNKEN)
         self.calibrate_frame.pack(
-            fill=Y, padx=MAIN_PAD_X, pady=MAIN_PAD_Y, side=LEFT, expand=NO)
+            fill=Y, padx=MAIN_PAD_X, pady=0, side=LEFT, expand=NO)
         self.calibrate_frame.pack_propagate(0)
 
         self.calibrate_label = Label(
             self.calibrate_frame, text="Motor Testing", takefocus=False, font=(FONT, HEADING_SIZE))
-        self.calibrate_label.grid(row=0, columnspan=3, sticky=W+E)
+        self.calibrate_label.grid(row=0, columnspan=4, sticky=W+E)
 
-        self.left_calibrate_button = Button(self.calibrate_frame, text="Left", takefocus=False,  # width = 15, height = 3,
+        self.forward_calibrate_button = Button(self.calibrate_frame, text="Forward", takefocus=False,  # width = 15, height = 3,
+                                               padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
+                                                   FONT, BUTTON_SIZE),
+                                               command=lambda: self.out_q.put("test_motor('FORWARD')"))
+
+        self.forward_calibrate_button.grid(
+            row=4, column=1, pady=CALIBRATE_PAD_Y)
+
+        self.turn_calibrate_button = Button(self.calibrate_frame, text="Turn", takefocus=False,  # width = 15, height = 3,
                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                 FONT, BUTTON_SIZE),
-                                            command=lambda: self.out_q.put("test_motor('LEFT')"))
+                                            command=lambda: self.out_q.put("test_motor('TURN')"))
 
-        self.left_calibrate_button.grid(row=2, column=0, pady=CALIBRATE_PAD_Y)
-
-        self.right_calibrate_button = Button(self.calibrate_frame, text="Right", takefocus=False,  # width = 15, height = 3,
-                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
-                                                 FONT, BUTTON_SIZE),
-                                             command=lambda: self.out_q.put("test_motor('RIGHT')"))
-
-        self.right_calibrate_button.grid(row=2, column=2, pady=CALIBRATE_PAD_Y)
+        self.turn_calibrate_button.grid(row=1, column=1, pady=CALIBRATE_PAD_Y)
 
         self.front_calibrate_button = Button(self.calibrate_frame, text="Front", takefocus=False,  # width = 15, height = 3,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                  FONT, BUTTON_SIZE),
                                              command=lambda: self.out_q.put("test_motor('FRONT')"))
 
-        self.front_calibrate_button.grid(row=1, column=1, pady=CALIBRATE_PAD_Y)
+        self.front_calibrate_button.grid(row=2, column=1, pady=CALIBRATE_PAD_Y)
 
         self.calibrate_all_button = Button(self.calibrate_frame, text="All", takefocus=False,  # width = 15, height = 3,
                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                FONT, BUTTON_SIZE),
                                            command=lambda: self.out_q.put("test_motor('ALL')"))
 
-        self.calibrate_all_button.grid(row=2, column=1, pady=CALIBRATE_PAD_Y)
+        self.calibrate_all_button.grid(row=5, column=1, pady=CALIBRATE_PAD_Y)
 
         self.back_calibrate_button = Button(self.calibrate_frame, text="Back", takefocus=False,  # width = 15, height = 3,
                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
@@ -326,9 +340,13 @@ class Main():
             self.bot_frame, height=BOT_FRAME_HEIGHT, width=MISSION_FRAME_WIDTH, bd=1, relief=SUNKEN)
 
         self.mission_frame.pack(fill=Y, padx=COMBO_PAD_X,
-                                pady=COMBO_PAD_Y, side=LEFT, expand=NO)
+                                pady=0, side=LEFT, expand=NO)
         self.mission_frame.pack_propagate(0)
 
+        self.mission_label = Label(
+            self.mission_frame, text="Mission Control", takefocus=False, font=(FONT, HEADING_SIZE))
+
+        self.mission_label.pack(expand=YES)
         self.mission_list = Combobox(
             self.mission_frame, state="readonly", values=MISSIONS, font=(FONT, 14))
         self.mission_list.set("Select Mission...")
@@ -339,6 +357,10 @@ class Main():
                                            width=BUTTON_WIDTH, height=BUTTON_HEIGHT, padx=BUTTON_PAD_X,
                                            pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE+5), command=self.confirm_mission)
         self.start_mission_button.pack(expand=YES)  # TODO
+
+        self.abort_button = Button(self.mission_frame, text="ABORT MISSION", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                   padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE), command=self.abort_mission)
+        self.abort_button.pack(expand=YES)
 
     def confirm_mission(self):
         # TODO messages
@@ -353,24 +375,13 @@ class Main():
             prompt = "Start mission: " + mission + "?"
             ans = messagebox.askquestion("Mission Select", prompt)
             if ans == 'yes':
-                message = "Starting mission: " + mission
-                self.log(message)
                 self.out_q.put("start_mission(\"" + mission + "\")")
-            else:
-                # TODO on message
-                message = "mission select cancelled"
-                self.log(message)
 
     def abort_mission(self):
         ans = messagebox.askquestion(
             "Abort Mission", "Are you sure you want to abort the mission?")
         if ans == 'yes':
-            message = "Mission Aborted"
-            self.log(message)
             self.out_q.put("abort_mission()")
-        else:
-            #message = "Continuing Mission"
-            self.log(message)
 
     def create_function_buttons(self):
         self.origin_button = Button(self.functions_frame, text="Set Origin", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
@@ -379,19 +390,16 @@ class Main():
                                           padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.new_waypoint_prompt)
         self.nav_to_waypoint_button = Button(self.functions_frame, text="Nav. to Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
-        self.switch_to_manual_button = Button(self.functions_frame, text="Switch to Manual", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
-        self.stop_manual_button = Button(self.functions_frame, text="Stop Manual", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                         padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
-        self.abort_button = Button(self.functions_frame, text="ABORT MISSION", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                   padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE), command=self.abort_mission)
+        self.custom_button_1 = Button(self.functions_frame, text="Custom 1", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                      padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
+        self.custom_button_2 = Button(self.functions_frame, text="Custom 2", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                      padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
 
         self.origin_button.pack(expand=YES)
         self.add_waypoint_button.pack(expand=YES)
         self.nav_to_waypoint_button.pack(expand=YES)
-        self.switch_to_manual_button.pack(expand=YES)
-        self.stop_manual_button.pack(expand=YES)
-        self.abort_button.pack(expand=YES)
+        self.custom_button_1.pack(expand=YES)
+        self.custom_button_2.pack(expand=YES)
 
     def create_map(self, frame):
         self.map = Map(frame, self)
