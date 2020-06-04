@@ -19,7 +19,7 @@ from missions import *
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 IMU_PATH = '/dev/serial0'
 PING = b'PING\n'
-THREAD_SLEEP_DELAY = 0.2
+THREAD_SLEEP_DELAY = 0.1
 CONNECTION_TIMEOUT = 3
 MIN_FUNC_LEN = 3
 
