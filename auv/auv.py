@@ -128,13 +128,13 @@ class AUV():
                                 # Append "self." to all commands.
                                 eval('self.' + message)
                                 self.radio.write(str.encode(
-                                    "log(\"Successfully evaluated command: " + message + "\")\n"))
+                                    "log(\"Successfully evaluated command: " + possible_func_name + "()\")\n"))
                             except Exception as e:
                                 # Print error message
                                 print(e)
                                 # Send verification of command back to base station.
                                 self.radio.write(str.encode("log(\"Evaluation of command " +
-                                                            message + " failed.\")\n"))
+                                                            possible_func_name + "() failed.\")\n"))
 
                 elif self.before:
                     # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
