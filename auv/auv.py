@@ -8,10 +8,6 @@ import sys
 import threading
 import time
 
-# Import I2C and SDA+SCL (Signal Data and Signal Clock) for low-level interfacing.
-from busio import I2C
-from board import SDA, SCL
-
 # Custom imports
 from api import Radio
 from api import IMU
@@ -19,12 +15,13 @@ from api import PressureSensor
 from api import MotorController
 from missions import *
 
+# Constants for the AUV
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
+IMU_PATH = '/dev/serial0'
 PING = b'PING\n'
-THREAD_SLEEP_DELAY = 0.3
+THREAD_SLEEP_DELAY = 0.2
 CONNECTION_WAIT_TIME = 0.5
 MIN_FUNC_LEN = 3
-
 
 class AUV():
     """ Class for the AUV object. Acts as the main file for the AUV. """
@@ -32,10 +29,8 @@ class AUV():
     def __init__(self):
         """ Constructor for the AUV """
         self.radio = None
-        self.i2c = I2C(SCL, SDA)  # Create a new I2C interfacing object.
-        self.imu = IMU(i2c)
-        self.pressure_sensor = PressureSensor()
-        self.imu = IMU()
+        self.pressure_sensor = None
+        self.imu = None
         self.mc = MotorController()
         self.connected_to_bs = False
 
@@ -43,12 +38,24 @@ class AUV():
 
         # Get all non-default callable methods in this class
         self.methods = [m for m in dir(AUV) if not m.startswith('__')]
+        
+        try:
+            self.pressure_sensor = PressureSensor()
+            print("Pressure sensor has been found")
+        except:
+            print("Pressure sensor is not connected to the AUV.")
+        
+        try:
+            self.imu = IMU(IMU_PATH)
+            print("IMU has been found.")
+        except:
+            print("IMU is not connected to the AUV on IMU_PATH.")
 
         try:
             self.radio = Radio(RADIO_PATH)
-            print("Radio device has been found")
+            print("Radio device has been found.")
         except:
-            print("Radio device is not connected to AUV on RADIO_PATH")
+            print("Radio device is not connected to AUV on RADIO_PATH.")
 
         self.main_loop()
 
