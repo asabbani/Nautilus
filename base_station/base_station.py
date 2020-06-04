@@ -160,7 +160,7 @@ class BaseStation(threading.Thread):
 
     def run(self):
         """ Main threaded loop for the base station. """
-
+        self.log("Running radio connection loop to locate AUV...")
         # Begin our main loop for this thread.
         while True:
             self.check_tasks()
