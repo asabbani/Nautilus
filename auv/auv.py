@@ -101,26 +101,32 @@ class AUV():
                     print("Radio is disconnected from pi!")
                     continue
 
-                # Check if we have an IMU object.
-                if self.imu is not None:
-                    try:
-                        heading = self.imu.quaternion[0]
-                        if heading is not None:
-                            heading = abs(heading * 360)
-                            self.radio.write(str.encode("out_q.put('set_heading(" + str(heading) + "')\n"))
-                    except:
-                        pass
                 # Save previous connection status
                 self.before=self.connected_to_bs
 
                 # Updated connection status
                 self.connected_to_bs=(line == PING)
 
-                if self.connected_to_bs:
+                if self.connected_to_bs: # This is where we send all auv data
+                    
                     # If there was a status change, print out updated
                     if self.before is False:
                         # TODO
                         print("Connection to BS verified. Returning ping.")
+                    
+                    # Check if we have an IMU object.
+                    if self.imu is not None:
+                        try:
+                            heading = self.imu.quaternion[0]
+                            if heading is not None:
+                                heading = round(abs(heading * 360) * 100.0) / 100.0
+                                self.radio.write(str.encode("set_heading(" + str(heading) + ")\n"))
+                        
+                            temperature = self.imu.temperature
+                            if temperature is not None:
+                                self.radio.write(str.encode("set_temperature(" + str(temperature) + ")\n"))
+                        except:
+                            pass
 
                 elif len(line) > 0:
                     # Line was read, but it was not equal to a BS_PING
