@@ -13,6 +13,7 @@ class NavController:
         self.joy = joy
         self.maxSpeed = max_speed
         self.maxTurnSpeed = max_turn_speed
+        self.motor_data = [0, 0, 0, 0]
 
     def get_data(self):
         """ Returns the motor speed data """

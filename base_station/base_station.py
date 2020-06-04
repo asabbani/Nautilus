@@ -178,10 +178,10 @@ class BaseStation(threading.Thread):
                 self.nav_controller = None
 
             # This executes if we never had a radio object, or it got disconnected.
-            if self.radio is None or not self.radio.is_open():
+            if self.radio is None or not os.path.exists(RADIO_PATH):
 
                 # This executes if we HAD a radio object, but it got disconnected.
-                if self.radio is not None and not self.radio.is_open():
+                if self.radio is not None and not os.path.exists(RADIO_PATH):
                     self.log("Radio device has been disconnected.")
                     self.radio.close()
 
@@ -200,10 +200,12 @@ class BaseStation(threading.Thread):
                     self.radio.write(PING)
 
                     # This is where secured/synchronous code should go.
-                    if self.connected_to_auv:
+                    if self.connected_to_auv and self.manual_mode:
                         if self.joy.connected() and self.nav_controller is not None:
-
-                            # Read ALL lines stored in buffer (probably around 2-3 commands)
+                            self.nav_controller.handle()
+                            self.radio.write(
+                                "xbox(" + self.nav_controller.get_data())
+                    # Read ALL lines stored in buffer (probably around 2-3 commands)
                     lines = self.radio.readlines()
 
                     for line in lines:

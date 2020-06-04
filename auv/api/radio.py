@@ -2,7 +2,7 @@
 The radio class enables communication over wireless serial radios.
 """
 import serial
-
+import os
 TIMEOUT_DURATION = 2
 DEFAULT_BAUDRATE = 115200
 
@@ -46,7 +46,7 @@ class Radio:
         """
         Returns a boolean if the serial connection is open.
         """
-        return self.ser.is_open
+        return self.ser.is_open()
 
     def flush(self):
         """
