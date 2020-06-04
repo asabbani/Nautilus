@@ -102,10 +102,14 @@ class AUV():
                     continue
 
                 # Check if we have an IMU object.
-                if self.imu is not None and self.imu.calibrated() is True:
-                    heading = self.imu.quaternion()[0]
-                    self.radio.write("out_q.put('set_heading(" + heading + ')")
-
+                if self.imu is not None:
+                    try:
+                        heading = self.imu.quaternion[0]
+                        if heading is not None:
+                            heading = abs(heading * 360)
+                            self.radio.write(str.encode("out_q.put('set_heading(" + str(heading) + "')\n"))
+                    except:
+                        pass
                 # Save previous connection status
                 self.before=self.connected_to_bs
 

@@ -69,7 +69,7 @@ class MotorController:
 
         data: String read from the serial connection containing motor speed values.
         """
-        if (len(data) != len(motors):
+        if len(data) != len(motors):
             raise Exception("Data packet length does not equal motor array length.")
             return
 
