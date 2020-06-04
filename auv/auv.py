@@ -158,15 +158,16 @@ class AUV():
                                         # Append "self." to all commands.
                                         eval('self.' + message)
                                         self.radio.write(str.encode(
-                                            "log(\"Successfully evaluated command: " + possible_func_name + "()\")\n"))
+                                            "log(\"[AUV]\tSuccessfully evaluated command: " + possible_func_name + "()\")\n"))
                                     except Exception as e:
                                         # log error message
-                                        log(e)
+                                        log(str(e))
                                         # Send verification of command back to base station.
-                                        self.radio.write(str.encode("log(\"Evaluation of command " +
+                                        self.radio.write(str.encode("log(\"[AUV]\tEvaluation of command " +
                                                                     possible_func_name + "() failed.\")\n"))
 
-                except:
+                except Exception as e:
+                    log("Error: " + str(e))
                     self.radio.close()
                     self.radio = None
                     log("Radio is disconnected from pi!")
@@ -183,16 +184,20 @@ class AUV():
             try:  # Try to start mission
                 self.current_mission = Mission1(
                     self.mc, self.imu, self.pressure_sensor)
-                log("Successfully started mission " + mission + ".")
-                self.radio.write(str.encode("mission_started("+mission+")"))
+                log("Successfully started mission " + str(mission) + ".")
+                self.radio.write(str.encode("mission_started("+str(mission)+")\n"))
             except:
-                raise Exception("Mission " + mission +
-                                " failed to start. Error: " + e)
+                raise Exception("Mission " + str(mission) +
+                                " failed to start. Error: " + str(e))
         # elif(mission == 2):
         #     self.current_mission = Mission2()
         # if self.current_mission is None:
         #     self.current_mission = Mission1()
-
+    
+    def abort_mission(self):
+        self.current_mission = None
+        log("Successfully aborted the current mission.")
+        self.radio.write(str.encode("mission_failed()\n"))
 
 def main():
     """ Main function that is run upon execution of auv.py """
