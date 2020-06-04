@@ -159,7 +159,7 @@ class AUV():
 
                         elif time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT:
                             # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
-                            if self.connected_to_bs == True:
+                            if self.connected_to_bs is True:
                                 log("Lost connection to BS.")
                                 self.connected_to_bs = False
 
