@@ -153,7 +153,7 @@ class Main():
 
     def get_time(self, now):
         """ Gets the current time in year-months-day hour:minute:second. """
-        return now.strftime("%Y-%m-%d %H:%M:%S: ")
+        return now.strftime("%Y-%m-%d %I:%M %p: ")
 
     def init_function_frame(self):
         """ Creates the frame for all UI functions. """
