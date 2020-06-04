@@ -11,20 +11,20 @@ import RPi.GPIO as io
 from api import Motor
 
 # GPIO Pin numbers for Motors
-LEFT_GPIO_PIN = 4  # 18
-RIGHT_GPIO_PIN = 11  # 24
+FORWARD_GPIO_PIN = 4  # 18
+TURN_GPIO_PIN = 11  # 24
 FRONT_GPIO_PIN = 18  # 4
 BACK_GPIO_PIN = 24  # 11
 
 # Define pin numbers for PI (Not the same as GPIO?)
-LEFT_PI_PIN = 7
-RIGHT_PI_PIN = 23
+FORWARD_PI_PIN = 7
+TURN_PI_PIN = 23
 FRONT_PI_PIN = 12
 BACK_PI_PIN = 18
 
 # Indices for motor array
-LEFT_MOTOR_INDEX = 0
-RIGHT_MOTOR_INDEX = 1
+FORWARD_MOTOR_INDEX = 0
+TURN_MOTOR_INDEX = 1
 FRONT_MOTOR_INDEX = 2
 BACK_MOTOR_INDEX = 3
 
@@ -48,61 +48,59 @@ class MotorController:
         self.pi = pigpio.pi()
 
         # Motor object definitions.
-        self.motor_pins = [LEFT_GPIO_PIN, RIGHT_GPIO_PIN,
+        self.motor_pins = [FORWARD_GPIO_PIN, TURN_GPIO_PIN,
                            FRONT_GPIO_PIN, BACK_GPIO_PIN]
 
-        self.pi_pins = [LEFT_PI_PIN, RIGHT_PI_PIN, FRONT_PI_PIN, BACK_PI_PIN]
+        self.pi_pins = [FORWARD_PI_PIN, TURN_PI_PIN, FRONT_PI_PIN, BACK_PI_PIN]
 
         self.motors = [Motor(gpio_pin=pin, pi=self.pi)
                        for pin in self.motor_pins]
 
-        self.left_speed = 0
-        self.right_speed = 0
+        self.forward_speed = 0
+        self.turn_speed = 0
         self.front_speed = 0
         self.back_speed = 0
 #        self.check_gpio_pins()
 
     def update_motor_speeds(self, data):
         """
-        Sets motor speeds to each individual motor. This is for manual control when the
-        radio sends a data packet of size 4 (old code).
+        Sets motor speeds to each individual motor. This is for manual (xbox) control when the
+        radio sends a data packet of size 4.
 
         data: String read from the serial connection containing motor speed values.
         """
+        if (len(data) != len(motors):
+            raise Exception("Data packet length does not equal motor array length.")
+            return
 
-        # Parse motor speed from radio
-        self.left_speed = data[LEFT_MOTOR_INDEX]
-        self.right_speed = data[RIGHT_MOTOR_INDEX]
+        # Parse motor speed from data object.
+        self.left_speed = data[FORWARD_MOTOR_INDEX]
+        self.right_speed = data[TURN_MOTOR_INDEX]
         self.front_speed = data[FRONT_MOTOR_INDEX]
-        # This is grabbing speed from the DATA packet which is index 2
-        # TODO is this supposed to be front?
-        self.back_speed = data[FRONT_MOTOR_INDEX]
+        self.back_speed = data[BACK_MOTOR_INDEX]
 
         print("motors is: ", self.motors)
         # Set motor speed
-        self.motors[LEFT_MOTOR_INDEX].set_speed(self.left_speed)
-        self.motors[RIGHT_MOTOR_INDEX].set_speed(self.right_speed)
+        self.motors[FORWARD_MOTOR_INDEX].set_speed(self.forward_speed)
+        self.motors[TURN_MOTOR_INDEX].set_speed(self.turn_speed)
         self.motors[FRONT_MOTOR_INDEX].set_speed(self.front_speed)
         self.motors[BACK_MOTOR_INDEX].set_speed(self.back_speed)
 
     def pid_motor(self, pid_feedback):
         """
-        Updates left and right motor speed base off pid feedback
+        Updates the TURN motor based on the PID feedback. 
 
         feedback: Feedback value from pid class.
         """
         if(not pid_feedback):
-            self.left_speed = 0
-            self.right_speed = 0
+            self.turn_speed = 0
         else:
-            self.left_speed = self.calculate_pid_new_speed(-pid_feedback)
-            self.right_speed = self.calculate_pid_new_speed(pid_feedback)
+            self.turn_speed = self.calculate_pid_new_speed(pid_feedback)
 
 #        print('[PID_MOTOR] %7.2f %7.2f' %
  #             (self.left_speed, self.right_speed), end='\n')
 
-        self.motors[LEFT_MOTOR_INDEX].set_speed(self.left_speed)
-        self.motors[RIGHT_MOTOR_INDEX].set_speed(self.right_speed)
+        self.motors[TURN_MOTOR_INDEX].set_speed(self.turn_speed)
 
     def pid_motor_pitch(self, pid_feedback, current_value):
         """
@@ -164,11 +162,11 @@ class MotorController:
 
     def test_forward(self):  # Used to be left motor
         print('Testing forward motor...')
-        self.motors[LEFT_MOTOR_INDEX].test_motor()
+        self.motors[FORWARD_MOTOR_INDEX].test_motor()
 
     def test_turn(self):  # used to be right motor
         print('Testing turn motor...')
-        self.motors[RIGHT_MOTOR_INDEX].test_motor()
+        self.motors[TURN_MOTOR_INDEX].test_motor()
 
     def test_front(self):
         print('Testing front motor...')
@@ -196,7 +194,6 @@ class MotorController:
 
 def main():
     mc = MotorController()
-    mc.test_left()
 
 
 if __name__ == '__main__':

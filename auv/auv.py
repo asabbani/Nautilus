@@ -59,6 +59,9 @@ class AUV():
 
         self.main_loop()
 
+    def xbox(self, data):
+        self.mc.update_motor_speeds(data)
+
     def test_motor(self, motor):
         """ Method to test all 4 motors on the AUV """
 
