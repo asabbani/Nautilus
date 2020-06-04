@@ -162,12 +162,12 @@ class MotorController:
             motor.test_motor()
             time.sleep(1)
 
-    def test_left(self):
-        print('Testing left motor...')
+    def test_forward(self):  # Used to be left motor
+        print('Testing forward motor...')
         self.motors[LEFT_MOTOR_INDEX].test_motor()
 
-    def test_right(self):
-        print('Testing right motor...')
+    def test_turn(self):  # used to be right motor
+        print('Testing turn motor...')
         self.motors[RIGHT_MOTOR_INDEX].test_motor()
 
     def test_front(self):

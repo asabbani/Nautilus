@@ -23,6 +23,7 @@ THREAD_SLEEP_DELAY = 0.2
 CONNECTION_WAIT_TIME = 0.5
 MIN_FUNC_LEN = 3
 
+
 class AUV():
     """ Class for the AUV object. Acts as the main file for the AUV. """
 
@@ -38,13 +39,13 @@ class AUV():
 
         # Get all non-default callable methods in this class
         self.methods = [m for m in dir(AUV) if not m.startswith('__')]
-        
+
         try:
             self.pressure_sensor = PressureSensor()
             print("Pressure sensor has been found")
         except:
             print("Pressure sensor is not connected to the AUV.")
-        
+
         try:
             self.imu = IMU(IMU_PATH)
             print("IMU has been found.")
@@ -62,16 +63,18 @@ class AUV():
     def test_motor(self, motor):
         """ Method to test all 4 motors on the AUV """
 
-        if motor == "LEFT":
-            self.mc.test_left()
-        elif motor == "RIGHT":
-            self.mc.test_right()
+        if motor == "FORWARD":  # Used to be LEFT motor
+            self.mc.test_forward()
+        elif motor == "TURN":  # Used to be RIGHT MOTOR
+            self.mc.test_turn()
         elif motor == "FRONT":
             self.mc.test_front()
         elif motor == "BACK":
             self.mc.test_back()
         elif motor == "ALL":
             self.mc.test_all()
+        else:
+            raise Exception('No implementation for motor name: ', motor)
 
     def main_loop(self):
         """ Main connection loop for the AUV. """
@@ -79,7 +82,7 @@ class AUV():
         print("Starting main connection loop.")
         while True:
             if self.radio is None or self.radio.is_open() is False:
-                try:
+                try:  # Try to connect to our devices.
                     self.radio = Radio(RADIO_PATH)
                     print("Radio device has been found!")
                 except:
@@ -129,7 +132,9 @@ class AUV():
                                 eval(message)
                                 self.radio.write(str.encode(
                                     "log(\"Successfully evaluated command: " + message + "\")\n"))
-                            except:
+                            except Exception, e:
+                                # Print error message
+                                print(e)
                                 # Send verification of command back to base station.
                                 self.radio.write(str.encode("log(\"Evaluation of command " +
                                                             message + " failed.\")\n"))
