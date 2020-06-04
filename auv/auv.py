@@ -115,7 +115,7 @@ class AUV():
                         print("Connection to BS verified. Returning ping.")
 
                     # Check if we have an IMU object.
-                    if self.imu is not None:
+                    elif self.imu is not None:
                         try:
                             heading = self.imu.quaternion[0]
                             if heading is not None:

@@ -216,7 +216,7 @@ class BaseStation(threading.Thread):
                         # Get possible function name
                         possible_func_name = message[0:message.find("(")]
                         if possible_func_name in self.methods:
-                            if possible_func_name is not "auv_data":
+                            if possible_func_name != "auv_data":
                                 self.log(
                                     "Received command from AUV: " + message)
                             # Put task received into our in_q to be processed later.
