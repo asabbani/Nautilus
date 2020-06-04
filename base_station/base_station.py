@@ -164,6 +164,14 @@ class BaseStation(threading.Thread):
         while True:
             self.check_tasks()
 
+            # Always try to update connection status
+            if time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT:
+                # We are NOT connected to AUV, but we previously ('before') were. Status has changed to failed.
+                if self.connected_to_auv is True:
+                    self.out_q.put("set_connection(False)")
+                    self.log("Lost connection to AUV.")
+                    self.connected_to_auv = False
+
             # Check if we have an Xbox controller
             if self.joy is None:
                 try:
@@ -232,16 +240,6 @@ class BaseStation(threading.Thread):
                                             "Received command from AUV: " + message)
                                     # Put task received into our in_q to be processed later.
                                     self.in_q.put(message)
-
-                        elif time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT:
-                            # We are NOT connected to AUV, but we previously ('before') were. Status has changed to failed.
-                            if self.connected_to_auv is True:
-                                self.out_q.put("set_connection(False)")
-                                self.log("Lost connection to AUV.")
-                                self.connected_to_auv = False
-                        elif self.connected_to_auv:
-                            # Do whatever we want here knowing we are connected.
-                            pass
 
                 except:
                     self.radio.close()

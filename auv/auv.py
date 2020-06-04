@@ -88,6 +88,14 @@ class AUV():
 
         log("Starting main connection loop.")
         while True:
+
+            # Always try to update connection status.
+            if time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT:
+                # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
+                if self.connected_to_bs is True:
+                    log("Lost connection to BS.")
+                    self.connected_to_bs = False
+
             if self.radio is None or self.radio.is_open() is False:
                 try:  # Try to connect to our devices.
                     self.radio = Radio(RADIO_PATH)
@@ -127,7 +135,7 @@ class AUV():
                                 log("Connection to BS verified.")
                                 self.connected_to_bs = True
 
-                        elif len(line) > 0:
+                        elif len(line) > 1:
                             # Line was read, but it was not equal to a BS_PING
                             log(
                                 "Possible command found. Line read was: " + str(line))
@@ -157,12 +165,6 @@ class AUV():
                                         # Send verification of command back to base station.
                                         self.radio.write(str.encode("log(\"Evaluation of command " +
                                                                     possible_func_name + "() failed.\")\n"))
-
-                        elif time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT:
-                            # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
-                            if self.connected_to_bs is True:
-                                log("Lost connection to BS.")
-                                self.connected_to_bs = False
 
                 except:
                     self.radio.close()
