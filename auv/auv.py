@@ -142,7 +142,7 @@ class AUV():
                         print("Lost connection to BS.")
                         self.connected_to_bs = False
                 elif self.connected_to_bs:  # Do whatever we want here.
-                    self.imu is not None:
+                    if self.imu is not None:
                         try:
                             heading = self.imu.quaternion[0]
                             if heading is not None:
