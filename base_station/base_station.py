@@ -24,6 +24,7 @@ from gui import Main
 THREAD_SLEEP_DELAY = 0.08  # Since we are the slave to AUV, we must run faster.
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 PING = b'PING\n'
+CONNECTION_TIMEOUT = 3
 
 
 class BaseStation(threading.Thread):
@@ -45,6 +46,7 @@ class BaseStation(threading.Thread):
         self.in_q = in_q
         self.out_q = out_q
         self.manual_mode = True
+        self.time_since_last_ping = 0.0
 
         # Get all non-default callable methods in this class
         self.methods = [m for m in dir(BaseStation) if not m.startswith(
@@ -201,10 +203,11 @@ class BaseStation(threading.Thread):
 
                 self.connected_to_auv = (line == PING)
 
-                if self.connected_to_auv:
-                    if self.before is False:
-                        self.out_q.put("set_connection(True)")
+                if line == PING:
+                    self.time_since_last_ping = time.time()
+                    if connected_to_auv is False:
                         self.log("Connection to AUV verified.")
+                        connected_to_auv = True
 
                 elif len(line) > 0:
                     # Line is greater than 0, but not equal to the AUV_PING
@@ -222,10 +225,14 @@ class BaseStation(threading.Thread):
                             # Put task received into our in_q to be processed later.
                             self.in_q.put(message)
 
-                elif self.before:
+                elif time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT
                     # We are NOT connected to AUV, but we previously ('before') were. Status has changed to failed.
-                    self.out_q.put("set_connection(False)")
-                    self.log("Connection verification to AUV failed.")
+                    if self.connected_to_auv is True:
+                        self.out_q.put("set_connection(False)")
+                        self.log("Lost connection to AUV.")
+                        self.connected_to_auv = False
+                elif self.connected_to_auv:
+                    pass # Do whatever we want here knowing we are connected.
 
             time.sleep(THREAD_SLEEP_DELAY)
 

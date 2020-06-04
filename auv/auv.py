@@ -20,6 +20,7 @@ RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Contr
 IMU_PATH = '/dev/serial0'
 PING = b'PING\n'
 THREAD_SLEEP_DELAY = 0.1
+CONNECTION_TIMEOUT = 3
 MIN_FUNC_LEN = 3
 
 
@@ -33,7 +34,7 @@ class AUV():
         self.imu = None
         self.mc = MotorController()
         self.connected_to_bs = False
-
+        self.time_since_last_ping = 0.0
         self.current_mission = None
 
         # Get all non-default callable methods in this class
@@ -101,34 +102,11 @@ class AUV():
                     print("Radio is disconnected from pi!")
                     continue
 
-                # Save previous connection status
-                self.before = self.connected_to_bs
-
-                # Updated connection status
-                self.connected_to_bs = (line == PING)
-
-                if self.connected_to_bs:  # This is where we send all auv data
-
-                    # If there was a status change, print out updated
-                    if self.before is False:
-                        # TODO
-                        print("Connection to BS verified. Returning ping.")
-
-                    # Check if we have an IMU object.
-                    elif self.imu is not None:
-                        try:
-                            heading = self.imu.quaternion[0]
-                            if heading is not None:
-                                heading = round(
-                                    abs(heading * 360) * 100.0) / 100.0
-
-                                temperature = self.imu.temperature
-                                # (Heading, Temperature)
-                                if temperature is not None:
-                                    self.radio.write(str.encode(
-                                        "auv_data(" + str(heading) + ", " + str(temperature) + ")\n"))
-                        except:
-                            pass
+                if line == PING:  # We have a ping!
+                    self.time_since_last_ping = time.time()
+                    if self.connected_to_bs is False:
+                        print("Connection to BS verified.")
+                        self.connected_to_bs = True
 
                 elif len(line) > 0:
                     # Line was read, but it was not equal to a BS_PING
@@ -143,6 +121,9 @@ class AUV():
 
                         if possible_func_name in self.methods:
                             print("Recieved command from base station: " + message)
+                            self.time_since_last_ping = time.time()
+                            self.connected_to_bs = True
+
                             try:  # Attempt to evaluate command.
                                 # Append "self." to all commands.
                                 eval('self.' + message)
@@ -155,9 +136,26 @@ class AUV():
                                 self.radio.write(str.encode("log(\"Evaluation of command " +
                                                             possible_func_name + "() failed.\")\n"))
 
-                elif self.before:
+                elif time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT:
                     # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
-                    print("Connection verification to BS failed.")
+                    if self.connected_to_bs == True:
+                        print("Lost connection to BS.")
+                        self.connected_to_bs = False
+                elif self.connected_to_bs:  # Do whatever we want here.
+                    self.imu is not None:
+                        try:
+                            heading = self.imu.quaternion[0]
+                            if heading is not None:
+                                heading = round(
+                                    abs(heading * 360) * 100.0) / 100.0
+
+                                temperature = self.imu.temperature
+                                # (Heading, Temperature)
+                                if temperature is not None:
+                                    self.radio.write(str.encode(
+                                        "auv_data(" + str(heading) + ", " + str(temperature) + ")\n"))
+                        except:
+                            pass
 
             if(self.current_mission is not None):
                 self.current_mission.loop()
