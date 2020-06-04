@@ -26,6 +26,10 @@ RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Contr
 PING = b'PING\n'
 CONNECTION_TIMEOUT = 3
 
+# AUV Constants (these are also in auv.py)
+MAX_AUV_SPEED = 100
+MAX_TURN_SPEED = 50
+
 
 class BaseStation(threading.Thread):
     """ Base station class that acts as the brain for the entire base station. """
@@ -164,12 +168,14 @@ class BaseStation(threading.Thread):
             if self.joy is None:
                 try:
                     self.joy = Joystick()
+                    self.nav_controller = NavController(self.joy)
                 except:
                     pass
 
             elif not self.joy.connected():
                 self.log("Xbox controller has been disconnected.")
                 self.joy = None
+                self.nav_controller = None
 
             # This executes if we never had a radio object, or it got disconnected.
             if self.radio is None or not self.radio.is_open():
@@ -195,9 +201,9 @@ class BaseStation(threading.Thread):
 
                     # This is where secured/synchronous code should go.
                     if self.connected_to_auv:
-                        pass
+                        if self.joy.connected() and self.nav_controller is not None:
 
-                    # Read ALL lines stored in buffer (probably around 2-3 commands)
+                            # Read ALL lines stored in buffer (probably around 2-3 commands)
                     lines = self.radio.readlines()
 
                     for line in lines:

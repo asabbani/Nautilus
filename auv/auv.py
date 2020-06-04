@@ -24,6 +24,10 @@ CONNECTION_TIMEOUT = 3
 MIN_FUNC_LEN = 3
 
 
+def log(val):
+    print("[AUV]\t" + val)
+
+
 class AUV():
     """ Class for the AUV object. Acts as the main file for the AUV. """
 
@@ -42,21 +46,21 @@ class AUV():
 
         try:
             self.pressure_sensor = PressureSensor()
-            print("Pressure sensor has been found")
+            log("Pressure sensor has been found")
         except:
-            print("Pressure sensor is not connected to the AUV.")
+            log("Pressure sensor is not connected to the AUV.")
 
         try:
             self.imu = IMU(IMU_PATH)
-            print("IMU has been found.")
+            log("IMU has been found.")
         except:
-            print("IMU is not connected to the AUV on IMU_PATH.")
+            log("IMU is not connected to the AUV on IMU_PATH.")
 
         try:
             self.radio = Radio(RADIO_PATH)
-            print("Radio device has been found.")
+            log("Radio device has been found.")
         except:
-            print("Radio device is not connected to AUV on RADIO_PATH.")
+            log("Radio device is not connected to AUV on RADIO_PATH.")
 
         self.main_loop()
 
@@ -82,12 +86,12 @@ class AUV():
     def main_loop(self):
         """ Main connection loop for the AUV. """
 
-        print("Starting main connection loop.")
+        log("Starting main connection loop.")
         while True:
             if self.radio is None or self.radio.is_open() is False:
                 try:  # Try to connect to our devices.
                     self.radio = Radio(RADIO_PATH)
-                    print("Radio device has been found!")
+                    log("Radio device has been found!")
                 except:
                     pass
             else:
@@ -119,12 +123,12 @@ class AUV():
                         if line == PING:  # We have a ping!
                             self.time_since_last_ping = time.time()
                             if self.connected_to_bs is False:
-                                print("Connection to BS verified.")
+                                log("Connection to BS verified.")
                                 self.connected_to_bs = True
 
                         elif len(line) > 0:
                             # Line was read, but it was not equal to a BS_PING
-                            print(
+                            log(
                                 "Possible command found. Line read was: " + str(line))
 
                             # Decode into a normal utd-8 encoded string and delete newline character
@@ -136,7 +140,7 @@ class AUV():
                                     "(")]
 
                                 if possible_func_name in self.methods:
-                                    print(
+                                    log(
                                         "Recieved command from base station: " + message)
                                     self.time_since_last_ping = time.time()
                                     self.connected_to_bs = True
@@ -147,8 +151,8 @@ class AUV():
                                         self.radio.write(str.encode(
                                             "log(\"Successfully evaluated command: " + possible_func_name + "()\")\n"))
                                     except Exception as e:
-                                        # Print error message
-                                        print(e)
+                                        # log error message
+                                        log(e)
                                         # Send verification of command back to base station.
                                         self.radio.write(str.encode("log(\"Evaluation of command " +
                                                                     possible_func_name + "() failed.\")\n"))
@@ -156,13 +160,13 @@ class AUV():
                         elif time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT:
                             # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
                             if self.connected_to_bs == True:
-                                print("Lost connection to BS.")
+                                log("Lost connection to BS.")
                                 self.connected_to_bs = False
 
                 except:
                     self.radio.close()
                     self.radio = None
-                    print("Radio is disconnected from pi!")
+                    log("Radio is disconnected from pi!")
                     continue
 
             if(self.current_mission is not None):
@@ -176,7 +180,7 @@ class AUV():
             try:  # Try to start mission
                 self.current_mission = Mission1(
                     self.mc, self.imu, self.pressure_sensor)
-                print("Successfully started mission " + mission + ".")
+                log("Successfully started mission " + mission + ".")
                 self.radio.write(str.encode("mission_started("+mission+")"))
             except:
                 raise Exception("Mission " + mission +

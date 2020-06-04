@@ -34,6 +34,11 @@ MAX_PITCH = 30
 MAX_CORRECTION_MOTOR_SPEED = 25  # Max turning speed during pid correction
 
 
+def log(val):
+    """ Adapt log to note the object we are in """
+    print("[MC]\t" + val)
+
+
 class MotorController:
     """
     Object that contains all interactions with the motor array for the AUV
@@ -70,7 +75,8 @@ class MotorController:
         data: String read from the serial connection containing motor speed values.
         """
         if len(data) != len(motors):
-            raise Exception("Data packet length does not equal motor array length.")
+            raise Exception(
+                "Data packet length does not equal motor array length.")
             return
 
         # Parse motor speed from data object.
@@ -79,7 +85,7 @@ class MotorController:
         self.front_speed = data[FRONT_MOTOR_INDEX]
         self.back_speed = data[BACK_MOTOR_INDEX]
 
-        print("motors is: ", self.motors)
+        log("motors is: ", self.motors)
         # Set motor speed
         self.motors[FORWARD_MOTOR_INDEX].set_speed(self.forward_speed)
         self.motors[TURN_MOTOR_INDEX].set_speed(self.turn_speed)
@@ -97,7 +103,7 @@ class MotorController:
         else:
             self.turn_speed = self.calculate_pid_new_speed(pid_feedback)
 
-#        print('[PID_MOTOR] %7.2f %7.2f' %
+#        log('[PID_MOTOR] %7.2f %7.2f' %
  #             (self.left_speed, self.right_speed), end='\n')
 
         self.motors[TURN_MOTOR_INDEX].set_speed(self.turn_speed)
@@ -139,7 +145,7 @@ class MotorController:
             # When not flipped, use -
             self.back_speed = self.calculate_pid_new_speed(-pid_feedback)
 
-      #  print('[PID_MOTOR] %7.2f %7.2f' %
+      #  log('[PID_MOTOR] %7.2f %7.2f' %
      #         (self.front_speed, self.back_speed), end='\n')
         self.motors[FRONT_MOTOR_INDEX].set_speed(self.front_speed)
         self.motors[BACK_MOTOR_INDEX].set_speed(self.back_speed)
@@ -155,25 +161,25 @@ class MotorController:
         """
         Calibrates each individual motor.
         """
-        print('Testing all motors...')
+        log('Testing all motors...')
         for motor in self.motors:
             motor.test_motor()
             time.sleep(1)
 
     def test_forward(self):  # Used to be left motor
-        print('Testing forward motor...')
+        log('Testing forward motor...')
         self.motors[FORWARD_MOTOR_INDEX].test_motor()
 
     def test_turn(self):  # used to be right motor
-        print('Testing turn motor...')
+        log('Testing turn motor...')
         self.motors[TURN_MOTOR_INDEX].test_motor()
 
     def test_front(self):
-        print('Testing front motor...')
+        log('Testing front motor...')
         self.motors[FRONT_MOTOR_INDEX].test_motor()
 
     def test_back(self):
-        print('Testing back motor...')
+        log('Testing back motor...')
         self.motors[BACK_MOTOR_INDEX].test_motor()
 
     def check_gpio_pins(self):
@@ -181,7 +187,7 @@ class MotorController:
         io.setmode(io.BOARD)
         for pins in self.pi_pins:
             io.setup(pins, io.IN)
-            print("Pin:", pins, io.input(pins))
+            log("Pin:", pins, io.input(pins))
 
     def calculate_pid_new_speed(self, feedback):
         # Case 1: Going backward
@@ -199,7 +205,7 @@ def main():
 if __name__ == '__main__':
     main()
     # def calculate_pid_new_speed(self, last_speed, speed_change):
-    #     #print(">>Last speed\t" + str(last_speed) + "speed_change\t" + str(speed_change))
+    #     #log(">>Last speed\t" + str(last_speed) + "speed_change\t" + str(speed_change))
     #     #new_speed = last_speed + speed_change
     #     # Case 1: was going forward
     #     assert(not (MAX_CORRECTION_MOTOR_SPEED < last_speed and last_speed <= 100)), "Unexpected last speed" + str(last_speed)
@@ -223,13 +229,13 @@ if __name__ == '__main__':
     #
     #         # Was going forward, want to backward
     #         if(last_speed <= MAX_CORRECTION_MOTOR_SPEED):
-    #             #print("Adjust case forward -> backward")
+    #             #log("Adjust case forward -> backward")
     #             new_speed = abs(new_speed) + 100
     #             # if it goes backward too fast
     #             if(new_speed > 100 + MAX_CORRECTION_MOTOR_SPEED):
     #                 new_speed = 100 + MAX_CORRECTION_MOTOR_SPEED
     #         else: # was going backward, want to forward
-    #             #print("Adjust case backward -> forward")
+    #             #log("Adjust case backward -> forward")
     #             new_speed = 100 - new_speed
     #             # if it goes forward too fast
     #             if(new_speed > MAX_CORRECTION_MOTOR_SPEED):
