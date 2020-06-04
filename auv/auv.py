@@ -118,6 +118,7 @@ class AUV():
 
                     # Read ALL lines stored in buffer (probably around 2-3 commands)
                     lines = self.radio.readlines()
+                    self.radio.flush()
 
                     for line in lines:
                         if line == PING:  # We have a ping!

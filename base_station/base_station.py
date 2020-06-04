@@ -201,12 +201,13 @@ class BaseStation(threading.Thread):
 
                     # This is where secured/synchronous code should go.
                     if self.connected_to_auv and self.manual_mode:
-                        if self.joy.connected() and self.nav_controller is not None:
+                        if self.joy is not None and self.joy.connected() and self.nav_controller is not None:
                             self.nav_controller.handle()
                             self.radio.write(
                                 "xbox(" + self.nav_controller.get_data())
                     # Read ALL lines stored in buffer (probably around 2-3 commands)
                     lines = self.radio.readlines()
+                    self.radio.flush()
 
                     for line in lines:
                         if line == PING:
