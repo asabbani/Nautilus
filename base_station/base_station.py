@@ -183,7 +183,7 @@ class BaseStation(threading.Thread):
                         possible_func_name = message[0:message.find("(")]
                         if possible_func_name in self.methods:
                             self.log("Received command from AUV: " + message)
-                            # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
+                            # Put task received into our in_q to be processed later.
                             self.in_q.put(message)
 
                 elif self.before:

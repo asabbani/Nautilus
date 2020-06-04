@@ -115,11 +115,8 @@ class AUV():
                     # Line was read, but it was not equal to a BS_PING
                     print("Possible command found. Line read was: " + str(line))
 
-                    # Attempt to split line into a string array after decoding it to UTF-8.
-                    # EX: line  = "command arg1 arg2 arg3..."
-                    #     cmd_array = [ "command", "arg1", "arg2" ]
+                    # Decode into a normal utd-8 encoded string and delete newline character
                     message = line.decode('utf-8').replace("\n", "")
-                    print(message)
 
                     if len(message) > 2 and "(" in message and ")" in message:
                         # Get possible function name
@@ -127,9 +124,9 @@ class AUV():
 
                         if possible_func_name in self.methods:
                             print("Recieved command from base station: " + message)
-                            try:
-                                # Attempt to evaluate command. => Uses Vertical Pole '|' as delimiter
-                                eval(message)
+                            try:  # Attempt to evaluate command.
+                                # Append "self." to all commands.
+                                eval('self.' + message)
                                 self.radio.write(str.encode(
                                     "log(\"Successfully evaluated command: " + message + "\")\n"))
                             except Exception as e:
