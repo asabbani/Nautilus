@@ -30,6 +30,12 @@ class Radio:
         """
         self.ser.write(message)
 
+    def readlines(self):
+        """
+        Returns a list of lines from buffer.
+        """
+        return self.ser.readlines()
+
     def readline(self):
         """
         Returns a string from the serial connection.

@@ -95,8 +95,8 @@ class AUV():
                     # Always send a connection verification packet and attempt to read one.
                     # self.radio.write(AUV_PING)
                     self.radio.write(PING)
-                    
-                    if self.connected_to_bs is True: # Send our AUV packet as well.
+
+                    if self.connected_to_bs is True:  # Send our AUV packet as well.
                         if self.imu is not None:
                             try:
                                 heading = self.imu.quaternion[0]
@@ -110,54 +110,60 @@ class AUV():
                                         self.radio.write(str.encode(
                                             "auv_data(" + str(heading) + ", " + str(temperature) + ")\n"))
                             except:
-                                pass 
+                                pass
 
-                    line = self.radio.readline()
+                    # Read ALL lines stored in buffer (probably around 2-3 commands)
+                    lines = self.radio.readlines()
+
+                    for line in lines:
+                        if line == PING:  # We have a ping!
+                            self.time_since_last_ping = time.time()
+                            if self.connected_to_bs is False:
+                                print("Connection to BS verified.")
+                                self.connected_to_bs = True
+
+                        elif len(line) > 0:
+                            # Line was read, but it was not equal to a BS_PING
+                            print(
+                                "Possible command found. Line read was: " + str(line))
+
+                            # Decode into a normal utd-8 encoded string and delete newline character
+                            message = line.decode('utf-8').replace("\n", "")
+
+                            if len(message) > 2 and "(" in message and ")" in message:
+                                # Get possible function name
+                                possible_func_name = message[0:message.find(
+                                    "(")]
+
+                                if possible_func_name in self.methods:
+                                    print(
+                                        "Recieved command from base station: " + message)
+                                    self.time_since_last_ping = time.time()
+                                    self.connected_to_bs = True
+
+                                    try:  # Attempt to evaluate command.
+                                        # Append "self." to all commands.
+                                        eval('self.' + message)
+                                        self.radio.write(str.encode(
+                                            "log(\"Successfully evaluated command: " + possible_func_name + "()\")\n"))
+                                    except Exception as e:
+                                        # Print error message
+                                        print(e)
+                                        # Send verification of command back to base station.
+                                        self.radio.write(str.encode("log(\"Evaluation of command " +
+                                                                    possible_func_name + "() failed.\")\n"))
+
+                        elif time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT:
+                            # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
+                            if self.connected_to_bs == True:
+                                print("Lost connection to BS.")
+                                self.connected_to_bs = False
+
                 except:
                     self.radio.close()
                     self.radio = None
                     print("Radio is disconnected from pi!")
                     continue
-
-                if line == PING:  # We have a ping!
-                    self.time_since_last_ping = time.time()
-                    if self.connected_to_bs is False:
-                        print("Connection to BS verified.")
-                        self.connected_to_bs = True
-
-                elif len(line) > 0:
-                    # Line was read, but it was not equal to a BS_PING
-                    print("Possible command found. Line read was: " + str(line))
-
-                    # Decode into a normal utd-8 encoded string and delete newline character
-                    message = line.decode('utf-8').replace("\n", "")
-
-                    if len(message) > 2 and "(" in message and ")" in message:
-                        # Get possible function name
-                        possible_func_name = message[0:message.find("(")]
-
-                        if possible_func_name in self.methods:
-                            print("Recieved command from base station: " + message)
-                            self.time_since_last_ping = time.time()
-                            self.connected_to_bs = True
-
-                            try:  # Attempt to evaluate command.
-                                # Append "self." to all commands.
-                                eval('self.' + message)
-                                self.radio.write(str.encode(
-                                    "log(\"Successfully evaluated command: " + possible_func_name + "()\")\n"))
-                            except Exception as e:
-                                # Print error message
-                                print(e)
-                                # Send verification of command back to base station.
-                                self.radio.write(str.encode("log(\"Evaluation of command " +
-                                                            possible_func_name + "() failed.\")\n"))
-
-                elif time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT:
-                    # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
-                    if self.connected_to_bs == True:
-                        print("Lost connection to BS.")
-                        self.connected_to_bs = False
 
             if(self.current_mission is not None):
                 self.current_mission.loop()

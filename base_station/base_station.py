@@ -192,47 +192,53 @@ class BaseStation(threading.Thread):
                 # Try to read line from radio.
                 try:
                     self.radio.write(PING)
-                    line = self.radio.readline()
+
+                    # This is where secured/synchronous code should go.
+                    if self.connected_to_auv:
+                        pass
+
+                    # Read ALL lines stored in buffer (probably around 2-3 commands)
+                    lines = self.radio.readlines()
+
+                    for line in lines:
+                        if line == PING:
+                            self.time_since_last_ping = time.time()
+                            if self.connected_to_auv is False:
+                                self.log("Connection to AUV verified.")
+                                self.connected_to_auv = True
+
+                        elif len(line) > 0:
+                            # Line is greater than 0, but not equal to the AUV_PING
+                            # which means a possible command was found.
+                            message = line.decode('utf-8').replace("\n", "")
+
+                            # Check if message is a possible python function
+                            if len(message) > 2 and "(" in message and ")" in message:
+                                # Get possible function name
+                                possible_func_name = message[0:message.find(
+                                    "(")]
+                                if possible_func_name in self.methods:
+                                    if possible_func_name != "auv_data":
+                                        self.log(
+                                            "Received command from AUV: " + message)
+                                    # Put task received into our in_q to be processed later.
+                                    self.in_q.put(message)
+
+                        elif time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT:
+                            # We are NOT connected to AUV, but we previously ('before') were. Status has changed to failed.
+                            if self.connected_to_auv is True:
+                                self.out_q.put("set_connection(False)")
+                                self.log("Lost connection to AUV.")
+                                self.connected_to_auv = False
+                        elif self.connected_to_auv:
+                            # Do whatever we want here knowing we are connected.
+                            pass
+
                 except:
                     self.radio.close()
                     self.radio = None
                     self.log("Radio device has been disconnected.")
                     continue
-
-                self.before = self.connected_to_auv
-
-                self.connected_to_auv = (line == PING)
-
-                if line == PING:
-                    self.time_since_last_ping = time.time()
-                    if connected_to_auv is False:
-                        self.log("Connection to AUV verified.")
-                        connected_to_auv = True
-
-                elif len(line) > 0:
-                    # Line is greater than 0, but not equal to the AUV_PING
-                    # which means a possible command was found.
-                    message = line.decode('utf-8').replace("\n", "")
-
-                    # Check if message is a possible python function
-                    if len(message) > 2 and "(" in message and ")" in message:
-                        # Get possible function name
-                        possible_func_name = message[0:message.find("(")]
-                        if possible_func_name in self.methods:
-                            if possible_func_name != "auv_data":
-                                self.log(
-                                    "Received command from AUV: " + message)
-                            # Put task received into our in_q to be processed later.
-                            self.in_q.put(message)
-
-                elif time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT
-                    # We are NOT connected to AUV, but we previously ('before') were. Status has changed to failed.
-                    if self.connected_to_auv is True:
-                        self.out_q.put("set_connection(False)")
-                        self.log("Lost connection to AUV.")
-                        self.connected_to_auv = False
-                elif self.connected_to_auv:
-                    pass # Do whatever we want here knowing we are connected.
 
             time.sleep(THREAD_SLEEP_DELAY)
 
