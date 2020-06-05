@@ -78,9 +78,9 @@ class BaseStation(threading.Thread):
         # Try to assign our GPS object connection to GPSD
         try:
             self.gps = GPS()
-            self.log("Successfully connected to gpsd socket.")
+            self.log("Successfully found a GPS device.")
         except:
-            self.log("Warning: Cannot find a gpsd socket.")
+            self.log("Warning: Cannot find a GPS device.")
 
     def calibrate_controller(self):
         """ Instantiates a new Xbox Controller Instance and NavigationController """
@@ -151,7 +151,7 @@ class BaseStation(threading.Thread):
         """  Attempts to start a mission and send to AUV. """
 
         if self.connected_to_auv is False:
-            self.log("Cannot start mission: " + str(mission) +
+            self.log("Cannot start mission " + str(mission) +
                      " because there is no connection to the AUV.")
         else:
             self.radio.write(str.encode(

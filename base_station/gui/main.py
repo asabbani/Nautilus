@@ -52,6 +52,8 @@ BUTTON_WIDTH = 17
 BUTTON_HEIGHT = 3
 # Mission
 MISSIONS = ["0: Sound Tracking", "1: Audio Collecting"]
+# Icon Path
+ICON_PATH = "gui/images/yonder_logo.png"
 
 
 class Main():
@@ -59,7 +61,7 @@ class Main():
 
     def __init__(self, in_q=None, out_q=None):
         """ Constructor that handles the initialization of the GUI.
-            in_q - An input queue that holds any tasks given to us 
+            in_q - An input queue that holds any tasks given to us
         from another thread.
             out_q - An output queue that it used to push tasks to
         the other thread. """
@@ -67,6 +69,7 @@ class Main():
         # Begin initializing the main Tkinter (GUI) framework/root window
         self.root = Tk()
         self.root.resizable(False, False)
+        self.root.iconphoto(True, PhotoImage(file=ICON_PATH))
 
         # Code below is to fix high resolution screen scaling.~
         os_enumerator = None
@@ -112,7 +115,7 @@ class Main():
         # End screen scaling
 
         # Begin defining instance variables
-        self.root.title("Yonder Arctic OPS")
+        self.root.title("YonderDeep AUV Interaction Terminal")
         self.in_q = in_q  # Messages sent here from base_station.py
         self.out_q = out_q  # Messages sent to base_station.py
 

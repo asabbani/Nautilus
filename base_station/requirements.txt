@@ -3,3 +3,4 @@ matplotlib
 pyserial
 gps3
 screeninfo
+autopep8
