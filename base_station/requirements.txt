@@ -3,4 +3,4 @@ matplotlib
 pyserial
 gps3
 screeninfo
-pyobjus
+autopep8

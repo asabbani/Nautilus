@@ -9,9 +9,12 @@ The codebase is split among two machines:
 
 ## Style Guidlines
 Development will be done in Python3 using the [PEP8](https://pep8.org) style guidelines.
-  * Uses indententation instead of spaces.
+  * Uses spaces (4 per indentation) instead of tabs.
   * Utilizes the [autopep8](https://pypi.org/project/autopep8/0.8/extension) for automatic formatting.
 Feel free to use the included settings.json file for VSCode development
+  * Automatically enables autopep8 functionality with VSCode
+  * Format-on-save enabled by default.
+  * Python linting disabled by default. (a runtime language like python should not rely on linting)
 
 # Base Station
 This machine communicates with the AUV using radio communication. Its main role is selecting and beginning missions for the AUV. It also receives data wirelessly from the AUV and outputs to an in-house Python GUI.
@@ -22,22 +25,22 @@ This machine communicates with the AUV using radio communication. Its main role 
     Xbox 360 Controller
 
 ## System Dependencies:
-    Python 3+ with pip
+    python3-tk (for use with tkinter UI development)
+    python3-pip (enable pip package manager)
     xboxdrv (Xbox Controller Driver)
     gpsd
-    gpsd-clients (for cgps, optional)
+    gpsd-clients (for the cgps program, optional)
 
-## Python Packages:
-    Tkinter
-    Matplotlib
+## Python Packages (in requirements.txt):
+    tkinter
+    matplotlib
     pyserial
     gps3
     screeninfo
-    pyOBjus
     autopep8 (optional)
 
 # Origin (the AUV)
-A practical, 3D-printed multi-mission modular AUV, housing many sensors including pressure, audio (hydrophones), and GPS. However, it can also be adapted to implement Sonar, salinity, PH, and temperature sensors.
+A practical, 3D-printed multi-mission modular AUV, housing many sensors including pressure, audio (hydrophones), and GPS. It can also be adapted to implement sonar, salinity, PH, and temperature sensors.
 
 ## Hardware:
 A fully assembled, 3D-printed Origin AUV also includes:
@@ -46,30 +49,68 @@ A fully assembled, 3D-printed Origin AUV also includes:
     915 MHz Radio
     GPS Sensor
     Pressure sensor
+    BNO055 IMU (intertial measurement unit)
     4 Underwater motors (Blue Robotics)
     Blue Robotics End-Caps
+    Various acoustic acquisitions devives (made from ADC's and MCU's)
 
-Note that this does NOT include specialized YonderDeep PCBs, PDMs, batteries, or cables.
+NOTE: that this does NOT include specialized YonderDeep PCBs, PDMs, batteries, or cables.
 
 ## System Dependencies:
-    Python 3.7+ with pip
+    Python 3.5+ with pip
     gpsd
     gpsd-clients
     IMU Library/Drivers
     and many more...
 This will continue to be updated as development continues.
 
-## Python Packages:
+## Python Packages (in requirements.txt):
     pyserial
+    adafruit-circuitpython-bno055 (our Inertial Measurement Unit)
     and many more...
     
 # Missions
-The Origin AUV is designed to tackle many aquatic "missions" throughout its life, many of which involve the research and development of:
+The Origin AUV is designed to perform a wide variety of aquatic "missions", many of which involve the research and development of:
 
   * Underwater acoustic processing (acoustic)
   * Autonomous underwater navigation
   * Sonar echolocation 
 
 # Development
-Most development takes place at the MESOM Laboratory in the Scripps Institution of Oceanography at the University of California, San Diego.
+Most development takes place at the MESOM Laboratory in the Scripps Institution of Oceanography at the University of California, San Diego. Due to the COVID-19 epidemic, software development will continue remotely for the forseeable future.
 
+# Contributors
+Kevin Medzorian,
+Software Team Lead
+* Computer Science
+* UCSD Graduation: 2022
+
+
+Ryan Xu,
+Software Development
+* Computer Science
+* UCSD Graduation: 2022
+
+
+Travis Davis,
+Software Development
+* Electrical Engineering
+* UCSD Graduation: 2022
+
+
+Stephen Boussarov,
+Software Development
+* Computer Science
+* UCSD Graduation: 2022
+
+
+Eric Estabaya,
+Software Development
+* Computer Science
+* UCSD Graduation: 2022
+
+
+Ethan Lew,
+Software Development
+* Mathematics-Computer Science
+* UCSD Graduation: 2021

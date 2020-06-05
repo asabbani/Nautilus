@@ -40,7 +40,10 @@ CLOSE_ENOUGH = 0.25
 
 
 class Map:
+    """ Map class creates a map of the position of the AUV """
+
     def __init__(self,  window, main):
+        """ Initialize Class variables """
         # Define the window.
         self.window = window
         self.main = main
@@ -90,14 +93,17 @@ class Map:
         self.draw_canvas()"""
 
     def clear(self):
+        """ Clears the map data """
         self.clear_waypoints()
         self.clear_auv_path()
         self.draw_canvas()
 
     def clear_auv_path(self):
+        """ Clears the AUV path """
         self.auv_path_obj.pop(0).remove()
 
     def undraw_waypoints(self):
+        """ Clears waypoints from the map """
         for waypoint in self.waypoints:
             # Remove waypoint from map.
             if waypoint[3] != None and type(waypoint[3]) != tuple:
@@ -109,14 +115,17 @@ class Map:
                 waypoint[4] = None
 
     def clear_waypoints(self):
+        """ Clears and removes waypoints """
         self.undraw_waypoints()
         del self.waypoints[:]
 
     def zero_map(self, x=0, y=0):
+        """ Sets the zero_offset to (0,0) """
         self.zero_offset_x = x
         self.zero_offset_y = y
 
     def on_move(self, mouse):
+        """ Moves the map on drag """
         if self.mouse_pressing == True and mouse.xdata != None and mouse.ydata != None:
             x_delta = (self.press_position[0] - mouse.xdata) / 6
             y_delta = (self.press_position[1] - mouse.ydata) / 6
@@ -128,6 +137,7 @@ class Map:
             self.draw_canvas()
 
     def redraw_waypoints(self):
+        """ Undraws waypoint and redraws a waypoint """
         self.undraw_waypoints()
         for waypoint in self.waypoints:
             # Draw waypoint again.
@@ -141,10 +151,12 @@ class Map:
         print("Waypoints Redrawn!")
 
     def on_press(self, mouse):
+        """ Gets the (x,y) position of map on click """
         self.press_position = [mouse.xdata, mouse.ydata]
         self.mouse_pressing = True
 
     def on_release(self, mouse):
+        """ gets map data if mouse was not dragged """
         self.mouse_pressing = False
         # Ensuring we didnt drag mouse in x.
         if mouse.xdata != None and mouse.xdata - self.press_position[0] == 0:

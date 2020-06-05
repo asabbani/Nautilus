@@ -11,20 +11,20 @@ import RPi.GPIO as io
 from api import Motor
 
 # GPIO Pin numbers for Motors
-LEFT_GPIO_PIN = 4  # 18
-RIGHT_GPIO_PIN = 11  # 24
+FORWARD_GPIO_PIN = 4  # 18
+TURN_GPIO_PIN = 11  # 24
 FRONT_GPIO_PIN = 18  # 4
 BACK_GPIO_PIN = 24  # 11
 
 # Define pin numbers for PI (Not the same as GPIO?)
-LEFT_PI_PIN = 7
-RIGHT_PI_PIN = 23
+FORWARD_PI_PIN = 7
+TURN_PI_PIN = 23
 FRONT_PI_PIN = 12
 BACK_PI_PIN = 18
 
 # Indices for motor array
-LEFT_MOTOR_INDEX = 0
-RIGHT_MOTOR_INDEX = 1
+FORWARD_MOTOR_INDEX = 0
+TURN_MOTOR_INDEX = 1
 FRONT_MOTOR_INDEX = 2
 BACK_MOTOR_INDEX = 3
 
@@ -32,6 +32,11 @@ BACK_MOTOR_INDEX = 3
 BALLAST = 4
 MAX_PITCH = 30
 MAX_CORRECTION_MOTOR_SPEED = 25  # Max turning speed during pid correction
+
+
+def log(val):
+    """ Adapt log to note the object we are in """
+    print("[MC]\t" + val)
 
 
 class MotorController:
@@ -48,61 +53,60 @@ class MotorController:
         self.pi = pigpio.pi()
 
         # Motor object definitions.
-        self.motor_pins = [LEFT_GPIO_PIN, RIGHT_GPIO_PIN,
+        self.motor_pins = [FORWARD_GPIO_PIN, TURN_GPIO_PIN,
                            FRONT_GPIO_PIN, BACK_GPIO_PIN]
 
-        self.pi_pins = [LEFT_PI_PIN, RIGHT_PI_PIN, FRONT_PI_PIN, BACK_PI_PIN]
+        self.pi_pins = [FORWARD_PI_PIN, TURN_PI_PIN, FRONT_PI_PIN, BACK_PI_PIN]
 
         self.motors = [Motor(gpio_pin=pin, pi=self.pi)
                        for pin in self.motor_pins]
 
-        self.left_speed = 0
-        self.right_speed = 0
+        self.forward_speed = 0
+        self.turn_speed = 0
         self.front_speed = 0
         self.back_speed = 0
 #        self.check_gpio_pins()
 
     def update_motor_speeds(self, data):
         """
-        Sets motor speeds to each individual motor. This is for manual control when the
-        radio sends a data packet of size 4 (old code).
+        Sets motor speeds to each individual motor. This is for manual (xbox) control when the
+        radio sends a data packet of size 4.
 
         data: String read from the serial connection containing motor speed values.
         """
+        if len(data) != len(motors):
+            raise Exception(
+                "Data packet length does not equal motor array length.")
+            return
 
-        # Parse motor speed from radio
-        self.left_speed = data[LEFT_MOTOR_INDEX]
-        self.right_speed = data[RIGHT_MOTOR_INDEX]
+        # Parse motor speed from data object.
+        self.left_speed = data[FORWARD_MOTOR_INDEX]
+        self.right_speed = data[TURN_MOTOR_INDEX]
         self.front_speed = data[FRONT_MOTOR_INDEX]
-        # This is grabbing speed from the DATA packet which is index 2
-        # TODO is this supposed to be front?
-        self.back_speed = data[FRONT_MOTOR_INDEX]
+        self.back_speed = data[BACK_MOTOR_INDEX]
 
-        print("motors is: ", self.motors)
+        log("motors is: ", self.motors)
         # Set motor speed
-        self.motors[LEFT_MOTOR_INDEX].set_speed(self.left_speed)
-        self.motors[RIGHT_MOTOR_INDEX].set_speed(self.right_speed)
+        self.motors[FORWARD_MOTOR_INDEX].set_speed(self.forward_speed)
+        self.motors[TURN_MOTOR_INDEX].set_speed(self.turn_speed)
         self.motors[FRONT_MOTOR_INDEX].set_speed(self.front_speed)
         self.motors[BACK_MOTOR_INDEX].set_speed(self.back_speed)
 
     def pid_motor(self, pid_feedback):
         """
-        Updates left and right motor speed base off pid feedback
+        Updates the TURN motor based on the PID feedback. 
 
         feedback: Feedback value from pid class.
         """
         if(not pid_feedback):
-            self.left_speed = 0
-            self.right_speed = 0
+            self.turn_speed = 0
         else:
-            self.left_speed = self.calculate_pid_new_speed(-pid_feedback)
-            self.right_speed = self.calculate_pid_new_speed(pid_feedback)
+            self.turn_speed = self.calculate_pid_new_speed(pid_feedback)
 
-#        print('[PID_MOTOR] %7.2f %7.2f' %
+#        log('[PID_MOTOR] %7.2f %7.2f' %
  #             (self.left_speed, self.right_speed), end='\n')
 
-        self.motors[LEFT_MOTOR_INDEX].set_speed(self.left_speed)
-        self.motors[RIGHT_MOTOR_INDEX].set_speed(self.right_speed)
+        self.motors[TURN_MOTOR_INDEX].set_speed(self.turn_speed)
 
     def pid_motor_pitch(self, pid_feedback, current_value):
         """
@@ -141,7 +145,7 @@ class MotorController:
             # When not flipped, use -
             self.back_speed = self.calculate_pid_new_speed(-pid_feedback)
 
-      #  print('[PID_MOTOR] %7.2f %7.2f' %
+      #  log('[PID_MOTOR] %7.2f %7.2f' %
      #         (self.front_speed, self.back_speed), end='\n')
         self.motors[FRONT_MOTOR_INDEX].set_speed(self.front_speed)
         self.motors[BACK_MOTOR_INDEX].set_speed(self.back_speed)
@@ -157,25 +161,25 @@ class MotorController:
         """
         Calibrates each individual motor.
         """
-        print('Testing all motors...')
+        log('Testing all motors...')
         for motor in self.motors:
             motor.test_motor()
             time.sleep(1)
 
-    def test_left(self):
-        print('Testing left motor...')
-        self.motors[LEFT_MOTOR_INDEX].test_motor()
+    def test_forward(self):  # Used to be left motor
+        log('Testing forward motor...')
+        self.motors[FORWARD_MOTOR_INDEX].test_motor()
 
-    def test_right(self):
-        print('Testing right motor...')
-        self.motors[RIGHT_MOTOR_INDEX].test_motor()
+    def test_turn(self):  # used to be right motor
+        log('Testing turn motor...')
+        self.motors[TURN_MOTOR_INDEX].test_motor()
 
     def test_front(self):
-        print('Testing front motor...')
+        log('Testing front motor...')
         self.motors[FRONT_MOTOR_INDEX].test_motor()
 
     def test_back(self):
-        print('Testing back motor...')
+        log('Testing back motor...')
         self.motors[BACK_MOTOR_INDEX].test_motor()
 
     def check_gpio_pins(self):
@@ -183,7 +187,7 @@ class MotorController:
         io.setmode(io.BOARD)
         for pins in self.pi_pins:
             io.setup(pins, io.IN)
-            print("Pin:", pins, io.input(pins))
+            log("Pin:", pins, io.input(pins))
 
     def calculate_pid_new_speed(self, feedback):
         # Case 1: Going backward
@@ -196,13 +200,12 @@ class MotorController:
 
 def main():
     mc = MotorController()
-    mc.test_left()
 
 
 if __name__ == '__main__':
     main()
     # def calculate_pid_new_speed(self, last_speed, speed_change):
-    #     #print(">>Last speed\t" + str(last_speed) + "speed_change\t" + str(speed_change))
+    #     #log(">>Last speed\t" + str(last_speed) + "speed_change\t" + str(speed_change))
     #     #new_speed = last_speed + speed_change
     #     # Case 1: was going forward
     #     assert(not (MAX_CORRECTION_MOTOR_SPEED < last_speed and last_speed <= 100)), "Unexpected last speed" + str(last_speed)
@@ -226,13 +229,13 @@ if __name__ == '__main__':
     #
     #         # Was going forward, want to backward
     #         if(last_speed <= MAX_CORRECTION_MOTOR_SPEED):
-    #             #print("Adjust case forward -> backward")
+    #             #log("Adjust case forward -> backward")
     #             new_speed = abs(new_speed) + 100
     #             # if it goes backward too fast
     #             if(new_speed > 100 + MAX_CORRECTION_MOTOR_SPEED):
     #                 new_speed = 100 + MAX_CORRECTION_MOTOR_SPEED
     #         else: # was going backward, want to forward
-    #             #print("Adjust case backward -> forward")
+    #             #log("Adjust case backward -> forward")
     #             new_speed = 100 - new_speed
     #             # if it goes forward too fast
     #             if(new_speed > MAX_CORRECTION_MOTOR_SPEED):

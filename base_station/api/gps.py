@@ -25,7 +25,8 @@ class GPS(threading.Thread):
             self.gps_socket = gps3.GPSDSocket()
             self.data_stream = gps3.DataStream()
         except:
-            pass  # TODO
+            raise Exception(
+                "Could not create gpsd-socket or data stream object.")
 
         # TODO testing
         if (self.gps_socket is not None):
