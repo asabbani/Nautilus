@@ -22,8 +22,9 @@ This machine communicates with the AUV using radio communication. Its main role 
 
 ## Hardware:
     Any Unix-like Machine (preferebly Ubuntu 16.04LTS+)
-    A 915 MHz Radio
-    Xbox 360 Controller
+    A 915 MHz Radio (required)
+    Xbox 360 Controller (optional)
+    GPS device compatible with gpsd (optional)
 
 ## System Dependencies:
     python3-tk (for use with tkinter UI development)
