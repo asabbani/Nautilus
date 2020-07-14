@@ -7,7 +7,7 @@ TIMEOUT_DURATION = 2
 DEFAULT_BAUDRATE = 115200
 
 
-class Radio:
+class Radio():
     def __init__(self, serial_path, baudrate=DEFAULT_BAUDRATE):
         """
         Initializes the radio object.
