@@ -4,7 +4,7 @@ Repository for the [YonderDeep](https://www.yonderdeep.org/) 2020-2021 Origin AU
 
 ## Basics
 The codebase is split among two machines: 
-  * a base station (a macOS / Linux machine)
+  * a base station (a Windows 10 / macOS / Linux machine)
   * Origin (an AUV with a Raspberry Pi 3 running Raspbian)
 
 ## Style Guidlines
