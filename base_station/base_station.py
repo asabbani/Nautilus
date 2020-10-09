@@ -268,10 +268,11 @@ class BaseStation(threading.Thread):
         """ Function that is executed upon the closure of the GUI (passed from input-queue). """
         os._exit(1)  # => Force-exit the process immediately.
 
-    # def call_download(self):
-    #     """ Function calls download data function """
-    #     if self.connected_to_auv is True:
-    #         self.out_q.put("download_data")
+    def call_download(self):
+        """ Function calls download data function """
+        if self.connected_to_auv is True:
+            self.out_q.put("download_data")
+            self.log("downloaded data")
 
 
 def main():
