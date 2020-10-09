@@ -96,7 +96,7 @@ class AUV():
 
                     # reset motor speed to 0 immediately
                     self.mc.update_motor_speeds([0,0,0,0])
-                    print([0,0,0,0])
+                    log("DEBUG TODO speeds reset")
 
                     self.connected_to_bs = False
 
@@ -140,7 +140,8 @@ class AUV():
                                 self.connected_to_bs = True
 
                                 # TODO test case: set motor speeds
-                                xbox([1,2,3,4])
+                                data = [1,2,3,4]
+                                self.xbox(data)
 
                         elif len(line) > 1:
                             # Line was read, but it was not equal to a BS_PING

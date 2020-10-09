@@ -74,7 +74,7 @@ class MotorController:
 
         data: String read from the serial connection containing motor speed values.
         """
-        if len(data) != len(motors):
+        if len(data) != len(self.motors):
             raise Exception(
                 "Data packet length does not equal motor array length.")
             return
@@ -85,8 +85,8 @@ class MotorController:
         self.front_speed = data[FRONT_MOTOR_INDEX]
         self.back_speed = data[BACK_MOTOR_INDEX]
 
-        log("motors is: ", self.motors)
-        print("motors properly changed ", self.motors)
+        log("motors is: " + str(data))
+
         # Set motor speed
         self.motors[FORWARD_MOTOR_INDEX].set_speed(self.forward_speed)
         self.motors[TURN_MOTOR_INDEX].set_speed(self.turn_speed)
