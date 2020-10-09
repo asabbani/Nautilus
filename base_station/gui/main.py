@@ -327,7 +327,7 @@ class Main():
         self.calibrate_all_button = Button(self.calibrate_frame, text="General Test", takefocus=False,  # width = 15, height = 3, #TODO
                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                FONT, BUTTON_SIZE),
-                                           command=lambda: self.out_q.put("xbox([1,2,3,4])")) #TODO
+                                           command=lambda: self.out_q.put("send_xbox_test([1,2,3,4])")) #TODO
 
         self.calibrate_all_button.grid(row=5, column=1, pady=CALIBRATE_PAD_Y)
 
