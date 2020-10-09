@@ -324,10 +324,10 @@ class Main():
 
         self.front_calibrate_button.grid(row=2, column=1, pady=CALIBRATE_PAD_Y)
 
-        self.calibrate_all_button = Button(self.calibrate_frame, text="All", takefocus=False,  # width = 15, height = 3,
+        self.calibrate_all_button = Button(self.calibrate_frame, text="General Test", takefocus=False,  # width = 15, height = 3, #TODO
                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                FONT, BUTTON_SIZE),
-                                           command=lambda: self.out_q.put("test_motor('ALL')"))
+                                           command=lambda: self.out_q.put("xbox([1,2,3,4])")) #TODO
 
         self.calibrate_all_button.grid(row=5, column=1, pady=CALIBRATE_PAD_Y)
 
