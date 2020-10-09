@@ -129,6 +129,10 @@ class BaseStation(threading.Thread):
             self.radio.write(str.encode('test_motor("' + motor + '")\n'))
             self.log('Sending task: test_motor("' + motor + '")')
 
+    def send_xbox_test(self, motors):
+        """ Test motors given speeds """
+        self.radio.write("xbox(" + motors + ")")
+
     def abort_mission(self):
         """ Attempts to abort the mission for the AUV."""
         if not self.connected_to_auv:
