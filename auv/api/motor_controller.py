@@ -86,6 +86,7 @@ class MotorController:
         self.back_speed = data[BACK_MOTOR_INDEX]
 
         log("motors is: ", self.motors)
+        print("motors properly changed ", self.motors)
         # Set motor speed
         self.motors[FORWARD_MOTOR_INDEX].set_speed(self.forward_speed)
         self.motors[TURN_MOTOR_INDEX].set_speed(self.turn_speed)

@@ -96,6 +96,7 @@ class AUV():
 
                     # reset motor speed to 0 immediately
                     self.mc.update_motor_speeds([0,0,0,0])
+                    print([0,0,0,0])
 
                     self.connected_to_bs = False
 
@@ -137,6 +138,9 @@ class AUV():
                             if self.connected_to_bs is False:
                                 log("Connection to BS verified.")
                                 self.connected_to_bs = True
+
+                                # TODO test case: set motor speeds
+                                xbox([1,2,3,4])
 
                         elif len(line) > 1:
                             # Line was read, but it was not equal to a BS_PING
