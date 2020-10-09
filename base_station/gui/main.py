@@ -111,7 +111,7 @@ class Main():
         MISSION_FRAME_WIDTH = int(MISSION_FRAME_WIDTH * self.multiplier_x)
         LOG_FRAME_WIDTH = int(LOG_FRAME_WIDTH * self.multiplier_x)
         BUTTON_WIDTH = int(BUTTON_WIDTH * self.multiplier_x)
-        BUTTON_HEIGHT = int(BUTTON_HEIGHT * self.multiplier_x)
+        BUTTON_HEIGHT = int(BUTTON_HEIGHT * self.multiplier_y)
         # End screen scaling
 
         # Begin defining instance variables
@@ -394,7 +394,7 @@ class Main():
                                           padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.new_waypoint_prompt)
         self.nav_to_waypoint_button = Button(self.functions_frame, text="Nav. to Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
-        self.custom_button_1 = Button(self.functions_frame, text="Custom 1", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+        self.download_data_button = Button(self.functions_frame, text="Download Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                       padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
         self.custom_button_2 = Button(self.functions_frame, text="Custom 2", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                       padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
@@ -402,7 +402,7 @@ class Main():
         self.origin_button.pack(expand=YES)
         self.add_waypoint_button.pack(expand=YES)
         self.nav_to_waypoint_button.pack(expand=YES)
-        self.custom_button_1.pack(expand=YES)
+        self.download_data_button.pack(expand=YES)
         self.custom_button_2.pack(expand=YES)
 
     def create_map(self, frame):

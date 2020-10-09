@@ -96,6 +96,7 @@ class AUV():
 
                     # reset motor speed to 0 immediately
                     self.mc.update_motor_speeds([0,0,0,0])
+
                     self.connected_to_bs = False
 
             if self.radio is None or self.radio.is_open() is False:
