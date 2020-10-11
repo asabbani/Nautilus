@@ -49,6 +49,7 @@ class BaseStation(threading.Thread):
         self.gps = None  # create the thread
         self.in_q = in_q
         self.out_q = out_q
+        self.gps_q = Queue()
         self.manual_mode = True
         self.time_since_last_ping = 0.0
 
@@ -77,10 +78,10 @@ class BaseStation(threading.Thread):
 
         # Try to assign our GPS object connection to GPSD
         try:
-            self.gps = GPS()
-            self.log("Successfully found a GPS device.")
+            self.gps = GPS(self.gps_q)
+            self.log("Successfully connected to GPS socket service.")
         except:
-            self.log("Warning: Cannot find a GPS device.")
+            self.log("Warning: Could not connect to a GPS socket service.")
 
     def calibrate_controller(self):
         """ Instantiates a new Xbox Controller Instance and NavigationController """
@@ -284,11 +285,19 @@ def main():
     to_BS = Queue()
 
     # Create a BS (base station) and GUI object thread.
-    threaded_bs = BaseStation(to_BS, to_GUI)
-    threaded_bs.start()
+    try:
+        threaded_bs = BaseStation(to_BS, to_GUI)
+        threaded_bs.start()
+    except:
+        print("[MAIN] Base Station initialization failed. Closing...")
+        sys.exit()
 
     # Create main GUI object
-    gui = Main(to_GUI, to_BS)
+    try:
+        gui = Main(to_GUI, to_BS)
+    except:
+        print("[MAIN] GUI initialization failed. Closing...")
+        sys.exit()
 
 
 if __name__ == '__main__':
