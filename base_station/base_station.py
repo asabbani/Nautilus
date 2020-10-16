@@ -46,7 +46,7 @@ class BaseStation(threading.Thread):
         self.joy = None
         self.connected_to_auv = False
         self.nav_controller = None
-        self.gps = None  # create the thread
+        self.gps = None
         self.in_q = in_q
         self.out_q = out_q
         self.gps_q = Queue()
@@ -114,11 +114,28 @@ class BaseStation(threading.Thread):
                 print("Failed to evaluate in_q task: ", task)
                 print("\t Error received was: ", str(e))
 
-    def auv_data(self, heading, temperature):
-        self.heading = heading
-        self.temperature = temperature
+    def auv_data(self, heading, temperature, longitude=None, latitude=None):
+        """ Parses the AUV data-update packet, stores knowledge of its on-board sensors"""
+
+        # Update heading on BS and on GUI
+        self.auv_heading = heading
         self.out_q.put("set_heading("+str(heading)+")")
+
+        # Update temp on BS and on GUI
+        self.auv_temperature = temperature
         self.out_q.put("set_temperature("+str(temperature)+")")
+
+        # If the AUV provided its location...
+        if longitude is not None and latitude is not None:
+            self.auv_longitude = longitude
+            self.auv_latitude = latitude
+            try:    # Try to convert AUVs latitude + longitude to UTM coordinates, then update on the GUI thread.
+                self.auv_utm_coordinates = utm.from_latlon(longitude, latitude)
+                self.out_q.put("add_auv_coordinates(" + self.auv_utm_coordinates[0] + ", " + self.auv_utm_coordinates[1] + ")")
+            except:
+                self.log("Failed to convert the AUV's gps coordinates to UTM.")
+        else:
+            self.log("The AUV did not report its latitude and longitude.")
 
     def test_motor(self, motor):
         """ Attempts to send the AUV a signal to test a given motor. """

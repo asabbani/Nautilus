@@ -143,6 +143,9 @@ class Main():
         self.create_map(self.map_frame)
         self.create_function_buttons()
 
+        # Save our last received BS coordinates
+        self.bs_coordinates = None
+
         # Call function to properly end the program
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.root.update_idletasks()
@@ -267,6 +270,14 @@ class Main():
         self.console.config(state=NORMAL)
         self.console.insert(END, time + string + "\n")
         self.console.config(state=DISABLED)
+
+    def add_auv_coordinates(self, northing, easting):
+        """ Plots the AUV's current coordinates onto the map, given its UTM-relative northing and easting. """
+        self.map.add_auv_data(northing, easting)
+
+    def update_bs_coordinates(self, northing, easting):
+        """ Saves base stations current coordinates, updates label on the data panel """
+        self.bs_coordinates = (northing, easting)
 
     def set_connection(self, status):
         """ Sets the connection status text in the status frame. """
@@ -394,23 +405,33 @@ class Main():
         if ans == 'yes':
             self.out_q.put("abort_mission()")
 
+    def calibrate_origin_on_map(self):
+        """ Calibrates the origin on the map to the base stations coordinates """
+
+        if self.bs_coordinates is not None:
+            # Update the origin on our map.
+            self.map.zero_map(self.bs_coordinates[0], self.bs_coordinates[1])
+            self.log("Updated the origin on the map to UTM coordinates (" + str(self.bs_coordinates[0]) + "," + str(self.bs_coordinates[1]) + ").")
+        else:
+            self.log("Cannot calibrate origin because the base station has not reported GPS data.")
+
     def create_function_buttons(self):
-        self.origin_button = Button(self.functions_frame, text="Set Origin", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.new_waypoint_prompt)
+        self.origin_button = Button(self.functions_frame, text="Calibrate Origin", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.calibrate_origin_on_map)
         self.add_waypoint_button = Button(self.functions_frame, text="Add Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                           padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.new_waypoint_prompt)
         self.nav_to_waypoint_button = Button(self.functions_frame, text="Nav. to Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
         self.download_data_button = Button(self.functions_frame, text="Download Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
-        self.custom_button_2 = Button(self.functions_frame, text="Custom 2", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                      padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
+        self.clear_button = Button(self.functions_frame, text="Clear Map", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                   padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.clear)
 
         self.origin_button.pack(expand=YES)
         self.add_waypoint_button.pack(expand=YES)
         self.nav_to_waypoint_button.pack(expand=YES)
         self.download_data_button.pack(expand=YES)
-        self.custom_button_2.pack(expand=YES)
+        self.clear_button.pack(expand=YES)
 
     def create_map(self, frame):
         self.map = Map(frame, self)

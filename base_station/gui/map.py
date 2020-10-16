@@ -111,10 +111,17 @@ class Map:
         self.clear_waypoints()
         self.clear_auv_path()
         self.draw_canvas()
+        print("[MAP] Map cleared.")
+
+        self.main.log("Map has been successfully cleared.")
 
     def clear_auv_path(self):
         """ Clears the AUV path """
-        self.auv_path_obj.pop(0).remove()
+        if self.auv_path_obj is not None and self.auv_path_obj.pop(0) is not None:
+            self.auv_path_obj.pop(0).remove()
+
+        self.auv_data[0].clear()  # clear all x values
+        self.auv_data[1].clear()  # clear all y values
 
     def undraw_waypoints(self):
         """ Clears waypoints from the map """
@@ -128,15 +135,41 @@ class Map:
                 waypoint[4].remove()
                 waypoint[4] = None
 
+        self.draw_canvas()
+
     def clear_waypoints(self):
         """ Clears and removes waypoints """
         self.undraw_waypoints()
         del self.waypoints[:]
 
     def zero_map(self, x=0, y=0):
-        """ Sets the zero_offset to (0,0) """
+        """ Sets the origin of our coordinate system to (x,y) in UTM northing/eastings values"""
+
+        # Move all old elements (waypoint, auv path) to their new position.
+        delta_x = self.zero_offset_x - x  # oldX - newX = adjustment
+        delta_y = self.zero_offset_y - y  # oldY - newY = adjustment
+
+        for waypoint in self.waypoints:  # Move waypoints based on our new Origin
+            waypoint[0] += delta_x
+            waypoint[1] += delta_y
+
+        for i in range(0, len(self.auv_data[0])):  # Move all auv_data based on our new Origin
+            self.auv_data[0][i] += delta_x
+            self.auv_data[1][i] += delta_y
+
+        # Actually update our new origin.
         self.zero_offset_x = x
         self.zero_offset_y = y
+
+        # Redraw waypoints based on new origin.
+        if len(self.waypoints) > 0:
+            self.redraw_waypoints()
+
+        # Redraw auv-path based on new origin
+        if len(self.auv_data[0]) > 0 and len(self.auv_data[1]) > 0:
+            self.draw_auv_path()
+
+        print("[MAP] Updated origin to UTM coordinates (" + str(x) + ", " + str(y) + ").")
 
     def on_move(self, mouse):
         """ Moves the map on drag """
@@ -157,7 +190,8 @@ class Map:
             # Draw waypoint again.
             waypoint[3] = self.map.plot(
                 waypoint[0], waypoint[1], marker='o', markersize=5, color="red"),
-            waypoint[4] = self.map.annotate(xy=(waypoint[0], waypoint[1]), s=waypoint[2] + " ("+str(round(waypoint[0]+self.zero_offset_x, 5))+","+str(round(waypoint[1]+self.zero_offset_y, 5))+")")
+            waypoint[4] = self.map.annotate(xy=(waypoint[0], waypoint[1]), s=waypoint[2] + ", UTM: (" +
+                                            str(round(waypoint[0]+self.zero_offset_x, 5))+","+str(round(waypoint[1]+self.zero_offset_y, 5))+")")
 
         # Redraw canvas.
         self.draw_canvas()
@@ -276,7 +310,7 @@ class Map:
         self.draw_auv_path()
 
     def draw_auv_path(self):
-        print("[MAP] Drawing AUV path.")
+        print("[MAP] Drawing (really re-drawing) AUV path.")
 
         # Completely delete the previous line, if it exists.
         if self.auv_path_obj != None:
@@ -284,7 +318,7 @@ class Map:
 
         # Re-draw the entire line using the newly updated x-values (auv_data[0]) and y-values (auv_data[1])
         self.auv_path_obj = self.map.plot(
-            self.auv_data[0], self.auv_data[1], label="AUV Path", color=AUV_PATH_COLOR)
+            self.auv_data[0]+self.zero_offset_x, self.auv_data[1]+self.zero_offset_y, label="AUV Path", color=AUV_PATH_COLOR)
 
         # Re-draw the canvas.
         self.draw_canvas()
@@ -344,7 +378,7 @@ class Map:
 
     def add_waypoint(self, x=0, y=0, label="My Waypoint"):
         self.main.log("Added waypoint \"" + label + "\" at map-position (" + str(int(x)) + ", " + str(int(y)) + ") " +
-                      "with earth-coordinates (" + str(int(float(x)+self.zero_offset_x)) + ", " + str(int(float(y)+self.zero_offset_y)) + ").")
+                      "with utm-coordinates (" + str(int(float(x)+self.zero_offset_x)) + ", " + str(int(float(y)+self.zero_offset_y)) + ").")
 
         # The code below should never fail (that would be a big problem).
         self.waypoints.append([
@@ -352,7 +386,7 @@ class Map:
             label,
             self.map.plot(x, y, marker='o', markersize=5,
                           color=WAYPOINT_COLOR, label=label),
-            self.map.annotate(xy=(x, y), text=label + " ("+str(round(float(
+            self.map.annotate(xy=(x, y), text=label + ", UTM: ("+str(round(float(
                 x)+self.zero_offset_x, 5))+","+str(round(float(y)+self.zero_offset_y, 5))+")")
         ])
 
