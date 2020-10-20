@@ -1,10 +1,10 @@
-# Origin
-Repository for the [YonderDeep](https://www.yonderdeep.org/) 2020-2021 Origin AUV (Autonomous Underwater Vehicle) developed in the MESOM Laboratory at the Scripps Institution of Oceanography, UC San Diego for the research and study of global anthropogenic climate change.
+# Nautilus
+Repository for the [YonderDeep](https://www.yonderdeep.org/) 2020-2022 Nautilus AUV (Autonomous Underwater Vehicle) developed in the MESOM Laboratory at the Scripps Institution of Oceanography, UC San Diego for the research and study of global anthropogenic climate change.
 
 ## Basics
 The codebase is split among two machines: 
   * a base station (a Windows 10 / macOS / Linux machine)
-  * Origin (an AUV with a Raspberry Pi 3 running Raspbian)
+  * Nautilus (an AUV with a Raspberry Pi 3 running Raspbian)
 
 ## Style Guidlines
 Development will be done in Python3 using the [PEP8](https://pep8.org) style guidelines (VSCode strongly encouraged).
@@ -40,11 +40,11 @@ This machine communicates with the AUV using radio communication. Its main role 
     screeninfo
     autopep8 (optional)
 
-# Origin (the AUV)
+# Nautilus (the AUV)
 A practical, 3D-printed multi-mission modular AUV, housing many sensors including pressure, audio (hydrophones), and GPS. It can also be adapted to implement sonar, salinity, PH, and temperature sensors.
 
 ## Hardware:
-A fully assembled, 3D-printed Origin AUV also includes:
+A fully assembled, 3D-printed Nautilus AUV also includes:
 
     Raspbery Pi 3 running Raspbian
     915 MHz Radio
@@ -71,7 +71,7 @@ This will continue to be updated as development continues.
     and many more...
     
 # Missions
-The Origin AUV is designed to perform a wide variety of aquatic "missions", many of which involve the research and development of:
+The Nautilus AUV is designed to perform a wide variety of aquatic "missions", many of which involve the research and development of:
 
   * Underwater acoustic processing (acoustic)
   * Autonomous underwater navigation
