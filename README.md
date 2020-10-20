@@ -134,5 +134,3 @@ Software Development
 
 - Mathematics-Computer Science
 - UCSD Graduation: 2021
-
-Changes
