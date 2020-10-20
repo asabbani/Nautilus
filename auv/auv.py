@@ -1,6 +1,6 @@
 '''
 This class acts as the main functionality file for
-the Origin AUV. The "mind and brain" of the mission.
+the Nautilus AUV. The "mind and brain" of the mission.
 '''
 # System imports
 import os
@@ -95,7 +95,7 @@ class AUV():
                     log("Lost connection to BS.")
 
                     # reset motor speed to 0 immediately
-                    self.mc.update_motor_speeds([0,0,0,0])
+                    self.mc.update_motor_speeds([0, 0, 0, 0])
                     log("DEBUG TODO speeds reset")
 
                     self.connected_to_bs = False
@@ -140,7 +140,7 @@ class AUV():
                                 self.connected_to_bs = True
 
                                 # TODO test case: set motor speeds
-                                data = [1,2,3,4]
+                                data = [1, 2, 3, 4]
                                 self.xbox(data)
 
                         elif len(line) > 1:
@@ -201,11 +201,12 @@ class AUV():
         #     self.current_mission = Mission2()
         # if self.current_mission is None:
         #     self.current_mission = Mission1()
-    
+
     def abort_mission(self):
         self.current_mission = None
         log("Successfully aborted the current mission.")
         self.radio.write(str.encode("mission_failed()\n"))
+
 
 def main():
     """ Main function that is run upon execution of auv.py """
