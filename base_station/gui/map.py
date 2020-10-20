@@ -38,6 +38,14 @@ M_TO_KM = 0000.001000000
 ZOOM_SCALAR = 1.15
 CLOSE_ENOUGH = 0.25
 
+# Popup Window Contstants
+PROMPT_WINDOW_WIDTH = 600
+PROMPT_WINDOW_HEIGHT = 400
+
+# Font Constants
+FONT = "Arial"
+FONT_SIZE = 11
+
 
 class Map:
     """ Map class creates a map of the position of the AUV """
@@ -78,6 +86,12 @@ class Map:
         # Re-draw the canvas.
         self.draw_canvas()
 
+        # Adjust prompt window width + height for Screen scaling
+        global PROMPT_WINDOW_HEIGHT, PROMPT_WINDOW_WIDTH, FONT_SIZE
+        PROMPT_WINDOW_WIDTH = int(PROMPT_WINDOW_WIDTH * self.main.multiplier_x)
+        PROMPT_WINDOW_HEIGHT = int(PROMPT_WINDOW_HEIGHT * self.main.multiplier_y)
+        FONT_SIZE = int(FONT_SIZE * self.main.multiplier_x)
+
         # Add random data to test line/path functionality.
         """self.add_auv_data(100, 100)
         self.add_auv_data(110, 105)
@@ -97,10 +111,17 @@ class Map:
         self.clear_waypoints()
         self.clear_auv_path()
         self.draw_canvas()
+        print("[MAP] Map cleared.")
+
+        self.main.log("Map has been successfully cleared.")
 
     def clear_auv_path(self):
         """ Clears the AUV path """
-        self.auv_path_obj.pop(0).remove()
+        if self.auv_path_obj is not None and self.auv_path_obj.pop(0) is not None:
+            self.auv_path_obj.pop(0).remove()
+
+        self.auv_data[0].clear()  # clear all x values
+        self.auv_data[1].clear()  # clear all y values
 
     def undraw_waypoints(self):
         """ Clears waypoints from the map """
@@ -114,15 +135,41 @@ class Map:
                 waypoint[4].remove()
                 waypoint[4] = None
 
+        self.draw_canvas()
+
     def clear_waypoints(self):
         """ Clears and removes waypoints """
         self.undraw_waypoints()
         del self.waypoints[:]
 
     def zero_map(self, x=0, y=0):
-        """ Sets the zero_offset to (0,0) """
+        """ Sets the origin of our coordinate system to (x,y) in UTM northing/eastings values"""
+
+        # Move all old elements (waypoint, auv path) to their new position.
+        delta_x = self.zero_offset_x - x  # oldX - newX = adjustment
+        delta_y = self.zero_offset_y - y  # oldY - newY = adjustment
+
+        for waypoint in self.waypoints:  # Move waypoints based on our new Origin
+            waypoint[0] += delta_x
+            waypoint[1] += delta_y
+
+        for i in range(0, len(self.auv_data[0])):  # Move all auv_data based on our new Origin
+            self.auv_data[0][i] += delta_x
+            self.auv_data[1][i] += delta_y
+
+        # Actually update our new origin.
         self.zero_offset_x = x
         self.zero_offset_y = y
+
+        # Redraw waypoints based on new origin.
+        if len(self.waypoints) > 0:
+            self.redraw_waypoints()
+
+        # Redraw auv-path based on new origin
+        if len(self.auv_data[0]) > 0 and len(self.auv_data[1]) > 0:
+            self.draw_auv_path()
+
+        print("[MAP] Updated origin to UTM coordinates (" + str(x) + ", " + str(y) + ").")
 
     def on_move(self, mouse):
         """ Moves the map on drag """
@@ -143,12 +190,12 @@ class Map:
             # Draw waypoint again.
             waypoint[3] = self.map.plot(
                 waypoint[0], waypoint[1], marker='o', markersize=5, color="red"),
-            waypoint[4] = self.map.annotate(xy=(waypoint[0], waypoint[1]),
-                                            s=waypoint[2] + " ("+str(round(waypoint[0]+self.zero_offset_x, 5))+","+str(round(waypoint[1]+self.zero_offset_y, 5))+")")
+            waypoint[4] = self.map.annotate(xy=(waypoint[0], waypoint[1]), s=waypoint[2] + ", UTM: (" +
+                                            str(round(waypoint[0]+self.zero_offset_x, 5))+","+str(round(waypoint[1]+self.zero_offset_y, 5))+")")
 
         # Redraw canvas.
         self.draw_canvas()
-        print("Waypoints Redrawn!")
+        print("[MAP] Waypoints Redrawn!")
 
     def on_press(self, mouse):
         """ Gets the (x,y) position of map on click """
@@ -188,11 +235,17 @@ class Map:
                     return
 
     def remove_waypoint_prompt(self, waypoint):
-        print("Opening remove-waypoint prompt.")
+        print("[MAP] Opening remove-waypoint prompt.")
         prompt_window = Toplevel(self.window)
+        center_x = ((self.main.root.winfo_x() +
+                     self.main.root.winfo_width()) / 2.5)
+        center_y = ((self.main.root.winfo_y() +
+                     self.main.root.winfo_height()) / 2.5)
+        prompt_window.geometry("+%d+%d" % (center_x, center_y))
+        prompt_window.resizable(False, False)
         prompt_window.title("Remove Waypoint \"" + str(waypoint[2]) + "\"?")
         prompt_window.wm_attributes('-topmost')
-        prompt_submit = Button(prompt_window, text="Yes, I want to remove waypoint \""+str(waypoint[2])+"\"",
+        prompt_submit = Button(prompt_window, text="Yes, I want to remove waypoint \""+str(waypoint[2])+"\"", font=(FONT, FONT_SIZE),
                                command=lambda:
                                [
             self.confirm_remove_waypoint(waypoint),
@@ -211,7 +264,7 @@ class Map:
         return
 
     def new_waypoint_prompt(self, x=0, y=0):
-        print("Opening new-waypoint prompt.")
+        print("[MAP] Opening new-waypoint prompt.")
         prompt_window = Toplevel(self.window)
         # Change position of waypoint prompt to cursor position.
         center_x = ((self.main.root.winfo_x() +
@@ -223,20 +276,20 @@ class Map:
         prompt_window.resizable(False, False)
         prompt_window.title("New Waypoint")
         prompt_window.wm_attributes('-topmost')
-        Label(prompt_window, text="Name").grid(row=0)
-        Label(prompt_window, text="X").grid(row=1)
-        Label(prompt_window, text="Y").grid(row=2)
-        prompt_input_name = Entry(prompt_window, bd=5)
+        Label(prompt_window, text="Name", font=(FONT, FONT_SIZE)).grid(row=0)
+        Label(prompt_window, text="X", font=(FONT, FONT_SIZE)).grid(row=1)
+        Label(prompt_window, text="Y", font=(FONT, FONT_SIZE)).grid(row=2)
+        prompt_input_name = Entry(prompt_window, bd=5, font=(FONT, FONT_SIZE))
         prompt_input_name.grid(row=0, column=1)
-        prompt_input_x = Entry(prompt_window, bd=5)
+        prompt_input_x = Entry(prompt_window, bd=5, font=(FONT, FONT_SIZE))
         prompt_input_x.grid(row=1, column=1)
-        prompt_input_y = Entry(prompt_window, bd=5)
+        prompt_input_y = Entry(prompt_window, bd=5, font=(FONT, FONT_SIZE))
         prompt_input_y.grid(row=2, column=1)
 
         prompt_input_name.insert(0, "My waypoint")  # Placeholder for input
         prompt_input_x.insert(0, x)
         prompt_input_y.insert(0, y)
-        prompt_submit = Button(prompt_window, text="Save",
+        prompt_submit = Button(prompt_window, text="Save", font=(FONT, FONT_SIZE),
                                command=lambda:  # Runs multiple functions.
                                [
                                    self.add_waypoint(float(prompt_input_x.get()),
@@ -244,11 +297,11 @@ class Map:
                                                          prompt_input_y.get()),
                                                      str(prompt_input_name.get())),
                                    prompt_window.destroy()
-                               ])
+        ])
 
         prompt_submit.grid(row=3, column=0, padx=5, pady=5)
  #       prompt_window.mainloop();
-        print("returning from waypoint mainloop")
+        print("[MAP] returning from waypoint mainloop")
 
     def add_auv_data(self, x=0, y=0):
         self.main.log("Adding AUV data at: ("+str(x)+", "+str(y)+").")
@@ -257,7 +310,7 @@ class Map:
         self.draw_auv_path()
 
     def draw_auv_path(self):
-        print("Drawing AUV path.")
+        print("[MAP] Drawing (really re-drawing) AUV path.")
 
         # Completely delete the previous line, if it exists.
         if self.auv_path_obj != None:
@@ -265,7 +318,7 @@ class Map:
 
         # Re-draw the entire line using the newly updated x-values (auv_data[0]) and y-values (auv_data[1])
         self.auv_path_obj = self.map.plot(
-            self.auv_data[0], self.auv_data[1], label="AUV Path", color=AUV_PATH_COLOR)
+            self.auv_data[0]+self.zero_offset_x, self.auv_data[1]+self.zero_offset_y, label="AUV Path", color=AUV_PATH_COLOR)
 
         # Re-draw the canvas.
         self.draw_canvas()
@@ -274,7 +327,7 @@ class Map:
         return self.canvas.draw()
 
     def init_canvas(self):
-        print("Initializing the canvas.")
+        print("[MAP] Initializing the canvas.")
 
         # Remove excess borders around figure.
         self.fig.subplots_adjust(
@@ -286,12 +339,12 @@ class Map:
         return canvas
 
     def init_fig(self):
-        print("Initializing figure...")
+        print("[MAP] Initializing figure...")
         fig = Figure(figsize=(DEFAULT_FIGURE_SIZE, DEFAULT_FIGURE_SIZE))
         return fig
 
     def init_map(self):
-        print("Initializing map...")
+        print("[MAP] Initializing map...")
         graph = self.fig.add_subplot(111, xmargin=-0.49, ymargin=-0.49)
         graph.grid(b=True, which='major', axis='both')
 
@@ -324,8 +377,8 @@ class Map:
         return graph
 
     def add_waypoint(self, x=0, y=0, label="My Waypoint"):
-        self.main.log("Added waypoint \"" + label + "\" at map-position (" + str(x) + ", " + str(y) + ").\n" +
-                      "Its earth-coordinates are (" + str(float(x)+self.zero_offset_x) + ", " + str(float(y)+self.zero_offset_y) + ").")
+        self.main.log("Added waypoint \"" + label + "\" at map-position (" + str(int(x)) + ", " + str(int(y)) + ") " +
+                      "with utm-coordinates (" + str(int(float(x)+self.zero_offset_x)) + ", " + str(int(float(y)+self.zero_offset_y)) + ").")
 
         # The code below should never fail (that would be a big problem).
         self.waypoints.append([
@@ -333,7 +386,7 @@ class Map:
             label,
             self.map.plot(x, y, marker='o', markersize=5,
                           color=WAYPOINT_COLOR, label=label),
-            self.map.annotate(xy=(x, y), s=label + " ("+str(round(float(
+            self.map.annotate(xy=(x, y), text=label + ", UTM: ("+str(round(float(
                 x)+self.zero_offset_x, 5))+","+str(round(float(y)+self.zero_offset_y, 5))+")")
         ])
 
@@ -341,7 +394,7 @@ class Map:
         return [x, y]
 
     def zoom_out(self):
-        print("Zooming out.")
+        print("[MAP] Zooming out.")
         xlim = self.map.get_xlim()
         ylim = self.map.get_ylim()
         self.size *= ZOOM_SCALAR
@@ -349,7 +402,7 @@ class Map:
                        y=[ylim[0]*ZOOM_SCALAR, ylim[1]*ZOOM_SCALAR])
 
     def zoom_in(self):
-        print("Zooming in.")
+        print("[MAP] Zooming in.")
         xlim = self.map.get_xlim()
         ylim = self.map.get_ylim()
         self.size /= ZOOM_SCALAR
@@ -357,13 +410,13 @@ class Map:
                        y=[ylim[0]/ZOOM_SCALAR, ylim[1]/ZOOM_SCALAR])
 
     def set_range(self, x=[-DEFAULT_GRID_SIZE, DEFAULT_GRID_SIZE], y=[-DEFAULT_GRID_SIZE, DEFAULT_GRID_SIZE]):
-        print("Changing grid size to x="+str(x)+", and y="+str(y)+".")
+        print("[MAP] Changing grid size to x="+str(x)+", and y="+str(y)+".")
         self.map.set_xlim(x)
         self.map.set_ylim(y)
         self.draw_canvas()
 
     def set_units(self, unit=METERS):
-        print("Changing units from " + self.units + " to " + unit)
+        print("[MAP] Changing units from " + self.units + " to " + unit)
         multiplier = 1
 
         # Convert KM -> M

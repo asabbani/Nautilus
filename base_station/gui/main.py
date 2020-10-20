@@ -7,10 +7,20 @@ import os
 import datetime
 
 # Begin custom imports
-from tkinter import *
+import tkinter
+from tkinter import Tk
+from tkinter import Button
+from tkinter import Frame
+from tkinter import Label
+from tkinter import Text
+from tkinter import PhotoImage
+from tkinter import Scrollbar
 from tkinter import Toplevel
+from tkinter import StringVar
+from tkinter import BOTH, TOP, BOTTOM, LEFT, RIGHT, YES, NO, SUNKEN, X, Y, W, E, N, S, DISABLED, NORMAL, END
 from tkinter import messagebox
 from tkinter.ttk import Combobox
+from tkinter import font
 from .map import Map
 from screeninfo import get_monitors, Enumerator
 
@@ -71,10 +81,8 @@ class Main():
         self.root.resizable(False, False)
         self.root.iconphoto(True, PhotoImage(file=ICON_PATH))
 
-        # Code below is to fix high resolution screen scaling.~
+        #### Code below is to fix high resolution screen scaling. ###
         os_enumerator = None
-        # os_enumerator = Enumerator.OSX  # TODO testing things
-
         # https://stackoverflow.com/questions/446209/possible-values-from-sys-platform
         if "linux" in sys.platform:  # Linux designated as "linux"
             os_enumerator = Enumerator.Xinerama
@@ -83,13 +91,11 @@ class Main():
         # Windows OS different versions, "win32", "cygwin", "msys" TODO check if this is supported
         elif "win32" in sys.platform or "cygwin" in sys.platform or "msys" in sys.platform:
             os_enumerator = Enumerator.Windows
-
         if os_enumerator is None:
-            print("Error: Operating system " +
+            print("[GUI] Error: Operating system " +
                   sys.platform + " is not supported.")
             exit()
             return
-
         screen_width = get_monitors(os_enumerator)[0].width
         screen_height = get_monitors(os_enumerator)[0].height
         self.multiplier_x = screen_width / DEV_WIDTH
@@ -110,14 +116,15 @@ class Main():
         CALIBRATE_FRAME_WIDTH = int(CALIBRATE_FRAME_WIDTH * self.multiplier_x)
         MISSION_FRAME_WIDTH = int(MISSION_FRAME_WIDTH * self.multiplier_x)
         LOG_FRAME_WIDTH = int(LOG_FRAME_WIDTH * self.multiplier_x)
-        BUTTON_WIDTH = int(BUTTON_WIDTH * self.multiplier_x)
-        BUTTON_HEIGHT = int(BUTTON_HEIGHT * self.multiplier_x)
-        # End screen scaling
+        ### End of high-resolution screen scaling code ###
+
+        # Fix font scaling for all Combo-box elements
+        self.root.option_add("*TCombobox*Listbox*Font", font.Font(family=FONT, size=BUTTON_SIZE))
 
         # Begin defining instance variables
         self.root.title("YonderDeep AUV Interaction Terminal")
-        self.in_q = in_q  # Messages sent here from base_station.py
-        self.out_q = out_q  # Messages sent to base_station.py
+        self.in_q = in_q  # Messages sent here from base_station.py thread
+        self.out_q = out_q  # Messages sent to base_station.py thread
 
         self.top_frame = Frame(self.root, bd=1)
         self.top_frame.pack(fill=BOTH, side=TOP,
@@ -136,19 +143,23 @@ class Main():
         self.create_map(self.map_frame)
         self.create_function_buttons()
 
+        # Save our last received BS coordinates
+        self.bs_coordinates = None
+
         # Call function to properly end the program
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.root.update_idletasks()
         self.root.update()
 
-        # Loop that checks our in-queue tasks given from the BaseStation object
+        # Loop that checks our in-queue tasks given from the BaseStation thread object
         self.root.after(REFRESH_TIME, self.check_tasks)
+
         # Begin running GUI loop
         self.root.mainloop()
 
     def check_tasks(self):
         """ Evaluates the commands/tasks given to us in the in-queue. These commands are
-        Passed as basic string objects. """
+        passed as basic string objects. """
         while (self.in_q.empty() is False):
             eval("self." + self.in_q.get())
 
@@ -163,7 +174,7 @@ class Main():
         self.functions_frame = Frame(
             self.top_frame, height=TOP_FRAME_HEIGHT, width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
         self.functions_frame.pack(
-            padx=MAIN_PAD_X, pady=MAIN_PAD_Y, side=LEFT, fill=Y, expand=NO)
+            padx=MAIN_PAD_X, pady=MAIN_PAD_Y, side=LEFT, fill=BOTH, expand=NO)
         self.functions_frame.pack_propagate(0)
 
     def init_map_frame(self):
@@ -260,6 +271,14 @@ class Main():
         self.console.insert(END, time + string + "\n")
         self.console.config(state=DISABLED)
 
+    def add_auv_coordinates(self, northing, easting):
+        """ Plots the AUV's current coordinates onto the map, given its UTM-relative northing and easting. """
+        self.map.add_auv_data(northing, easting)
+
+    def update_bs_coordinates(self, northing, easting):
+        """ Saves base stations current coordinates, updates label on the data panel """
+        self.bs_coordinates = (northing, easting)
+
     def set_connection(self, status):
         """ Sets the connection status text in the status frame. """
         if (status):
@@ -350,8 +369,7 @@ class Main():
             self.mission_frame, text="Mission Control", takefocus=False, font=(FONT, HEADING_SIZE))
 
         self.mission_label.pack(expand=YES)
-        self.mission_list = Combobox(
-            self.mission_frame, state="readonly", values=MISSIONS, font=(FONT, 14))
+        self.mission_list = Combobox(self.mission_frame, state="readonly", values=MISSIONS, font=(FONT, BUTTON_SIZE))
         self.mission_list.set("Select Mission...")
         self.mission_list.pack(expand=YES, fill=X, pady=COMBO_PAD_Y)
         # self.mission_list.bind("<<ComboboxSelected>>", lambda _ : out_q.put(missions.index(self_mission_list.get())))
@@ -383,37 +401,47 @@ class Main():
 
     def abort_mission(self):
         ans = messagebox.askquestion(
-            "Abort Mission", "Are you sure you want to abort the mission?")
+            "Abort Misssion", "Are you sure you want to abort the mission?")
         if ans == 'yes':
             self.out_q.put("abort_mission()")
 
+    def calibrate_origin_on_map(self):
+        """ Calibrates the origin on the map to the base stations coordinates """
+
+        if self.bs_coordinates is not None:
+            # Update the origin on our map.
+            self.map.zero_map(self.bs_coordinates[0], self.bs_coordinates[1])
+            self.log("Updated the origin on the map to UTM coordinates (" + str(self.bs_coordinates[0]) + "," + str(self.bs_coordinates[1]) + ").")
+        else:
+            self.log("Cannot calibrate origin because the base station has not reported GPS data.")
+
     def create_function_buttons(self):
-        self.origin_button = Button(self.functions_frame, text="Set Origin", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.new_waypoint_prompt)
+        self.origin_button = Button(self.functions_frame, text="Calibrate Origin", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.calibrate_origin_on_map)
         self.add_waypoint_button = Button(self.functions_frame, text="Add Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                           padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.new_waypoint_prompt)
         self.nav_to_waypoint_button = Button(self.functions_frame, text="Nav. to Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
-        self.custom_button_1 = Button(self.functions_frame, text="Custom 1", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                      padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
-        self.custom_button_2 = Button(self.functions_frame, text="Custom 2", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                      padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
+        self.download_data_button = Button(self.functions_frame, text="Download Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                           padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
+        self.clear_button = Button(self.functions_frame, text="Clear Map", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                   padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.clear)
 
         self.origin_button.pack(expand=YES)
         self.add_waypoint_button.pack(expand=YES)
         self.nav_to_waypoint_button.pack(expand=YES)
-        self.custom_button_1.pack(expand=YES)
-        self.custom_button_2.pack(expand=YES)
+        self.download_data_button.pack(expand=YES)
+        self.clear_button.pack(expand=YES)
 
     def create_map(self, frame):
         self.map = Map(frame, self)
         self.zoom_in_button = Button(self.map_frame, text="+", takefocus=False, width=1, height=1,
                                      padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.zoom_in)
-        self.zoom_in_button.place(relx=1, rely=0.0, anchor=NE)
+        self.zoom_in_button.place(relx=1, rely=0.0, anchor=N+E)
 
         self.zoom_out_button = Button(self.map_frame, text="-", takefocus=False, width=1, height=1,
                                       padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.zoom_out)
-        self.zoom_out_button.place(relx=1, rely=0.06, anchor=NE)
+        self.zoom_out_button.place(relx=1, rely=0.06, anchor=N+E)
 
     def on_closing(self):
         #    self.map.on_close()

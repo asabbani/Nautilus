@@ -46,9 +46,10 @@ class BaseStation(threading.Thread):
         self.joy = None
         self.connected_to_auv = False
         self.nav_controller = None
-        self.gps = None  # create the thread
+        self.gps = None
         self.in_q = in_q
         self.out_q = out_q
+        self.gps_q = Queue()
         self.manual_mode = True
         self.time_since_last_ping = 0.0
 
@@ -77,10 +78,10 @@ class BaseStation(threading.Thread):
 
         # Try to assign our GPS object connection to GPSD
         try:
-            self.gps = GPS()
-            self.log("Successfully found a GPS device.")
+            self.gps = GPS(self.gps_q)
+            self.log("Successfully connected to GPS socket service.")
         except:
-            self.log("Warning: Cannot find a GPS device.")
+            self.log("Warning: Could not connect to a GPS socket service.")
 
     def calibrate_controller(self):
         """ Instantiates a new Xbox Controller Instance and NavigationController """
@@ -113,11 +114,28 @@ class BaseStation(threading.Thread):
                 print("Failed to evaluate in_q task: ", task)
                 print("\t Error received was: ", str(e))
 
-    def auv_data(self, heading, temperature):
-        self.heading = heading
-        self.temperature = temperature
+    def auv_data(self, heading, temperature, longitude=None, latitude=None):
+        """ Parses the AUV data-update packet, stores knowledge of its on-board sensors"""
+
+        # Update heading on BS and on GUI
+        self.auv_heading = heading
         self.out_q.put("set_heading("+str(heading)+")")
+
+        # Update temp on BS and on GUI
+        self.auv_temperature = temperature
         self.out_q.put("set_temperature("+str(temperature)+")")
+
+        # If the AUV provided its location...
+        if longitude is not None and latitude is not None:
+            self.auv_longitude = longitude
+            self.auv_latitude = latitude
+            try:    # Try to convert AUVs latitude + longitude to UTM coordinates, then update on the GUI thread.
+                self.auv_utm_coordinates = utm.from_latlon(longitude, latitude)
+                self.out_q.put("add_auv_coordinates(" + self.auv_utm_coordinates[0] + ", " + self.auv_utm_coordinates[1] + ")")
+            except:
+                self.log("Failed to convert the AUV's gps coordinates to UTM.")
+        else:
+            self.log("The AUV did not report its latitude and longitude.")
 
     def test_motor(self, motor):
         """ Attempts to send the AUV a signal to test a given motor. """
@@ -160,7 +178,7 @@ class BaseStation(threading.Thread):
 
     def run(self):
         """ Main threaded loop for the base station. """
-        self.log("Running radio connection loop to locate AUV...")
+
         # Begin our main loop for this thread.
         while True:
             self.check_tasks()
@@ -268,6 +286,12 @@ class BaseStation(threading.Thread):
         """ Function that is executed upon the closure of the GUI (passed from input-queue). """
         os._exit(1)  # => Force-exit the process immediately.
 
+    def call_download(self):
+        """ Function calls download data function """
+        if self.connected_to_auv is True:
+            self.out_q.put("download_data")
+            self.log("downloaded data")
+
 
 def main():
     """ Main method responsible for developing the main objects used during runtime
@@ -278,11 +302,19 @@ def main():
     to_BS = Queue()
 
     # Create a BS (base station) and GUI object thread.
-    threaded_bs = BaseStation(to_BS, to_GUI)
-    threaded_bs.start()
+    try:
+        threaded_bs = BaseStation(to_BS, to_GUI)
+        threaded_bs.start()
+    except:
+        print("[MAIN] Base Station initialization failed. Closing...")
+        sys.exit()
 
     # Create main GUI object
-    gui = Main(to_GUI, to_BS)
+    try:
+        gui = Main(to_GUI, to_BS)
+    except:
+        print("[MAIN] GUI initialization failed. Closing...")
+        sys.exit()
 
 
 if __name__ == '__main__':

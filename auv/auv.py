@@ -93,6 +93,11 @@ class AUV():
                 # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
                 if self.connected_to_bs is True:
                     log("Lost connection to BS.")
+
+                    # reset motor speed to 0 immediately
+                    self.mc.update_motor_speeds([0,0,0,0])
+                    log("DEBUG TODO speeds reset")
+
                     self.connected_to_bs = False
 
             if self.radio is None or self.radio.is_open() is False:
@@ -133,6 +138,10 @@ class AUV():
                             if self.connected_to_bs is False:
                                 log("Connection to BS verified.")
                                 self.connected_to_bs = True
+
+                                # TODO test case: set motor speeds
+                                data = [1,2,3,4]
+                                self.xbox(data)
 
                         elif len(line) > 1:
                             # Line was read, but it was not equal to a BS_PING
