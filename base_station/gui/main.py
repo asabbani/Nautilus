@@ -407,7 +407,7 @@ class Main():
 
     def calibrate_origin_on_map(self):
         """ Calibrates the origin on the map to the base stations coordinates """
-
+        print("ran calibrate")
         if self.bs_coordinates is not None:
             # Update the origin on our map.
             self.map.zero_map(self.bs_coordinates[0], self.bs_coordinates[1])
@@ -423,7 +423,7 @@ class Main():
         self.nav_to_waypoint_button = Button(self.functions_frame, text="Nav. to Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
         self.download_data_button = Button(self.functions_frame, text="Download Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                           padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
+                                           padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
         self.clear_button = Button(self.functions_frame, text="Clear Map", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.clear)
 

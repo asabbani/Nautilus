@@ -19,7 +19,7 @@ from missions import *
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 IMU_PATH = '/dev/serial0'
 PING = b'PING\n'
-THREAD_SLEEP_DELAY = 0.1
+THREAD_SLEEP_DELAY = 0.05
 CONNECTION_TIMEOUT = 3
 
 
@@ -113,6 +113,16 @@ class AUV():
                     self.radio.write(PING)
 
                     if self.connected_to_bs is True:  # Send our AUV packet as well.
+
+                        # TODO Data sending logic
+                        #
+                        # if (sending_data):
+                        #    if(data.read(500000) != EOF)
+                        #        send("d("+data.nextBytes+")")
+                        #    else:
+                        #        send("d_done()")
+                        #        sending_data = False
+
                         if self.imu is not None:
                             try:
                                 heading = self.imu.quaternion[0]
@@ -191,7 +201,7 @@ class AUV():
         if(mission == 0):  # Echo-location.
             try:  # Try to start mission
                 self.current_mission = Mission1(
-                    self.mc, self.imu, self.pressure_sensor)
+                    self, self.mc, self.imu, self.pressure_sensor)
                 log("Successfully started mission " + str(mission) + ".")
                 self.radio.write(str.encode("mission_started("+str(mission)+")\n"))
             except:
@@ -201,6 +211,11 @@ class AUV():
         #     self.current_mission = Mission2()
         # if self.current_mission is None:
         #     self.current_mission = Mission1()
+
+    def d_data(self):
+        # TODO Set sending data flag
+        # self.sending_data = true
+        pass
 
     def abort_mission(self):
         self.current_mission = None

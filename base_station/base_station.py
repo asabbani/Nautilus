@@ -269,6 +269,30 @@ class BaseStation(threading.Thread):
 
             time.sleep(THREAD_SLEEP_DELAY)
 
+    def close(self):
+        """ Function that is executed upon the closure of the GUI (passed from input-queue). """
+        os._exit(1)  # => Force-exit the process immediately.
+
+    def d(self, bytes):
+        # TODO
+        # Append new bytes to local data string/byte array
+        # local_data += bytes
+        pass
+
+    def d_done(self):
+        # TODO write data to file
+        # write(local_data)
+        # local_data.clear
+        pass
+
+    def download_data(self):
+        """ Function calls download data function """
+        if self.connected_to_auv is True:
+            self.radio.write(str.encode("d_data()\n"))
+            self.log("Sending download data command to AUV.")
+        else:
+            self.log("Cannot download data because there is no connection to the AUV.")
+
     def log(self, message):
         """ Logs the message to the GUI console by putting the function into the output-queue. """
         self.out_q.put("log('" + message + "')")
@@ -281,16 +305,6 @@ class BaseStation(threading.Thread):
             self.log("Switched to autonomous mode.")
 
         self.log("Successfully started mission " + str(index))
-
-    def close(self):
-        """ Function that is executed upon the closure of the GUI (passed from input-queue). """
-        os._exit(1)  # => Force-exit the process immediately.
-
-    def call_download(self):
-        """ Function calls download data function """
-        if self.connected_to_auv is True:
-            self.out_q.put("download_data")
-            self.log("downloaded data")
 
 
 def main():
@@ -310,11 +324,7 @@ def main():
         sys.exit()
 
     # Create main GUI object
-    try:
-        gui = Main(to_GUI, to_BS)
-    except:
-        print("[MAIN] GUI initialization failed. Closing...")
-        sys.exit()
+    gui = Main(to_GUI, to_BS)
 
 
 if __name__ == '__main__':
