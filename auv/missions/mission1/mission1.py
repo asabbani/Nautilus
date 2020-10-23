@@ -1,22 +1,53 @@
-import threading
+MAX_DEPTH_METERS = 50.0
+NEAR_SURFACE_METERS = 0.5
 
 
-class Mission1(threading.Thread):
+class Mission1():
+    """ Dive and collect hydrophone data """
+
     def __init__(self, motor_controller, pressure_sensor, IMU):
-        """ TODO Function Header """
+        """ Creates new audio collection mission object. Save parameters as local variables, and assign our state to starting state """
 
         self.motor_controller = motor_controller
         self.pressure_sensor = pressure_sensor
         self.IMU = IMU
 
+        # Assign our state to starting state.
+        self.state = "START"
+
     def loop(self):
-        pass
+        """ Continuously running loop function, run by AUV main thread. """
+        if self.state == "START":
+            if self.motor_controller is not None and self.pressure_sensor is not None and self.IMU is not None:
+                # Begin our mission (start diving)
+                self.motor_controller.update_motor_speeds([0, 0, 50, 50])
+                self.state = "DIVING"
 
-    def find_source(self):
-        pass
+        if self.state == "DIVING":
+            # Read Pressure
+            # pressure = self.pressure_sensor.read()
 
-    def move_to_source(self):
-        """ TODO FUNCTION HEADER """
-        # only move to source if the auv is in position to move
-        motor_speed_array = [10, 10, 0, 0]  # sync the left and right motors
-        self.motor_controller.update_motor_speeds(motor_speed_array)
+            # Convert to depth
+            #depth = SomeAlgorithmOn(pressure)
+
+            # If we reached max depth
+            if depth >= MAX_DEPTH_METERS:
+                # Turn off our motors
+                self.motor_controller.update_motor_speeds([0, 0, 0, 0])
+
+                # Set state to rising
+                self.state = "RISING"
+
+                # Start recording
+                self.hydrophone.start_recording()
+
+        if self.state == "RISING":
+            # Read Pressure
+            # pressure = self.pressure_sensor.read()
+
+            # Convert to depth
+            #depth = SomeAlgorithmOn(pressure)
+
+            if depth <= NEAR_SURFACE_METERS:
+                self.hydrophone.end_recording()
+                self.state = "DONE"
