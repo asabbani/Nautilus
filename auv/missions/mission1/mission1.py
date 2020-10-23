@@ -5,7 +5,7 @@ NEAR_SURFACE_METERS = 0.5
 class Mission1():
     """ Dive and collect hydrophone data """
 
-    def __init__(self, motor_controller, pressure_sensor, IMU):
+    def __init__(self, auv, motor_controller, pressure_sensor, IMU):
         """ Creates new audio collection mission object. Save parameters as local variables, and assign our state to starting state """
 
         self.motor_controller = motor_controller
@@ -24,11 +24,8 @@ class Mission1():
                 self.state = "DIVING"
 
         if self.state == "DIVING":
-            # Read Pressure
-            # pressure = self.pressure_sensor.read()
-
-            # Convert to depth
-            #depth = SomeAlgorithmOn(pressure)
+            # Read Depth
+            depth = self.pressure_sensor.depth()
 
             # If we reached max depth
             if depth >= MAX_DEPTH_METERS:
@@ -42,11 +39,8 @@ class Mission1():
                 self.hydrophone.start_recording()
 
         if self.state == "RISING":
-            # Read Pressure
-            # pressure = self.pressure_sensor.read()
-
-            # Convert to depth
-            #depth = SomeAlgorithmOn(pressure)
+            # Read Depth
+            depth = self.pressure_sensor.depth()
 
             if depth <= NEAR_SURFACE_METERS:
                 self.hydrophone.end_recording()
