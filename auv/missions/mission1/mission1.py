@@ -40,7 +40,7 @@ class Mission1():
 
         if self.state == "RISING":
             # Read Depth
-            depth = self.pressure_sensor.depth()
+            depth = self.pressure_sensor.depth
 
             if depth <= NEAR_SURFACE_METERS:
                 self.hydrophone.end_recording()
