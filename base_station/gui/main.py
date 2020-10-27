@@ -79,9 +79,12 @@ class Main():
         # Begin initializing the main Tkinter (GUI) framework/root window
         self.root = Tk()
         self.root.resizable(False, False)
-        self.root.iconphoto(True, PhotoImage(file=ICON_PATH))
+        try:
+            self.root.iconphoto(True, PhotoImage(file=ICON_PATH))
+        except:
+            pass
 
-        #### Code below is to fix high resolution screen scaling. ###
+            #### Code below is to fix high resolution screen scaling. ###
         os_enumerator = None
         # https://stackoverflow.com/questions/446209/possible-values-from-sys-platform
         if "linux" in sys.platform:  # Linux designated as "linux"
