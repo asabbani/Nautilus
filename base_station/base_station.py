@@ -165,6 +165,7 @@ class BaseStation(threading.Thread):
 
         self.log("The current mission has failed.")
 
+    #TODO
     def start_mission(self, mission):
         """  Attempts to start a mission and send to AUV. """
 
@@ -324,7 +325,7 @@ def main():
         sys.exit()
 
     # Create main GUI object
-    gui = Main(to_GUI, to_BS)
+    gui = Main(to_GUI, to_BS, threaded_bs)
 
 
 if __name__ == '__main__':
