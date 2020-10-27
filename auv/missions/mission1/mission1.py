@@ -23,6 +23,12 @@ class Mission1():
                 self.motor_controller.update_motor_speeds([0, 0, 50, 50])
                 self.state = "DIVING"
 
+            else:
+                # necessary equipment not found, ending
+                self.auv.log("Could not start mission 1 - Missing equipment.")
+                self.auv.current_mission = None
+                return
+
         if self.state == "DIVING":
             # Read Depth
             depth = self.pressure_sensor.depth()
