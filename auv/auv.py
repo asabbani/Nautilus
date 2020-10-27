@@ -7,6 +7,7 @@ import os
 import sys
 import threading
 import time
+import math
 
 # Custom imports
 from api import Radio
@@ -125,10 +126,13 @@ class AUV():
 
                         if self.imu is not None:
                             try:
-                                heading = self.imu.quaternion[0]
-                                if heading is not None:
-                                    heading = round(
-                                        abs(heading * 360) * 100.0) / 100.0
+                                #heading = self.imu.quaternion[0]
+                                compass = self.imu.read_magnetometer()
+                                if compass is not None:
+                                    heading = math.atan2(compass[1], compass[0])
+
+                                    #heading = round(
+                                    #    abs(heading * 360) * 100.0) / 100.0
 
                                     temperature = self.imu.temperature
                                     # (Heading, Temperature)
