@@ -218,6 +218,7 @@ class AUV():
         pass
 
     def abort_mission(self):
+        self.current_mission.abort_loop()
         self.current_mission = None
         log("Successfully aborted the current mission.")
         self.radio.write(str.encode("mission_failed()\n"))

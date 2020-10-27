@@ -45,3 +45,14 @@ class Mission1():
             if depth <= NEAR_SURFACE_METERS:
                 self.hydrophone.end_recording()
                 self.state = "DONE"
+
+    def abort_loop(self):
+        self.state = "RISING"
+        depth = self.pressure_sensor.depth
+        self.hydrophone.end_recording()
+
+        #TODO probably include sleep delay?
+        while depth > NEAR_SURFACE_METERS:
+            depth = self.pressure_sensor.depth
+
+        self.state = "DONE"
