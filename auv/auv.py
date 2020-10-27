@@ -201,7 +201,7 @@ class AUV():
         if(mission == 0):  # Echo-location.
             try:  # Try to start mission
                 self.current_mission = Mission1(
-                    self, self.mc, self.imu, self.pressure_sensor)
+                    self, self.mc, self.pressure_sensor, self.imu)
                 log("Successfully started mission " + str(mission) + ".")
                 self.radio.write(str.encode("mission_started("+str(mission)+")\n"))
             except:
