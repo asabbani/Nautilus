@@ -325,7 +325,7 @@ def main():
         sys.exit()
 
     # Create main GUI object
-    gui = Main(to_GUI, to_BS, threaded_bs)
+    gui = Main(threaded_bs, to_GUI, to_BS)
 
 
 if __name__ == '__main__':
