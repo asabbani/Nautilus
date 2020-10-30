@@ -127,7 +127,7 @@ class AUV():
                         if self.imu is not None:
                             try:
                                 #heading = self.imu.quaternion[0]
-                                compass = self.imu.read_magnetometer()
+                                compass = self.imu.magnetic
                                 if compass is not None:
                                     heading = math.degrees(math.atan2(compass[1], compass[0]))
 
