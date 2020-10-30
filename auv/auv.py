@@ -129,7 +129,7 @@ class AUV():
                                 #heading = self.imu.quaternion[0]
                                 compass = self.imu.read_magnetometer()
                                 if compass is not None:
-                                    heading = math.atan2(compass[1], compass[0])
+                                    heading = math.degrees(math.atan2(compass[1], compass[0]))
 
                                     #heading = round(
                                     #    abs(heading * 360) * 100.0) / 100.0
