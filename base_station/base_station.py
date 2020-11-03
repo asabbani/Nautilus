@@ -231,8 +231,12 @@ class BaseStation(threading.Thread):
                     # This is where secured/synchronous code should go.
                     if self.connected_to_auv and self.manual_mode:
                         if self.joy is not None and self.joy.connected() and self.nav_controller is not None:
-                            self.nav_controller.handle()
-                            self.radio.write(str.encode("xbox(" + self.nav_controller.get_data()))
+                            try:
+                                self.nav_controller.handle()
+                                self.radio.write(str.encode("xbox(" + self.nav_controller.get_data()))
+                            except Exception as e:
+                                self.log("Error with Xbox data: " + str(e))
+
                     # Read ALL lines stored in buffer (probably around 2-3 commands)
                     lines = self.radio.readlines()
                     self.radio.flush()
@@ -245,13 +249,13 @@ class BaseStation(threading.Thread):
                                 self.out_q.put("set_connection(True)")
                                 self.connected_to_auv = True
 
-                        elif len(line) > 0:
+                        elif len(line) > 3:
                             # Line is greater than 0, but not equal to the AUV_PING
                             # which means a possible command was found.
                             message = line.decode('utf-8').replace("\n", "")
 
                             # Check if message is a possible python function
-                            if len(message) > 2 and "(" in message and ")" in message:
+                            if "(" in message and ")" in message:
                                 # Get possible function name
                                 possible_func_name = message[0:message.find(
                                     "(")]
