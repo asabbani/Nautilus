@@ -74,7 +74,7 @@ class BaseStation(threading.Thread):
                 self.log(
                     "Successfully created a Navigation with Controller object.")
         except Exception as e: #TODO
-            self.log(str(e))
+            #self.log(str(e))
             self.log("Warning: Cannot find Xbox 360 controller.")
 
         # Try to assign our GPS object connection to GPSD
