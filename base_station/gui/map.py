@@ -93,18 +93,18 @@ class Map:
         FONT_SIZE = int(FONT_SIZE * self.main.multiplier_x)
 
         # Add random data to test line/path functionality.
-        """self.add_auv_data(100, 100)
-        self.add_auv_data(110, 105)
-        self.add_auv_data(130, 109)
-        self.add_auv_data(200, 225)
-        self.add_auv_data(240, 250)
-        self.add_auv_data(350, 330)
-        self.add_auv_data(360, 200)
-        self.add_auv_data(370, 260)
-        self.add_auv_data(360, 230)
-        self.add_auv_data(350, 200)
+        # self.add_auv_data(100, 100)
+        # self.add_auv_data(110, 105)
+        # self.add_auv_data(130, 109)
+        # self.add_auv_data(200, 225)
+        # self.add_auv_data(240, 250)
+        # self.add_auv_data(350, 330)
+        # self.add_auv_data(360, 200)
+        # self.add_auv_data(370, 260)
+        # self.add_auv_data(360, 230)
+        # self.add_auv_data(350, 200)
         # self.clear()
-        self.draw_canvas()"""
+        self.draw_canvas()
 
     def clear(self):
         """ Clears the map data """

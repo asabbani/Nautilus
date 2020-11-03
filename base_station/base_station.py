@@ -73,8 +73,8 @@ class BaseStation(threading.Thread):
                 self.nav_controller = NavController(self.joy)
                 self.log(
                     "Successfully created a Navigation with Controller object.")
-        except: #TODO
-            #self.log(str(e))
+        except:  # TODO
+            # self.log(str(e))
             self.log("Warning: Cannot find Xbox 360 controller.")
 
         # Try to assign our GPS object connection to GPSD
@@ -166,7 +166,7 @@ class BaseStation(threading.Thread):
 
         self.log("The current mission has failed.")
 
-    #TODO
+    # TODO
     def start_mission(self, mission):
         """  Attempts to start a mission and send to AUV. """
 
@@ -232,8 +232,7 @@ class BaseStation(threading.Thread):
                     if self.connected_to_auv and self.manual_mode:
                         if self.joy is not None and self.joy.connected() and self.nav_controller is not None:
                             self.nav_controller.handle()
-                            self.radio.write(
-                                "xbox(" + self.nav_controller.get_data())
+                            self.radio.write(str.encode("xbox(" + self.nav_controller.get_data()))
                     # Read ALL lines stored in buffer (probably around 2-3 commands)
                     lines = self.radio.readlines()
                     self.radio.flush()
