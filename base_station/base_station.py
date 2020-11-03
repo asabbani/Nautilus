@@ -73,7 +73,7 @@ class BaseStation(threading.Thread):
                 self.nav_controller = NavController(self.joy)
                 self.log(
                     "Successfully created a Navigation with Controller object.")
-        except Exception as e: #TODO
+        except: #TODO
             #self.log(str(e))
             self.log("Warning: Cannot find Xbox 360 controller.")
 
