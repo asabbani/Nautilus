@@ -67,7 +67,7 @@ class BaseStation(threading.Thread):
 
         # Try to connect our Xbox 360 controller.
         try:
-            self.joy = Joystick()
+            #self.joy = Joystick() TODO
             if (joy.connected()):
                 self.log("Successfuly found Xbox 360 controller.")
                 self.nav_controller = NavController(self.joy)
