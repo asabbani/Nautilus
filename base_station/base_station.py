@@ -23,7 +23,7 @@ from gui import Main
 # Constants
 THREAD_SLEEP_DELAY = 0.1  # Since we are the slave to AUV, we must run faster.
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
-PING = b'PING\n'
+PING = "PING"  # b'PING\n'
 CONNECTION_TIMEOUT = 4
 
 # AUV Constants (these are also in auv.py)
@@ -196,19 +196,20 @@ class BaseStation(threading.Thread):
             # Check if we have an Xbox controller
             if self.joy is None:
                 try:
+                    print("Creating joystick")
                     self.joy = Joystick()
                     self.nav_controller = NavController(self.joy)
+                    print("Done creating.")
                 except:
                     pass
 
-            elif not self.joy.connected():
-                self.log("Xbox controller has been disconnected.")
-                self.joy = None
-                self.nav_controller = None
+            # elif not self.joy.connected():
+            #    self.log("Xbox controller has been disconnected.")
+            #    self.joy = None
+            #    self.nav_controller = None
 
             # This executes if we never had a radio object, or it got disconnected.
             if self.radio is None or not os.path.exists(RADIO_PATH):
-
                 # This executes if we HAD a radio object, but it got disconnected.
                 if self.radio is not None and not os.path.exists(RADIO_PATH):
                     self.log("Radio device has been disconnected.")
@@ -226,20 +227,26 @@ class BaseStation(threading.Thread):
             else:
                 # Try to read line from radio.
                 try:
-                    self.radio.write(PING)
+                    self.radio.write(b'PING\n')
 
                     # This is where secured/synchronous code should go.
                     if self.connected_to_auv and self.manual_mode:
-                        if self.joy is not None and self.joy.connected() and self.nav_controller is not None:
+                        if self.joy is not None:  # and self.joy.connected() and self.nav_controller is not None:
                             try:
                                 self.nav_controller.handle()
-                                self.radio.write(str.encode("xbox(" + self.nav_controller.get_data()))
+                                self.radio.write(str.encode("x(" + str(self.nav_controller.get_data()) + ")\n"))
+                                self.log("[XBOX]\t" + str(self.nav_controller.get_data()))
                             except Exception as e:
                                 self.log("Error with Xbox data: " + str(e))
 
-                    # Read ALL lines stored in buffer (probably around 2-3 commands)
-                    lines = self.radio.readlines()
-                    self.radio.flush()
+                    # Reffer (probably around 2-3 commands)
+                    print("read line")
+                    lines = self.radio.read_bytes()
+                    lines = lines.decode('utf-8')
+                    lines = lines.split("\n")
+
+                    # self.radio.flush()
+                    print("read")
 
                     for line in lines:
                         if line == PING:
@@ -252,7 +259,7 @@ class BaseStation(threading.Thread):
                         elif len(line) > 3:
                             # Line is greater than 0, but not equal to the AUV_PING
                             # which means a possible command was found.
-                            message = line.decode('utf-8').replace("\n", "")
+                            # message = line.decode('utf-8').replace("\n", "")
 
                             # Check if message is a possible python function
                             if "(" in message and ")" in message:
