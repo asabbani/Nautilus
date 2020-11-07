@@ -2,8 +2,7 @@
 The radio class enables communication over wireless serial radios.
 """
 import serial
-
-TIMEOUT_DURATION = 2
+TIMEOUT_DURATION = 0
 DEFAULT_BAUDRATE = 115200
 
 
