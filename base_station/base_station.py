@@ -67,7 +67,7 @@ class BaseStation(threading.Thread):
 
         # Try to connect our Xbox 360 controller.
         try:
-            self.joy = Joystick()
+            #self.joy = Joystick()
             if (self.joy.connected()):
                 self.log("Successfuly found Xbox 360 controller.")
                 self.nav_controller = NavController(self.joy)
@@ -92,7 +92,7 @@ class BaseStation(threading.Thread):
         while self.joy is None:
             self.main.update()
             try:
-                #self.joy = xbox.Joystick()
+                #self.joy = xbox.Joystick() TODO
                 raise Exception()
             except Exception as e:
                 continue
@@ -198,7 +198,7 @@ class BaseStation(threading.Thread):
             if self.joy is None:
                 try:
                     print("Creating joystick. 5 seconds...")
-                    self.joy = Joystick()
+                    #self.joy = Joystick() TODO
                     self.nav_controller = NavController(self.joy)
                     print("Done creating.")
                 except Exception as e:
