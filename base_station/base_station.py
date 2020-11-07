@@ -92,7 +92,8 @@ class BaseStation(threading.Thread):
         while self.joy is None:
             self.main.update()
             try:
-                self.joy = xbox.Joystick()
+                #self.joy = xbox.Joystick()
+                raise Exception()
             except Exception as e:
                 continue
         self.main.log("Xbox controller is connected.")
