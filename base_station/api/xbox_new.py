@@ -10,7 +10,7 @@ class Xbox(Xbox360Controller):
         print("superclass did something")
 
     def leftX(self):
-        return self.button_thumb_l._value #TODO
+        return self.axis_l.x #TODO
 
     def rightTrigger(self):
         return self.trigger_r.value
