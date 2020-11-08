@@ -6,7 +6,7 @@ class Xbox(Xbox360Controller):
 
     def __init__(self):
         print("attempting superclass")
-        super.__init__(0, axis_threshold=0.2)
+        super().__init__(0, axis_threshold=0.2)
         print("superclass did something")
 
     def leftX(self):
