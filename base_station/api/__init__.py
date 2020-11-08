@@ -3,4 +3,4 @@ from .gps import GPS
 from .xbox import Joystick
 from .nav import NavController
 from .radio import Radio
-from .xbox_new import XBOX_Controller
+from .xbox_new import Xbox
