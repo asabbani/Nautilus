@@ -70,7 +70,6 @@ class BaseStation(threading.Thread):
 
 # XXX ---------------------- XXX ---------------------------- XXX TESTING AREA
         try:
-
             print("case0")
             self.joy = Xbox()
             print("case1")
