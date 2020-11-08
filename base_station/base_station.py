@@ -16,6 +16,7 @@ from queue import Queue
 # Custom imports
 from api import Radio
 from api import Joystick
+from api import XBOX_Controller
 from api import NavController
 from api import GPS
 from gui import Main
@@ -67,6 +68,8 @@ class BaseStation(threading.Thread):
 
         # Try to connect our Xbox 360 controller.
         try:
+            self.joy = XBOX_Controller()
+            self.joy.start()
             #self.joy = Joystick()
             if (self.joy.connected()):
                 self.log("Successfuly found Xbox 360 controller.")
@@ -195,7 +198,7 @@ class BaseStation(threading.Thread):
                     self.connected_to_auv = False
 
             # Check if we have an Xbox controller
-            if self.joy is None:
+            if False and self.joy is None:
                 try:
                     print("Creating joystick. 5 seconds...")
                     #self.joy = Joystick() TODO
