@@ -67,18 +67,19 @@ class BaseStation(threading.Thread):
                 "Warning: Cannot find radio device. Ensure RADIO_PATH is correct.")
 
         # Try to connect our Xbox 360 controller.
+
+# XXX ---------------------- XXX ---------------------------- XXX TESTING AREA
         try:
             self.joy = XBOX_Controller()
-            self.joy.start()
             #self.joy = Joystick()
-            if (self.joy.connected()):
-                self.log("Successfuly found Xbox 360 controller.")
-                self.nav_controller = NavController(self.joy)
-                self.log(
-                    "Successfully created a Navigation with Controller object.")
+            self.log("Successfuly found Xbox 360 controller.")
+            self.nav_controller = NavController(self.joy)
+            self.log("Successfully created a Navigation with Controller object.")
         except Exception as e:  # TODO
             self.log(str(e))
             self.log("Warning: Cannot find Xbox 360 controller.")
+
+# XXX ---------------------- XXX ---------------------------- XXX TESTING AREA
 
         # Try to assign our GPS object connection to GPSD
         try:
@@ -198,7 +199,7 @@ class BaseStation(threading.Thread):
                     self.connected_to_auv = False
 
             # Check if we have an Xbox controller
-            if False and self.joy is None:
+            if self.joy is None:
                 try:
                     print("Creating joystick. 5 seconds...")
                     #self.joy = Joystick() TODO

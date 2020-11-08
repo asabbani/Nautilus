@@ -2,32 +2,18 @@ import signal
 import time
 from xbox360controller import Xbox360Controller
 
-def on_button_pressed(button):
-    print('Button {0} was pressed'.format(button.name))
-
-def on_button_released(button):
-    print('Button {0} was released'.format(button.name))
-
-def on_axis_moved(axis):
-    print('Axis {0} moved to {1} {2}'.format(axis.name, axis.x, axis.y))
-
-class XBOX_Controller:
+class Xbox(Xbox360Controller):
 
     def __init__(self):
-        pass
+        super.__init__(0, axis_threshold=0.2)
 
-    def start(self):
-        try:
-            with Xbox360Controller(0, axis_threshold=0.2) as controller:
-                # Button A events
-                controller.button_a.when_pressed = on_button_pressed
-                controller.button_a.when_released = on_button_released
+    def leftX(self):
+        return 0 #TODO
 
-                # Left and right axis move event
-                controller.axis_l.when_moved = on_axis_moved
-                controller.axis_r.when_moved = on_axis_moved
+    def rightTrigger(self):
+        return self.trigger_r.value
 
-                signal.pause()
+    def leftTrigger(self):
+        return self.trigger_l.value
 
-        except KeyboardInterrupt:
-            pass
+
