@@ -71,10 +71,18 @@ class BaseStation(threading.Thread):
 # XXX ---------------------- XXX ---------------------------- XXX TESTING AREA
         try:
             self.joy = Xbox()
+            print("case1")
+
             #self.joy = Joystick()
             self.log("Successfuly found Xbox 360 controller.")
+            print("case2")
+
             self.nav_controller = NavController(self.joy)
+            print("case3")
+
             self.log("Successfully created a Navigation with Controller object.")
+            print("case4")
+
         except Exception as e:  # TODO
             self.log(str(e))
             self.log("Warning: Cannot find Xbox 360 controller.")
