@@ -16,7 +16,7 @@ from queue import Queue
 # Custom imports
 from api import Radio
 from api import Joystick
-from api import XBOX_Controller
+from api import Xbox
 from api import NavController
 from api import GPS
 from gui import Main
@@ -70,7 +70,7 @@ class BaseStation(threading.Thread):
 
 # XXX ---------------------- XXX ---------------------------- XXX TESTING AREA
         try:
-            self.joy = XBOX_Controller()
+            self.joy = Xbox()
             #self.joy = Joystick()
             self.log("Successfuly found Xbox 360 controller.")
             self.nav_controller = NavController(self.joy)
