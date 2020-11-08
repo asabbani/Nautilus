@@ -2,13 +2,13 @@ import signal
 import time
 from xbox360controller import Xbox360Controller
 
-def on_button_pressed(self, button):
+def on_button_pressed(button):
     print('Button {0} was pressed'.format(button.name))
 
-def on_button_released(self, button):
+def on_button_released(button):
     print('Button {0} was released'.format(button.name))
 
-def on_axis_moved(self, axis):
+def on_axis_moved(axis):
     print('Axis {0} moved to {1} {2}'.format(axis.name, axis.x, axis.y))
 
 class XBOX_Controller:
