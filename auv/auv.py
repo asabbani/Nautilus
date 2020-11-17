@@ -219,6 +219,7 @@ class AUV():
             try:  # Try to start mission
                 self.current_mission = Mission1(
                     self, self.mc, self.pressure_sensor, self.imu)
+                self.timer = 0
                 log("Successfully started mission " + str(mission) + ".")
                 self.radio.write(str.encode("mission_started("+str(mission)+")\n"))
             except Exception as e:
