@@ -210,7 +210,6 @@ class AUV():
 
             log(str(self.pressure_sensor.pressure()))
 
-
             time.sleep(THREAD_SLEEP_DELAY)
 
     def start_mission(self, mission):
