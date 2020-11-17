@@ -23,6 +23,9 @@ PING = b'PING\n'
 THREAD_SLEEP_DELAY = 0.05
 CONNECTION_TIMEOUT = 3
 
+MAX_TIME = 600
+MAX_ITERATION_COUNT = MAX_TIME / THREAD_SLEEP_DELAY
+
 
 def log(val):
     print("[AUV]\t" + val)
@@ -40,6 +43,7 @@ class AUV():
         self.connected_to_bs = False
         self.time_since_last_ping = 0.0
         self.current_mission = None
+        self.timer = 0
 
         # Get all non-default callable methods in this class
         self.methods = [m for m in dir(AUV) if not m.startswith('__')]
@@ -198,7 +202,14 @@ class AUV():
             if(self.current_mission is not None):
                 self.current_mission.loop()
 
+                #TODO statements because max time received
+                self.timer = self.timer + 1
+                if self.timer > MAX_ITERATION_COUNT:
+                    # kill mission, we exceeded time
+                    self.abort_mission()
+
             log(str(self.pressure_sensor.pressure()))
+
 
             time.sleep(THREAD_SLEEP_DELAY)
 
@@ -210,7 +221,7 @@ class AUV():
                     self, self.mc, self.pressure_sensor, self.imu)
                 log("Successfully started mission " + str(mission) + ".")
                 self.radio.write(str.encode("mission_started("+str(mission)+")\n"))
-            except:
+            except Exception as e:
                 raise Exception("Mission " + str(mission) +
                                 " failed to start. Error: " + str(e))
         # elif(mission == 2):
