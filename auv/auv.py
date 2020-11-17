@@ -64,7 +64,7 @@ class AUV():
 
         self.main_loop()
 
-    def xbox(self, data):
+    def x(self, data):
         self.mc.update_motor_speeds(data)
 
     def test_motor(self, motor):
@@ -155,7 +155,7 @@ class AUV():
 
                                 # TODO test case: set motor speeds
                                 data = [1, 2, 3, 4]
-                                self.xbox(data)
+                                self.x(data)
 
                         elif len(line) > 1:
                             # Line was read, but it was not equal to a BS_PING
@@ -198,7 +198,7 @@ class AUV():
             if(self.current_mission is not None):
                 self.current_mission.loop()
 
-            log(str(self.pressure_sensor.pressure()))
+            #log(str(self.pressure_sensor.pressure()))
 
             time.sleep(THREAD_SLEEP_DELAY)
 
