@@ -2,8 +2,7 @@
 The radio class enables communication over wireless serial radios.
 """
 import serial
-
-TIMEOUT_DURATION = 2
+TIMEOUT_DURATION = 0
 DEFAULT_BAUDRATE = 115200
 
 
@@ -35,6 +34,18 @@ class Radio():
         Returns an array of lines
         """
         return self.ser.readlines()
+
+    def read_bytes(self):
+        """
+        Reads all bytes in buffer.
+        """
+        return self.ser.read(self.ser.in_waiting)
+
+    def read(self, n_bytes=1):
+        """
+        Returns array of bytes
+        """
+        return self.ser.read(n_bytes)
 
     def readline(self):
         """

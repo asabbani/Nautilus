@@ -74,7 +74,7 @@ class Main():
             in_q - An input queue that holds any tasks given to us
         from another thread.
             out_q - An output queue that it used to push tasks to
-        the other thread. """        
+        the other thread. """
 
         # Begin initializing the main Tkinter (GUI) framework/root window
         self.root = Tk()
@@ -260,6 +260,7 @@ class Main():
             FONT, BUTTON_SIZE-2), state=DISABLED, width=LOG_FRAME_WIDTH)
 
         self.scrollbar = Scrollbar(self.log_frame)
+        self.scrollbar.config(command=self.console.yview)
         self.console.configure(yscrollcommand=self.scrollbar.set)
         self.scrollbar.pack(side=RIGHT, fill=Y)
         self.console.pack()
