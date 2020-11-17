@@ -23,8 +23,8 @@ PING = b'PING\n'
 THREAD_SLEEP_DELAY = 0.05
 CONNECTION_TIMEOUT = 3
 
-MAX_TIME = 600
-MAX_ITERATION_COUNT = MAX_TIME / THREAD_SLEEP_DELAY
+MAX_TIME = 5
+MAX_ITERATION_COUNT = MAX_TIME / THREAD_SLEEP_DELAY / 7
 
 
 def log(val):
@@ -200,6 +200,7 @@ class AUV():
                     continue
 
             if(self.current_mission is not None):
+                print(self.timer)
                 self.current_mission.loop()
 
                 #TODO statements because max time received
