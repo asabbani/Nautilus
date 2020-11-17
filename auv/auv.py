@@ -99,8 +99,9 @@ class AUV():
                 if self.connected_to_bs is True:
                     log("Lost connection to BS.")
 
-                    # reset motor speed to 0 immediately
+                    # reset motor speed to 0 immediately and flush buffer
                     self.mc.update_motor_speeds([0, 0, 0, 0])
+                    self.radio.flush()
                     log("DEBUG TODO speeds reset")
 
                     self.connected_to_bs = False
