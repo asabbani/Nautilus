@@ -79,7 +79,10 @@ class Main():
         # Begin initializing the main Tkinter (GUI) framework/root window
         self.root = Tk()
         self.root.resizable(False, False)
-        self.root.iconphoto(True, PhotoImage(file=ICON_PATH))
+        try:
+            self.root.iconphoto(True, PhotoImage(file=ICON_PATH))
+        except:
+            pass
 
         #### Code below is to fix high resolution screen scaling. ###
         os_enumerator = None
@@ -156,6 +159,10 @@ class Main():
 
         # Begin running GUI loop
         self.root.mainloop()
+
+        # Initializes heading variables
+        self.localized_heading = 0
+        self.current_heading = 0
 
     def check_tasks(self):
         """ Evaluates the commands/tasks given to us in the in-queue. These commands are
@@ -300,7 +307,11 @@ class Main():
 
     def set_heading(self, direction):
         """ Sets heading text """
-        self.heading_label_string.set("Heading: " + str(direction))
+        try:
+            self.currentHeading = int(direction)
+            self.heading_label_string.set("Heading: " + str(self.localized_heading - self.current_heading))
+        except Exception as e:
+            print("failed to set heading of " + str(direction))
 
     def set_temperature(self, temperature):
         """ Sets internal temperature text """
@@ -409,7 +420,7 @@ class Main():
 
     def calibrate_origin_on_map(self):
         """ Calibrates the origin on the map to the base stations coordinates """
-        print("ran calibrate")
+        print("ran calibrate origin")
         if self.bs_coordinates is not None:
             # Update the origin on our map.
             self.map.zero_map(self.bs_coordinates[0], self.bs_coordinates[1])
@@ -417,7 +428,21 @@ class Main():
         else:
             self.log("Cannot calibrate origin because the base station has not reported GPS data.")
 
+
+    def calibrate_heading_on_map(self):
+        """ Calibrates heading on the map to the AUV's heading """
+        print("ran calibrate heading")
+        if self.heading_label_string is not None:
+            # Update heading
+            self.heading_label_string.set("Heading: 0")
+            localized_heading = current_heading
+        else:
+            self.log("Cannot calibrate heading because the base station has not reported heading data.")
+            
+
     def create_function_buttons(self):
+        self.heading_button = Button(self.functions_frame, text="Calibrate Heading", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.calibrate_heading_on_map)
         self.origin_button = Button(self.functions_frame, text="Calibrate Origin", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                     padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.calibrate_origin_on_map)
         self.add_waypoint_button = Button(self.functions_frame, text="Add Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
@@ -429,6 +454,7 @@ class Main():
         self.clear_button = Button(self.functions_frame, text="Clear Map", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.clear)
 
+        self.heading_button.pack(expand=YES)
         self.origin_button.pack(expand=YES)
         self.add_waypoint_button.pack(expand=YES)
         self.nav_to_waypoint_button.pack(expand=YES)
