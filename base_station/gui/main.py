@@ -157,12 +157,13 @@ class Main():
         # Loop that checks our in-queue tasks given from the BaseStation thread object
         self.root.after(REFRESH_TIME, self.check_tasks)
 
-        # Begin running GUI loop
-        self.root.mainloop()
-
         # Initializes heading variables
         self.localized_heading = 0.0
         self.current_heading = 0.0
+
+        # Begin running GUI loop
+        self.root.mainloop()
+
 
     def check_tasks(self):
         """ Evaluates the commands/tasks given to us in the in-queue. These commands are
