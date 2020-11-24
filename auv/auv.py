@@ -50,6 +50,7 @@ class AUV():
 
         try:
             self.pressure_sensor = PressureSensor()
+            self.pressure_sensor.init()
             log("Pressure sensor has been found")
         except:
             log("Pressure sensor is not connected to the AUV.")
@@ -204,12 +205,14 @@ class AUV():
                 print(self.timer)
                 self.current_mission.loop()
 
+
                 #TODO statements because max time received
                 self.timer = self.timer + 1
                 if self.timer > MAX_ITERATION_COUNT:
                     # kill mission, we exceeded time
                     self.abort_mission()
 
+            self.pressure_sensor.read()
             log(str(self.pressure_sensor.pressure()))
 
             time.sleep(THREAD_SLEEP_DELAY)
