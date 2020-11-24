@@ -162,7 +162,7 @@ class Main():
 
         # Initializes heading variables
         self.localized_heading = 0.0
-        self.current_heading = 0
+        self.current_heading = 0.0
 
     def check_tasks(self):
         """ Evaluates the commands/tasks given to us in the in-queue. These commands are
@@ -308,9 +308,10 @@ class Main():
     def set_heading(self, direction):
         """ Sets heading text """
         try:
-            self.currentHeading = float(direction)
+            self.current_heading = float(direction)
             self.heading_label_string.set("Heading: " + str(self.localized_heading - self.current_heading))
         except Exception as e:
+            print(str(e))
             print("failed to set heading of " + str(direction))
 
     def set_temperature(self, temperature):
