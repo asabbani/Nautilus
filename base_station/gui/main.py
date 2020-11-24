@@ -161,7 +161,7 @@ class Main():
         self.root.mainloop()
 
         # Initializes heading variables
-        self.localized_heading = 0
+        self.localized_heading = 0.0
         self.current_heading = 0
 
     def check_tasks(self):
@@ -308,7 +308,7 @@ class Main():
     def set_heading(self, direction):
         """ Sets heading text """
         try:
-            self.currentHeading = int(direction)
+            self.currentHeading = float(direction)
             self.heading_label_string.set("Heading: " + str(self.localized_heading - self.current_heading))
         except Exception as e:
             print("failed to set heading of " + str(direction))
@@ -434,7 +434,7 @@ class Main():
         print("ran calibrate heading")
         if self.heading_label_string is not None:
             # Update heading
-            self.heading_label_string.set("Heading: 0")
+            self.heading_label_string.set("Heading: 0.0")
             self.localized_heading = self.current_heading
         else:
             self.log("Cannot calibrate heading because the base station has not reported heading data.")
