@@ -248,12 +248,12 @@ class Main():
         self.comms_status_string.set("Comms Status: Not connected")
         self.comms_status.place(relx=0.05, rely=0.80, anchor='sw')
 
-        self.pressure_string = StringVar()
-        self.pressure = Label(
-            self.status_frame, textvariable=self.pressure_string, font=(FONT, STATUS_SIZE))
-        self.pressure.pack()
-        self.pressure_string.set("Pressure: 0 mBar")
-        self.pressure.place(relx=0.05, rely=0.90, anchor='sw')
+        self.depth_string = StringVar()
+        self.depth = Label(
+            self.status_frame, textvariable=self.depth_string, font=(FONT, STATUS_SIZE))
+        self.depth.pack()
+        self.depth_string.set("depth: 0 mBar")
+        self.depth.place(relx=0.05, rely=0.90, anchor='sw')
         # self.calibrate_xbox_button           = Button(self.status_frame, text = "Calibrate Controller", takefocus = False, width = BUTTON_WIDTH + 10, height = BUTTON_HEIGHT,
         #                                      padx = BUTTON_PAD_X, pady = BUTTON_PAD_Y, font = (FONT, BUTTON_SIZE), command = self.base_station.calibrate_controller )
         # self.calibrate_xbox_button.pack()
@@ -326,10 +326,10 @@ class Main():
         self.temperature_string.set(
             "Internal Temperature: " + str(temperature) + "C")
     
-    def set_pressure(self, pressure):
-        """ Sets pressure text """
-        self.pressure_string.set(
-            "Pressure: " + str(pressure) + "mBar")
+    def set_depth(self, depth):
+        """ Sets depth text """
+        self.depth_string.set(
+            "depth: " + str(depth) + "mBar")
 
     def set_position(self, xPos, yPos):
         self.position_label_string.set(
