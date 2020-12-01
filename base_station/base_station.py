@@ -129,7 +129,7 @@ class BaseStation(threading.Thread):
                 print("Failed to evaluate in_q task: ", task)
                 print("\t Error received was: ", str(e))
 
-    def auv_data(self, heading, temperature, longitude=None, latitude=None):
+    def auv_data(self, heading, temperature, pressure, longitude=None, latitude=None):
         """ Parses the AUV data-update packet, stores knowledge of its on-board sensors"""
 
         # Update heading on BS and on GUI
@@ -139,6 +139,10 @@ class BaseStation(threading.Thread):
         # Update temp on BS and on GUI
         self.auv_temperature = temperature
         self.out_q.put("set_temperature("+str(temperature)+")")
+
+        # Update pressure on BS and on GUI
+        self.auv_pressure = pressure
+        self.out_q.put("set_pressure(" + str(pressure) + ")")
 
         # If the AUV provided its location...
         if longitude is not None and latitude is not None:

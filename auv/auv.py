@@ -130,6 +130,11 @@ class AUV():
                         #        send("d_done()")
                         #        sending_data = False
 
+                        # TODO default values in case we could not read anything
+                        heading = 0
+                        temperature = 0
+                        pressure = 0
+
                         if self.imu is not None:
                             try:
                                 #heading = self.imu.quaternion[0]
@@ -140,13 +145,23 @@ class AUV():
                                     #heading = round(
                                     #    abs(heading * 360) * 100.0) / 100.0
 
-                                    temperature = self.imu.temperature
-                                    # (Heading, Temperature)
-                                    print(temperature)
-                                    if temperature is not None:
-                                        self.radio.write(str.encode("auv_data(" + str(heading) + ", " + str(temperature) + ")\n"))
+                                temperature = self.imu.temperature
+                                # (Heading, Temperature)
+                                if temperature is not None:
+                                    temperature = str(temperature)
+                                else:
+                                    temperature = 0
+
                             except:
-                                pass
+                                # TODO print statement, something went wrong!
+                                heading = 0
+                                temperature = 0
+
+                        if self.pressure_sensor is not None:
+                            pressure = self.pressure_sensor.read()
+                            # log(str(self.pressure_sensor.pressure()))
+
+                        self.radio.write(str.encode("auv_data(" + str(heading) + ", " + str(temperature) + ", " + str(pressure) + ")\n"))
 
                     # Read ALL lines stored in buffer (probably around 2-3 commands)
                     lines = self.radio.readlines()
@@ -210,9 +225,6 @@ class AUV():
                 if self.timer > MAX_ITERATION_COUNT:
                     # kill mission, we exceeded time
                     self.abort_mission()
-
-            self.pressure_sensor.read()
-            log(str(self.pressure_sensor.pressure()))
 
             time.sleep(THREAD_SLEEP_DELAY)
 
