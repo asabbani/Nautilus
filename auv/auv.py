@@ -159,7 +159,8 @@ class AUV():
                                 self.radio.write(str.encode("log(\"[AUV]\tAn error occurred while trying to read heading and temperature.\")\n"))
 
                         if self.pressure_sensor is not None:
-                            pressure = self.pressure_sensor.read()
+                            self.pressure_sensor.read()
+                            pressure = self.pressure_sensor.pressure()
                             # log(str(self.pressure_sensor.pressure()))
 
                         self.radio.write(str.encode("auv_data(" + str(heading) + ", " + str(temperature) + ", " + str(pressure) + ")\n"))
@@ -201,8 +202,7 @@ class AUV():
                                     try:  # Attempt to evaluate command.
                                         # Append "self." to all commands.
                                         eval('self.' + message)
-                                        self.radio.write(str.encode(
-                                            "log(\"[AUV]\tSuccessfully evaluated command: " + possible_func_name + "()\")\n"))
+                                        #self.radio.write(str.encode("log(\"[AUV]\tSuccessfully evaluated command: " + possible_func_name + "()\")\n"))
                                     except Exception as e:
                                         # log error message
                                         log(str(e))
