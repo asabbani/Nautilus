@@ -140,6 +140,10 @@ class BaseStation(threading.Thread):
         self.auv_temperature = temperature
         self.out_q.put("set_temperature("+str(temperature)+")")
 
+        # Update pressure on BS and on GUI
+        self.auv_pressure = pressure
+        self.out_q.put("set_pressure(" + str(pressure) + ")")
+
         # If the AUV provided its location...
         if longitude is not None and latitude is not None:
             self.auv_longitude = longitude
