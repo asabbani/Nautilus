@@ -156,6 +156,7 @@ class AUV():
                                 # TODO print statement, something went wrong!
                                 heading = 0
                                 temperature = 0
+                                self.radio.write(str.encode("log(\"[AUV]\tAn error occurred while trying to read heading and temperature.\")\n"))
 
                         if self.pressure_sensor is not None:
                             pressure = self.pressure_sensor.read()
