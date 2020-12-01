@@ -142,9 +142,9 @@ class AUV():
 
                                     temperature = self.imu.temperature
                                     # (Heading, Temperature)
+                                    print(temperature)
                                     if temperature is not None:
-                                        self.radio.write(str.encode(
-                                            "auv_data(" + str(heading) + ", " + str(temperature) + ")\n"))
+                                        self.radio.write(str.encode("auv_data(" + str(heading) + ", " + str(temperature) + ")\n"))
                             except:
                                 pass
 
@@ -185,8 +185,7 @@ class AUV():
                                     try:  # Attempt to evaluate command.
                                         # Append "self." to all commands.
                                         eval('self.' + message)
-                                        self.radio.write(str.encode(
-                                            "log(\"[AUV]\tSuccessfully evaluated command: " + possible_func_name + "()\")\n"))
+                                        #self.radio.write(str.encode("log(\"[AUV]\tSuccessfully evaluated command: " + possible_func_name + "()\")\n"))
                                     except Exception as e:
                                         # log error message
                                         log(str(e))
