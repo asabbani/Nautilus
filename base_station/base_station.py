@@ -144,6 +144,10 @@ class BaseStation(threading.Thread):
         self.auv_pressure = pressure
         self.out_q.put("set_pressure(" + str(pressure) + ")")
 
+        # Update depth on BS and on GUI
+        self.depth = pressure / 100 # 1 mBar = 0.01 msw
+        self.out_q.put("set_depth(" + str(self.depth) + ")")
+
         # If the AUV provided its location...
         if longitude is not None and latitude is not None:
             self.auv_longitude = longitude
