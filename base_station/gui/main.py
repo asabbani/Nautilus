@@ -252,7 +252,7 @@ class Main():
         self.depth = Label(
             self.status_frame, textvariable=self.depth_string, font=(FONT, STATUS_SIZE))
         self.depth.pack()
-        self.depth_string.set("depth: 0 mBar")
+        self.depth_string.set("depth: 0meters")
         self.depth.place(relx=0.05, rely=0.90, anchor='sw')
         # self.calibrate_xbox_button           = Button(self.status_frame, text = "Calibrate Controller", takefocus = False, width = BUTTON_WIDTH + 10, height = BUTTON_HEIGHT,
         #                                      padx = BUTTON_PAD_X, pady = BUTTON_PAD_Y, font = (FONT, BUTTON_SIZE), command = self.base_station.calibrate_controller )
@@ -329,7 +329,7 @@ class Main():
     def set_depth(self, depth):
         """ Sets depth text """
         self.depth_string.set(
-            "depth: " + str(depth) + "mBar")
+            "depth: " + str(depth) + "meter")
 
     def set_position(self, xPos, yPos):
         self.position_label_string.set(
