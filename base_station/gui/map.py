@@ -5,6 +5,7 @@ from matplotlib.pyplot import scatter
 from matplotlib.lines import Line2D
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from tkinter.ttk import Combobox
 import matplotlib
 import matplotlib.axes
 matplotlib.use('TkAgg')
@@ -392,43 +393,32 @@ class Map:
         prompt_window.wm_attributes('-topmost')
         Label(prompt_window, text="Waypoint", font=(FONT, FONT_SIZE)).grid(row=1)
 
-        prompt_input_name.insert(0, "My waypoint")  # Placeholder for input
-        prompt_input_x.insert(0, x)
-        prompt_input_y.insert(0, y)
-
 
         buttonList = list()
 
-        i = 1
-        for waypoint in self.waypoints:
-            prompt_way = Button(prompt_window, text="(" + waypoint[0] + ", " + waypoint[1] + ")", font=(FONT, FONT_SIZE),
-                            command=lambda:
-                            [
-                                self.nav_x = waypoint[0]
-                                self.nav_y = waypoint[1]
-                                self.main.log(self.nav_x + " " + self.nav_y)
+        # creates combo box of waypoints
+        self.waypoint_list = Combobox(prompt_window, state="readonly", values=self.waypoints, font=(FONT, 20))
+        self.waypoint_list.set("Select Waypoint...")
 
-                            ])
-            prompt_way.grid(row=i, columin= 1, padx=5, pady=5)
-            buttonList.append(prompt_way)
-            i += 1
+        self.waypoint_list.grid(row=2, column=0, padx=5, pady=5)
 
 
+        # saves the selected waypoint when save is pressed
+        def set_waypoint():
+            self.nav_x = self.waypoints[self.waypoint_list.current()][0]
+            self.nav_y = self.waypoints[self.waypoint_list.current()][1]
+            self.main.log("Selected waypoint: " + str(self.nav_x) + " " + str(self.nav_y))
+
+        # save button that calls set_waypoint()
         prompt_submit = Button(prompt_window, text="Save", font=(FONT, FONT_SIZE),
                                command=lambda:  # Runs multiple functions.
                                [
-                                   self.add_waypoint(float(prompt_input_x.get()),
-                                                     float(
-                                                         prompt_input_y.get()),
-                                                     str(prompt_input_name.get())),
+                                   set_waypoint(),
                                    prompt_window.destroy()
         ])
 
-        prompt_submit.grid(row=i, column=0, padx=5, pady=5)
+        prompt_submit.grid(row=3, column=0, padx=5, pady=5)
 
-
-    self.nav_x = 0
-    self.nav_y = 0
 
     def add_waypoint(self, x=0, y=0, label="My Waypoint"):
         self.main.log("Added waypoint \"" + label + "\" at map-position (" + str(int(x)) + ", " + str(int(y)) + ") " +
@@ -440,7 +430,7 @@ class Map:
             label,
             self.map.plot(x, y, marker='o', markersize=5,
                           color=WAYPOINT_COLOR, label=label),
-            self.map.annotate(xy=(x, y), text=label + ", UTM: ("+str(round(float(
+            self.map.annotate(xy=(x, y), s=label + ", UTM: ("+str(round(float(
                 x)+self.zero_offset_x, 5))+","+str(round(float(y)+self.zero_offset_y, 5))+")")
         ])
 
