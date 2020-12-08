@@ -376,6 +376,60 @@ class Map:
 
         return graph
 
+
+    def nav_to_waypoint(self):
+        print("[MAP] Opening nav-to-waypoint prompt.")
+        prompt_window = Toplevel(self.window)
+        # Change position of waypoint prompt to cursor position.
+        center_x = ((self.main.root.winfo_x() +
+                     self.main.root.winfo_width()) / 2.5)
+        center_y = ((self.main.root.winfo_y() +
+                     self.main.root.winfo_height()) / 2.5)
+        prompt_window.geometry("+%d+%d" % (center_x, center_y))
+
+        prompt_window.resizable(False, False)
+        prompt_window.title("Select Waypoint")
+        prompt_window.wm_attributes('-topmost')
+        Label(prompt_window, text="Waypoint", font=(FONT, FONT_SIZE)).grid(row=1)
+
+        prompt_input_name.insert(0, "My waypoint")  # Placeholder for input
+        prompt_input_x.insert(0, x)
+        prompt_input_y.insert(0, y)
+
+
+        buttonList = list()
+
+        i = 1
+        for waypoint in self.waypoints:
+            prompt_way = Button(prompt_window, text="(" + waypoint[0] + ", " + waypoint[1] + ")", font=(FONT, FONT_SIZE),
+                            command=lambda:
+                            [
+                                self.nav_x = waypoint[0]
+                                self.nav_y = waypoint[1]
+                                self.main.log(self.nav_x + " " + self.nav_y)
+
+                            ])
+            prompt_way.grid(row=i, columin= 1, padx=5, pady=5)
+            buttonList.append(prompt_way)
+            i += 1
+
+
+        prompt_submit = Button(prompt_window, text="Save", font=(FONT, FONT_SIZE),
+                               command=lambda:  # Runs multiple functions.
+                               [
+                                   self.add_waypoint(float(prompt_input_x.get()),
+                                                     float(
+                                                         prompt_input_y.get()),
+                                                     str(prompt_input_name.get())),
+                                   prompt_window.destroy()
+        ])
+
+        prompt_submit.grid(row=i, column=0, padx=5, pady=5)
+
+
+    self.nav_x = 0
+    self.nav_y = 0
+
     def add_waypoint(self, x=0, y=0, label="My Waypoint"):
         self.main.log("Added waypoint \"" + label + "\" at map-position (" + str(int(x)) + ", " + str(int(y)) + ") " +
                       "with utm-coordinates (" + str(int(float(x)+self.zero_offset_x)) + ", " + str(int(float(y)+self.zero_offset_y)) + ").")
