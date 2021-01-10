@@ -460,9 +460,9 @@ class Main():
         if self.heading_label_string is not None:
             # Update heading
             self.heading_label_string.set("Heading: 0.0")
-            print("heading changed from " + self.localized_heading)
+            print("heading changed from", self.localized_heading)
             self.localized_heading = self.current_heading
-            print(" to " + self.localized_heading + "\n")
+            print("to", self.localized_heading)
         else:
             self.log("Cannot calibrate heading because the base station has not reported heading data.")
             
