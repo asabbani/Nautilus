@@ -218,10 +218,10 @@ class BaseStation(threading.Thread):
             # Check if we have an Xbox controller
             if self.joy is None:
                 try:
-                    print("Creating joystick. 5 seconds...")
+                    # print("Creating joystick. 5 seconds...")
                     #self.joy = Joystick() TODO
                     self.nav_controller = NavController(self.joy)
-                    print("Done creating.")
+                    # print("Done creating.")
                 except Exception as e:
                     print("Xbox creation error: ", str(e))
                     pass
