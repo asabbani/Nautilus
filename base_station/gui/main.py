@@ -323,7 +323,7 @@ class Main():
         """ Sets heading text """
         try:
             self.current_heading = float(direction)
-            self.heading_label_string.set("Heading: " + str(self.localized_heading - self.current_heading))
+            self.heading_label_string.set("Heading: " + str(self.current_heading - self.localized_heading))
         except Exception as e:
             print(str(e))
             print("failed to set heading of " + str(direction))
@@ -462,10 +462,12 @@ class Main():
             self.heading_label_string.set("Heading: 0.0")
             print("heading changed from", self.localized_heading)
             self.localized_heading = self.current_heading
-            print("to", self.localized_heading)
+            print("to", self.current_heading, self.localized_heading)
         else:
             self.log("Cannot calibrate heading because the base station has not reported heading data.")
-            
+
+    def get_angle(self):
+
 
     def create_function_buttons(self):
         self.heading_button = Button(self.functions_frame, text="Calibrate Heading", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
