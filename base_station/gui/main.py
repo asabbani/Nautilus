@@ -462,7 +462,7 @@ class Main():
             self.heading_label_string.set("Heading: 0.0")
             print("heading changed from", self.localized_heading)
             self.localized_heading = self.current_heading
-            print("to", self.localized_heading)
+            print("to", self.current_heading, self.localized_heading)
         else:
             self.log("Cannot calibrate heading because the base station has not reported heading data.")
             
