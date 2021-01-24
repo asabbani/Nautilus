@@ -102,8 +102,11 @@ class AUV():
 
                     # reset motor speed to 0 immediately and flush buffer
                     self.mc.update_motor_speeds([0, 0, 0, 0])
-                    self.radio.flush()
                     log("DEBUG TODO speeds reset")
+
+                    # enforce check in case radio is not found
+                    if self.radio is not None:
+                        self.radio.flush()
 
                     self.connected_to_bs = False
 
