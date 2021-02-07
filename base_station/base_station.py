@@ -19,6 +19,7 @@ from api import Joystick
 from api import Xbox
 from api import NavController
 from api import GPS
+from api import Hasher
 from gui import Main
 
 # Constants
@@ -105,7 +106,7 @@ class BaseStation(threading.Thread):
         while self.joy is None:
             self.main.update()
             try:
-                #self.joy = xbox.Joystick() TODO
+                # self.joy = xbox.Joystick() TODO
                 raise Exception()
             except Exception as e:
                 continue
@@ -145,7 +146,7 @@ class BaseStation(threading.Thread):
         self.out_q.put("set_pressure(" + str(pressure) + ")")
 
         # Update depth on BS and on GUI
-        self.depth = pressure / 100 # 1 mBar = 0.01 msw
+        self.depth = pressure / 100  # 1 mBar = 0.01 msw
         self.out_q.put("set_depth(" + str(self.depth) + ")")
 
         # If the AUV provided its location...
@@ -219,7 +220,7 @@ class BaseStation(threading.Thread):
             if self.joy is None:
                 try:
                     # print("Creating joystick. 5 seconds...")
-                    #self.joy = Joystick() TODO
+                    # self.joy = Joystick() TODO
                     self.nav_controller = NavController(self.joy)
                     # print("Done creating.")
                 except Exception as e:

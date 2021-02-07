@@ -145,7 +145,7 @@ class AUV():
                                 if compass is not None:
                                     heading = math.degrees(math.atan2(compass[1], compass[0]))
 
-                                    #heading = round(
+                                    # heading = round(
                                     #    abs(heading * 360) * 100.0) / 100.0
 
                                 temperature = self.imu.temperature
@@ -224,8 +224,7 @@ class AUV():
                 print(self.timer)
                 self.current_mission.loop()
 
-
-                #TODO statements because max time received
+                # TODO statements because max time received
                 self.timer = self.timer + 1
                 if self.timer > MAX_ITERATION_COUNT:
                     # kill mission, we exceeded time
