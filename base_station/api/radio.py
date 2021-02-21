@@ -27,13 +27,21 @@ class Radio():
 
         message: A string message that is sent over serial connection.
         """
-        self.ser.write(message)
+
+        # Process different types of messages
+        if isinstance(message, str):
+            encoded = str.encode(message + "\n")
+            self.ser.write(encoded)
+
+        elif isinstance(message, bytes):
+            self.ser.write(message)
 
     def readlines(self):
         """
         Returns an array of lines
         """
-        return self.ser.readlines()
+        lines = self.ser.readlines()
+        return [line.decode('utf-8').replace("\n", "") for line in lines]
 
     def read_bytes(self):
         """
@@ -51,7 +59,7 @@ class Radio():
         """
         Returns a string from the serial connection.
         """
-        return self.ser.readline()
+        return self.ser.readline().decode('utf-8').replace("\n", "")
 
     def is_open(self):
         """
