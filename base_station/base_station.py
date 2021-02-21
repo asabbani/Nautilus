@@ -19,13 +19,13 @@ from api import Joystick
 from api import Xbox
 from api import NavController
 from api import GPS
-from api import Hasher
+from api import checksum
 from gui import Main
 
 # Constants
 THREAD_SLEEP_DELAY = 0.1  # Since we are the slave to AUV, we must run faster.
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
-PING = b'PING\n'
+PING = 'PING'
 CONNECTION_TIMEOUT = 4
 
 # AUV Constants (these are also in auv.py)
@@ -168,7 +168,7 @@ class BaseStation(threading.Thread):
             self.log("Cannot test " + motor +
                      " motor(s) because there is no connection to the AUV.")
         else:
-            self.radio.write(str.encode('test_motor("' + motor + '")\n'))
+            self.radio.write('test_motor("' + motor + '")')
             self.log('Sending task: test_motor("' + motor + '")')
 
     def abort_mission(self):
@@ -177,7 +177,7 @@ class BaseStation(threading.Thread):
             self.log(
                 "Cannot abort mission because there is no connection to the AUV.")
         else:
-            self.radio.write(str.encode("abort_mission()\n"))
+            self.radio.write("abort_mission()")
             self.log("Sending task: abort_mission()")
             self.manual_mode = True
 
@@ -197,8 +197,7 @@ class BaseStation(threading.Thread):
             self.log("Cannot start mission " + str(mission) +
                      " because there is no connection to the AUV.")
         else:
-            self.radio.write(str.encode(
-                "start_mission(" + str(mission) + ")\n"))
+            self.radio.write("start_mission(" + str(mission) + ")")
             self.log('Sending task: start_mission(' + str(mission) + ')')
 
     def run(self):
@@ -257,7 +256,7 @@ class BaseStation(threading.Thread):
                         if self.joy is not None:  # and self.joy.connected() and self.nav_controller is not None:
                             try:
                                 self.nav_controller.handle()
-                                self.radio.write(str.encode("x(" + str(self.nav_controller.get_data()) + ")\n"))
+                                self.radio.write("x(" + str(self.nav_controller.get_data()) + ")")
                                 print("[XBOX]\t" + str(self.nav_controller.get_data()))
                             except Exception as e:
                                 self.log("Error with Xbox data: " + str(e))
@@ -281,7 +280,7 @@ class BaseStation(threading.Thread):
                         elif len(line) > 3:
                             # Line is greater than 0, but not equal to the AUV_PING
                             # which means a possible command was found.
-                            message = line.decode('utf-8').replace("\n", "")
+                            message = line
 
                             # Check if message is a possible python function
                             if "(" in message and ")" in message:
@@ -323,7 +322,7 @@ class BaseStation(threading.Thread):
     def download_data(self):
         """ Function calls download data function """
         if self.connected_to_auv is True:
-            self.radio.write(str.encode("d_data()\n"))
+            self.radio.write("d_data()")
             self.log("Sending download data command to AUV.")
         else:
             self.log("Cannot download data because there is no connection to the AUV.")
