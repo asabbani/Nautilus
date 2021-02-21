@@ -4,4 +4,4 @@ from .xbox import Joystick
 from .nav import NavController
 from .radio import Radio
 from .xbox_new import Xbox
-from .hasher import Hasher
+import hasher as checksum
