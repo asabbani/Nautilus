@@ -65,6 +65,9 @@ MISSIONS = ["0: Sound Tracking", "1: Audio Collecting"]
 # Icon Path
 ICON_PATH = "gui/images/yonder_logo.png"
 
+# Navigation Encoding
+NAV_ENCODE = 0b000000100000000000000000           # | with XSY (forward, angle sign, angle)
+MISSION_ENCODE = 0b000000000000000000000000       # | with X   (mission)
 
 class Main():
     """ Main GUI object that handles all aspects of the User-Interface """
@@ -361,7 +364,7 @@ class Main():
         self.forward_calibrate_button = Button(self.calibrate_frame, text="Forward", takefocus=False,  # width = 15, height = 3,
                                                padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                    FONT, BUTTON_SIZE),
-                                               command=lambda: self.out_q.put("test_motor('FORWARD')"))
+                                               command=lambda: self.out_q.put((NAV_ENCODE | (10 << 9) | (0 << 8) | (0)) & 0xFFFFFF))
 
         self.forward_calibrate_button.grid(
             row=4, column=1, pady=CALIBRATE_PAD_Y)
