@@ -66,6 +66,11 @@ MISSIONS = ["0: Sound Tracking", "1: Audio Collecting"]
 ICON_PATH = "gui/images/yonder_logo.png"
 
 
+# Navigation Encoding
+NAV_ENCODE = 0b000000100000000000000000           # | with XSY (forward, angle sign, angle)
+MISSION_ENCODE = 0b000000000000000000000000       # | with X   (mission)
+
+
 class Main():
     """ Main GUI object that handles all aspects of the User-Interface """
 
@@ -85,7 +90,6 @@ class Main():
             pass
 
         #### Code below is to fix high resolution screen scaling. ###
->>>>>> > ff8ff7605ac4ae93024f34e9b0b1d920201f1a0b
         os_enumerator = None
         # https://stackoverflow.com/questions/446209/possible-values-from-sys-platform
         if "linux" in sys.platform:  # Linux designated as "linux"
@@ -325,28 +329,32 @@ class Main():
             self.calibrate_frame, text="Motor Testing", takefocus=False, font=(FONT, HEADING_SIZE))
         self.calibrate_label.grid(row=0, columnspan=4, sticky=W+E)
 
+        # test move forward
         self.forward_calibrate_button = Button(self.calibrate_frame, text="Forward", takefocus=False,  # width = 15, height = 3,
                                                padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                    FONT, BUTTON_SIZE),
-                                               command=lambda: self.out_q.put("test_motor('FORWARD')"))
-
+                                               command=lambda: self.out_q.put((NAV_ENCODE | (10 << 9) | (0 << 8) | (0)) & 0xFFFFFF))
+                                                                                # NAV X S Y  
         self.forward_calibrate_button.grid(
             row=4, column=1, pady=CALIBRATE_PAD_Y)
 
-        self.turn_calibrate_button = Button(self.calibrate_frame, text="Turn", takefocus=False,  # width = 15, height = 3,
+
+        self.turn_calibrate_button = Button(self.calibrate_frame, text="Right", takefocus=False,  # width = 15, height = 3,
                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                 FONT, BUTTON_SIZE),
                                             command=lambda: self.out_q.put("test_motor('TURN')"))
-
+                                                                            # X = 10, Y = 90
         self.turn_calibrate_button.grid(row=1, column=1, pady=CALIBRATE_PAD_Y)
 
-        self.front_calibrate_button = Button(self.calibrate_frame, text="Front", takefocus=False,  # width = 15, height = 3,
+        self.front_calibrate_button = Button(self.calibrate_frame, text="Left", takefocus=False,  # width = 15, height = 3,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                  FONT, BUTTON_SIZE),
                                              command=lambda: self.out_q.put("test_motor('FRONT')"))
 
         self.front_calibrate_button.grid(row=2, column=1, pady=CALIBRATE_PAD_Y)
 
+
+        #TODO ask about these tests
         self.calibrate_all_button = Button(self.calibrate_frame, text="All", takefocus=False,  # width = 15, height = 3,
                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                FONT, BUTTON_SIZE),
