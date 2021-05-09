@@ -334,27 +334,25 @@ class Main():
                                                padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                    FONT, BUTTON_SIZE),
                                                command=lambda: self.out_q.put((NAV_ENCODE | (10 << 9) | (0 << 8) | (0)) & 0xFFFFFF))
-                                                                                # NAV X S Y  
+        # NAV X S Y
         self.forward_calibrate_button.grid(
             row=4, column=1, pady=CALIBRATE_PAD_Y)
-
 
         self.turn_calibrate_button = Button(self.calibrate_frame, text="Right", takefocus=False,  # width = 15, height = 3,
                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                 FONT, BUTTON_SIZE),
-                                            command=lambda: self.out_q.put("test_motor('TURN')"))
-                                                                            # X = 10, Y = 90
+                                            command=lambda: self.out_q.put((NAV_ENCODE | (0 << 9) | (0 << 8) | 90) & 0xFFFFFF))
+        # X = 10, Y = 90
         self.turn_calibrate_button.grid(row=1, column=1, pady=CALIBRATE_PAD_Y)
 
         self.front_calibrate_button = Button(self.calibrate_frame, text="Left", takefocus=False,  # width = 15, height = 3,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                  FONT, BUTTON_SIZE),
-                                             command=lambda: self.out_q.put("test_motor('FRONT')"))
+                                             command=lambda: self.out_q.put((NAV_ENCODE | (0 << 9) | (1 << 8) | 90) & 0xFFFFFF))
 
         self.front_calibrate_button.grid(row=2, column=1, pady=CALIBRATE_PAD_Y)
 
-
-        #TODO ask about these tests
+        # TODO ask about these tests
         self.calibrate_all_button = Button(self.calibrate_frame, text="All", takefocus=False,  # width = 15, height = 3,
                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                FONT, BUTTON_SIZE),
