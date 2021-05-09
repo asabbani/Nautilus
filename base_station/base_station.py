@@ -33,6 +33,11 @@ MAX_AUV_SPEED = 100
 MAX_TURN_SPEED = 50
 
 
+# Navigation Encoding
+NAV_ENCODE = 0b000000100000000000000000           # | with XSY (forward, angle sign, angle)
+MISSION_ENCODE = 0b000000000000000000000000       # | with X   (mission)
+
+
 class BaseStation(threading.Thread):
     """ Base station class that acts as the brain for the entire base station. """
 
@@ -75,7 +80,7 @@ class BaseStation(threading.Thread):
             self.joy = Xbox()
             print("case1")
 
-            #self.joy = Joystick()
+            # self.joy = Joystick()
             self.log("Successfuly found Xbox 360 controller.")
             print("case2")
 
@@ -168,8 +173,16 @@ class BaseStation(threading.Thread):
             self.log("Cannot test " + motor +
                      " motor(s) because there is no connection to the AUV.")
         else:
-            self.radio.write('test_motor("' + motor + '")')
-            self.log('Sending task: test_motor("' + motor + '")')
+            if (motor == 'Forward'):
+                self.radio.write((NAV_ENCODE | (10 << 9) | (0 << 8) | (0)) & 0xFFFFFF)
+            elif (motor == 'Left'):
+                self.radio.write((NAV_ENCODE | (0 << 9) | (1 << 8) | 90) & 0xFFFFFF)
+            elif (motor == 'Right'):
+                self.radio.write((NAV_ENCODE | (0 << 9) | (0 << 8) | 90) & 0xFFFFFF)
+
+            self.log('Sending encoded task: test_motor("' + motor + '")')
+
+            # self.radio.write('test_motor("' + motor + '")')
 
     def abort_mission(self):
         """ Attempts to abort the mission for the AUV."""
@@ -262,9 +275,9 @@ class BaseStation(threading.Thread):
                                 self.log("Error with Xbox data: " + str(e))
 
                     # Reffer (probably around 2-3 commands)
-                    #lines = self.radio.read_bytes()
-                    #lines = lines.decode('utf-8')
-                    #lines = lines.split("\n")
+                    # lines = self.radio.read_bytes()
+                    # lines = lines.decode('utf-8')
+                    # lines = lines.split("\n")
 
                     lines = self.radio.readlines()
                     # self.radio.flush()
