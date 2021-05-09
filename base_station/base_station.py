@@ -16,14 +16,16 @@ from queue import Queue
 # Custom imports
 from api import Radio
 from api import Joystick
+from api import Xbox
 from api import NavController
 from api import GPS
+from api import checksum
 from gui import Main
 
 # Constants
 THREAD_SLEEP_DELAY = 0.1  # Since we are the slave to AUV, we must run faster.
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
-PING = b'PING\n'
+PING = 'PING'
 CONNECTION_TIMEOUT = 4
 
 # AUV Constants (these are also in auv.py)
@@ -66,15 +68,28 @@ class BaseStation(threading.Thread):
                 "Warning: Cannot find radio device. Ensure RADIO_PATH is correct.")
 
         # Try to connect our Xbox 360 controller.
+
+# XXX ---------------------- XXX ---------------------------- XXX TESTING AREA
         try:
-            self.joy = Joystick()
-            if (joy.connected()):
-                self.log("Successfuly found Xbox 360 controller.")
-                self.nav_controller = NavController(self.joy)
-                self.log(
-                    "Successfully created a Navigation with Controller object.")
-        except:
+            print("case0")
+            self.joy = Xbox()
+            print("case1")
+
+            #self.joy = Joystick()
+            self.log("Successfuly found Xbox 360 controller.")
+            print("case2")
+
+            self.nav_controller = NavController(self.joy)
+            print("case3")
+
+            self.log("Successfully created a Navigation with Controller object.")
+            print("case4")
+
+        except Exception as e:  # TODO
+            self.log(str(e))
             self.log("Warning: Cannot find Xbox 360 controller.")
+
+# XXX ---------------------- XXX ---------------------------- XXX TESTING AREA
 
         # Try to assign our GPS object connection to GPSD
         try:
@@ -91,7 +106,8 @@ class BaseStation(threading.Thread):
         while self.joy is None:
             self.main.update()
             try:
-                self.joy = xbox.Joystick()
+                # self.joy = xbox.Joystick() TODO
+                raise Exception()
             except Exception as e:
                 continue
         self.main.log("Xbox controller is connected.")
@@ -114,7 +130,7 @@ class BaseStation(threading.Thread):
                 print("Failed to evaluate in_q task: ", task)
                 print("\t Error received was: ", str(e))
 
-    def auv_data(self, heading, temperature, longitude=None, latitude=None):
+    def auv_data(self, heading, temperature, pressure, longitude=None, latitude=None):
         """ Parses the AUV data-update packet, stores knowledge of its on-board sensors"""
 
         # Update heading on BS and on GUI
@@ -124,6 +140,14 @@ class BaseStation(threading.Thread):
         # Update temp on BS and on GUI
         self.auv_temperature = temperature
         self.out_q.put("set_temperature("+str(temperature)+")")
+
+        # Update pressure on BS and on GUI
+        self.auv_pressure = pressure
+        self.out_q.put("set_pressure(" + str(pressure) + ")")
+
+        # Update depth on BS and on GUI
+        self.depth = pressure / 100  # 1 mBar = 0.01 msw
+        self.out_q.put("set_depth(" + str(self.depth) + ")")
 
         # If the AUV provided its location...
         if longitude is not None and latitude is not None:
@@ -144,7 +168,7 @@ class BaseStation(threading.Thread):
             self.log("Cannot test " + motor +
                      " motor(s) because there is no connection to the AUV.")
         else:
-            self.radio.write(str.encode('test_motor("' + motor + '")\n'))
+            self.radio.write('test_motor("' + motor + '")')
             self.log('Sending task: test_motor("' + motor + '")')
 
     def abort_mission(self):
@@ -153,7 +177,7 @@ class BaseStation(threading.Thread):
             self.log(
                 "Cannot abort mission because there is no connection to the AUV.")
         else:
-            self.radio.write(str.encode("abort_mission()\n"))
+            self.radio.write("abort_mission()")
             self.log("Sending task: abort_mission()")
             self.manual_mode = True
 
@@ -165,6 +189,7 @@ class BaseStation(threading.Thread):
 
         self.log("The current mission has failed.")
 
+    # TODO
     def start_mission(self, mission):
         """  Attempts to start a mission and send to AUV. """
 
@@ -172,8 +197,7 @@ class BaseStation(threading.Thread):
             self.log("Cannot start mission " + str(mission) +
                      " because there is no connection to the AUV.")
         else:
-            self.radio.write(str.encode(
-                "start_mission(" + str(mission) + ")\n"))
+            self.radio.write("start_mission(" + str(mission) + ")")
             self.log('Sending task: start_mission(' + str(mission) + ')')
 
     def run(self):
@@ -194,19 +218,21 @@ class BaseStation(threading.Thread):
             # Check if we have an Xbox controller
             if self.joy is None:
                 try:
-                    self.joy = Joystick()
+                    # print("Creating joystick. 5 seconds...")
+                    # self.joy = Joystick() TODO
                     self.nav_controller = NavController(self.joy)
-                except:
+                    # print("Done creating.")
+                except Exception as e:
+                    print("Xbox creation error: ", str(e))
                     pass
 
-            elif not self.joy.connected():
-                self.log("Xbox controller has been disconnected.")
-                self.joy = None
-                self.nav_controller = None
+            # elif not self.joy.connected():
+            #    self.log("Xbox controller has been disconnected.")
+            #    self.joy = None
+            #    self.nav_controller = None
 
             # This executes if we never had a radio object, or it got disconnected.
             if self.radio is None or not os.path.exists(RADIO_PATH):
-
                 # This executes if we HAD a radio object, but it got disconnected.
                 if self.radio is not None and not os.path.exists(RADIO_PATH):
                     self.log("Radio device has been disconnected.")
@@ -217,24 +243,31 @@ class BaseStation(threading.Thread):
                     self.radio = Radio(RADIO_PATH)
                     self.log(
                         "Radio device has been found on RADIO_PATH.")
-                except:
-                    pass
+                except Exception as e:
+                    print("Radio error: ", str(e))
 
             # If we have a Radio object device, but we aren't connected to the AUV
             else:
                 # Try to read line from radio.
                 try:
                     self.radio.write(PING)
-
                     # This is where secured/synchronous code should go.
                     if self.connected_to_auv and self.manual_mode:
-                        if self.joy is not None and self.joy.connected() and self.nav_controller is not None:
-                            self.nav_controller.handle()
-                            self.radio.write(
-                                "xbox(" + self.nav_controller.get_data())
-                    # Read ALL lines stored in buffer (probably around 2-3 commands)
+                        if self.joy is not None:  # and self.joy.connected() and self.nav_controller is not None:
+                            try:
+                                self.nav_controller.handle()
+                                self.radio.write("x(" + str(self.nav_controller.get_data()) + ")")
+                                print("[XBOX]\t" + str(self.nav_controller.get_data()))
+                            except Exception as e:
+                                self.log("Error with Xbox data: " + str(e))
+
+                    # Reffer (probably around 2-3 commands)
+                    #lines = self.radio.read_bytes()
+                    #lines = lines.decode('utf-8')
+                    #lines = lines.split("\n")
+
                     lines = self.radio.readlines()
-                    self.radio.flush()
+                    # self.radio.flush()
 
                     for line in lines:
                         if line == PING:
@@ -244,13 +277,13 @@ class BaseStation(threading.Thread):
                                 self.out_q.put("set_connection(True)")
                                 self.connected_to_auv = True
 
-                        elif len(line) > 0:
+                        elif len(line) > 3:
                             # Line is greater than 0, but not equal to the AUV_PING
                             # which means a possible command was found.
-                            message = line.decode('utf-8').replace("\n", "")
+                            message = line
 
                             # Check if message is a possible python function
-                            if len(message) > 2 and "(" in message and ")" in message:
+                            if "(" in message and ")" in message:
                                 # Get possible function name
                                 possible_func_name = message[0:message.find(
                                     "(")]
@@ -261,7 +294,8 @@ class BaseStation(threading.Thread):
                                     # Put task received into our in_q to be processed later.
                                     self.in_q.put(message)
 
-                except:
+                except Exception as e:
+                    print(str(e))
                     self.radio.close()
                     self.radio = None
                     self.log("Radio device has been disconnected.")
@@ -288,7 +322,7 @@ class BaseStation(threading.Thread):
     def download_data(self):
         """ Function calls download data function """
         if self.connected_to_auv is True:
-            self.radio.write(str.encode("d_data()\n"))
+            self.radio.write("d_data()")
             self.log("Sending download data command to AUV.")
         else:
             self.log("Cannot download data because there is no connection to the AUV.")

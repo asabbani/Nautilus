@@ -65,6 +65,9 @@ MISSIONS = ["0: Sound Tracking", "1: Audio Collecting"]
 # Icon Path
 ICON_PATH = "gui/images/yonder_logo.png"
 
+# Navigation Encoding
+NAV_ENCODE = 0b000000100000000000000000           # | with XSY (forward, angle sign, angle)
+MISSION_ENCODE = 0b000000000000000000000000       # | with X   (mission)
 
 # Navigation Encoding
 NAV_ENCODE = 0b000000100000000000000000           # | with XSY (forward, angle sign, angle)
@@ -162,6 +165,10 @@ class Main():
         # Loop that checks our in-queue tasks given from the BaseStation thread object
         self.root.after(REFRESH_TIME, self.check_tasks)
 
+        # Initializes heading variables
+        self.localized_heading = 0.0
+        self.current_heading = 0.0
+
         # Begin running GUI loop
         self.root.mainloop()
 
@@ -248,6 +255,19 @@ class Main():
         self.comms_status_string.set("Comms Status: Not connected")
         self.comms_status.place(relx=0.05, rely=0.80, anchor='sw')
 
+        self.pressure_string = StringVar()
+        self.pressure = Label(
+            self.status_frame, textvariable=self.pressure_string, font=(FONT, STATUS_SIZE))
+        self.pressure.pack()
+        self.pressure_string.set("depth: 0mBar")
+        self.pressure.place(relx=0.05, rely=0.90, anchor='sw')
+
+        self.depth_string = StringVar()
+        self.depth = Label(
+            self.status_frame, textvariable=self.depth_string, font=(FONT, STATUS_SIZE))
+        self.depth.pack()
+        self.depth_string.set("depth: 0meters")
+        self.depth.place(relx=0.05, rely=1.0, anchor='sw')
         # self.calibrate_xbox_button           = Button(self.status_frame, text = "Calibrate Controller", takefocus = False, width = BUTTON_WIDTH + 10, height = BUTTON_HEIGHT,
         #                                      padx = BUTTON_PAD_X, pady = BUTTON_PAD_Y, font = (FONT, BUTTON_SIZE), command = self.base_station.calibrate_controller )
         # self.calibrate_xbox_button.pack()
@@ -268,6 +288,7 @@ class Main():
             FONT, BUTTON_SIZE-2), state=DISABLED, width=LOG_FRAME_WIDTH)
 
         self.scrollbar = Scrollbar(self.log_frame)
+        self.scrollbar.config(command=self.console.yview)
         self.console.configure(yscrollcommand=self.scrollbar.set)
         self.scrollbar.pack(side=RIGHT, fill=Y)
         self.console.pack()
@@ -307,12 +328,27 @@ class Main():
 
     def set_heading(self, direction):
         """ Sets heading text """
-        self.heading_label_string.set("Heading: " + str(direction))
+        try:
+            self.current_heading = float(direction)
+            self.heading_label_string.set("Heading: " + str(self.current_heading - self.localized_heading))
+        except Exception as e:
+            print(str(e))
+            print("failed to set heading of " + str(direction))
 
     def set_temperature(self, temperature):
         """ Sets internal temperature text """
         self.temperature_string.set(
             "Internal Temperature: " + str(temperature) + "C")
+
+    def set_pressure(self, pressure):
+        """ Sets depth text """
+        self.pressure_string.set(
+            "pressure: " + str(pressure) + "mBar")
+
+    def set_depth(self, depth):
+        """ Sets depth text """
+        self.depth_string.set(
+            "depth: " + str(depth) + "meter")
 
     def set_position(self, xPos, yPos):
         self.position_label_string.set(
@@ -406,6 +442,7 @@ class Main():
             prompt = "Start mission: " + mission + "?"
             ans = messagebox.askquestion("Mission Select", prompt)
             if ans == 'yes':  # Send index of mission (0, 1, 2, etc...)
+
                 self.out_q.put(
                     "start_mission(" + str(self.mission_list.current()) + ")")
 
@@ -417,7 +454,7 @@ class Main():
 
     def calibrate_origin_on_map(self):
         """ Calibrates the origin on the map to the base stations coordinates """
-        print("ran calibrate")
+        print("ran calibrate origin")
         if self.bs_coordinates is not None:
             # Update the origin on our map.
             self.map.zero_map(self.bs_coordinates[0], self.bs_coordinates[1])
@@ -425,18 +462,35 @@ class Main():
         else:
             self.log("Cannot calibrate origin because the base station has not reported GPS data.")
 
+    def calibrate_heading_on_map(self):
+        """ Calibrates heading on the map to the AUV's heading """
+        print("ran calibrate heading:")
+        if self.heading_label_string is not None:
+            # Update heading
+            self.heading_label_string.set("Heading: 0.0")
+            print("heading changed from", self.localized_heading)
+            self.localized_heading = self.current_heading
+            print("to", self.current_heading, self.localized_heading)
+        else:
+            self.log("Cannot calibrate heading because the base station has not reported heading data.")
+
+    # def get_angle(self):
+
     def create_function_buttons(self):
+        self.heading_button = Button(self.functions_frame, text="Calibrate Heading", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                     padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.calibrate_heading_on_map)
         self.origin_button = Button(self.functions_frame, text="Calibrate Origin", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                     padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.calibrate_origin_on_map)
         self.add_waypoint_button = Button(self.functions_frame, text="Add Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                           padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.new_waypoint_prompt)
         self.nav_to_waypoint_button = Button(self.functions_frame, text="Nav. to Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: None)
+                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.nav_to_waypoint)
         self.download_data_button = Button(self.functions_frame, text="Download Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
         self.clear_button = Button(self.functions_frame, text="Clear Map", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.clear)
 
+        self.heading_button.pack(expand=YES)
         self.origin_button.pack(expand=YES)
         self.add_waypoint_button.pack(expand=YES)
         self.nav_to_waypoint_button.pack(expand=YES)

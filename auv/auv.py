@@ -7,6 +7,7 @@ import os
 import sys
 import threading
 import time
+import math
 
 # Custom imports
 from api import Radio
@@ -21,6 +22,9 @@ IMU_PATH = '/dev/serial0'
 PING = b'PING\n'
 THREAD_SLEEP_DELAY = 0.05
 CONNECTION_TIMEOUT = 3
+
+MAX_TIME = 600
+MAX_ITERATION_COUNT = MAX_TIME / THREAD_SLEEP_DELAY / 7
 
 
 def log(val):
@@ -39,12 +43,14 @@ class AUV():
         self.connected_to_bs = False
         self.time_since_last_ping = 0.0
         self.current_mission = None
+        self.timer = 0
 
         # Get all non-default callable methods in this class
         self.methods = [m for m in dir(AUV) if not m.startswith('__')]
 
         try:
             self.pressure_sensor = PressureSensor()
+            self.pressure_sensor.init()
             log("Pressure sensor has been found")
         except:
             log("Pressure sensor is not connected to the AUV.")
@@ -63,7 +69,7 @@ class AUV():
 
         self.main_loop()
 
-    def xbox(self, data):
+    def x(self, data):
         self.mc.update_motor_speeds(data)
 
     def test_motor(self, motor):
@@ -94,9 +100,13 @@ class AUV():
                 if self.connected_to_bs is True:
                     log("Lost connection to BS.")
 
-                    # reset motor speed to 0 immediately
+                    # reset motor speed to 0 immediately and flush buffer
                     self.mc.update_motor_speeds([0, 0, 0, 0])
                     log("DEBUG TODO speeds reset")
+
+                    # enforce check in case radio is not found
+                    if self.radio is not None:
+                        self.radio.flush()
 
                     self.connected_to_bs = False
 
@@ -123,20 +133,40 @@ class AUV():
                         #        send("d_done()")
                         #        sending_data = False
 
+                        # TODO default values in case we could not read anything
+                        heading = 0
+                        temperature = 0
+                        pressure = 0
+
                         if self.imu is not None:
                             try:
-                                heading = self.imu.quaternion[0]
-                                if heading is not None:
-                                    heading = round(
-                                        abs(heading * 360) * 100.0) / 100.0
+                                #heading = self.imu.quaternion[0]
+                                compass = self.imu.magnetic
+                                if compass is not None:
+                                    heading = math.degrees(math.atan2(compass[1], compass[0]))
 
-                                    temperature = self.imu.temperature
-                                    # (Heading, Temperature)
-                                    if temperature is not None:
-                                        self.radio.write(str.encode(
-                                            "auv_data(" + str(heading) + ", " + str(temperature) + ")\n"))
+                                    # heading = round(
+                                    #    abs(heading * 360) * 100.0) / 100.0
+
+                                temperature = self.imu.temperature
+                                # (Heading, Temperature)
+                                if temperature is not None:
+                                    temperature = str(temperature)
+                                else:
+                                    temperature = 0
+
                             except:
-                                pass
+                                # TODO print statement, something went wrong!
+                                heading = 0
+                                temperature = 0
+                                self.radio.write(str.encode("log(\"[AUV]\tAn error occurred while trying to read heading and temperature.\")\n"))
+
+                        if self.pressure_sensor is not None:
+                            self.pressure_sensor.read()
+                            pressure = self.pressure_sensor.pressure()
+                            # log(str(self.pressure_sensor.pressure()))
+
+                        self.radio.write(str.encode("auv_data(" + str(heading) + ", " + str(temperature) + ", " + str(pressure) + ")\n"))
 
                     # Read ALL lines stored in buffer (probably around 2-3 commands)
                     lines = self.radio.readlines()
@@ -151,7 +181,7 @@ class AUV():
 
                                 # TODO test case: set motor speeds
                                 data = [1, 2, 3, 4]
-                                self.xbox(data)
+                                self.x(data)
 
                         elif len(line) > 1:
                             # Line was read, but it was not equal to a BS_PING
@@ -175,8 +205,7 @@ class AUV():
                                     try:  # Attempt to evaluate command.
                                         # Append "self." to all commands.
                                         eval('self.' + message)
-                                        self.radio.write(str.encode(
-                                            "log(\"[AUV]\tSuccessfully evaluated command: " + possible_func_name + "()\")\n"))
+                                        #self.radio.write(str.encode("log(\"[AUV]\tSuccessfully evaluated command: " + possible_func_name + "()\")\n"))
                                     except Exception as e:
                                         # log error message
                                         log(str(e))
@@ -192,7 +221,14 @@ class AUV():
                     continue
 
             if(self.current_mission is not None):
+                print(self.timer)
                 self.current_mission.loop()
+
+                # TODO statements because max time received
+                self.timer = self.timer + 1
+                if self.timer > MAX_ITERATION_COUNT:
+                    # kill mission, we exceeded time
+                    self.abort_mission()
 
             time.sleep(THREAD_SLEEP_DELAY)
 
@@ -201,10 +237,11 @@ class AUV():
         if(mission == 0):  # Echo-location.
             try:  # Try to start mission
                 self.current_mission = Mission1(
-                    self, self.mc, self.imu, self.pressure_sensor)
+                    self, self.mc, self.pressure_sensor, self.imu)
+                self.timer = 0
                 log("Successfully started mission " + str(mission) + ".")
                 self.radio.write(str.encode("mission_started("+str(mission)+")\n"))
-            except:
+            except Exception as e:
                 raise Exception("Mission " + str(mission) +
                                 " failed to start. Error: " + str(e))
         # elif(mission == 2):
@@ -218,7 +255,9 @@ class AUV():
         pass
 
     def abort_mission(self):
+        aborted_mission = self.current_mission
         self.current_mission = None
+        aborted_mission.abort_loop()
         log("Successfully aborted the current mission.")
         self.radio.write(str.encode("mission_failed()\n"))
 
