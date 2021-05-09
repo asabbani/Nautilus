@@ -23,10 +23,10 @@ FRONT_PI_PIN = 12
 BACK_PI_PIN = 18
 
 # Indices for motor array
-FORWARD_MOTOR_INDEX = 0
-TURN_MOTOR_INDEX = 1
-FRONT_MOTOR_INDEX = 2
-BACK_MOTOR_INDEX = 3
+FORWARD_MOTOR_INDEX = 0         # in the back
+TURN_MOTOR_INDEX = 1            # in the front
+FRONT_MOTOR_INDEX = 2           # goes up/down
+BACK_MOTOR_INDEX = 3            # goes up/down
 
 # Constants
 BALLAST = 4
@@ -80,8 +80,8 @@ class MotorController:
             return
 
         # Parse motor speed from data object.
-        self.left_speed = data[FORWARD_MOTOR_INDEX]
-        self.right_speed = data[TURN_MOTOR_INDEX]
+        self.forward_speed = data[FORWARD_MOTOR_INDEX]
+        self.turn_speed = data[TURN_MOTOR_INDEX]
         self.front_speed = data[FRONT_MOTOR_INDEX]
         self.back_speed = data[BACK_MOTOR_INDEX]
 

@@ -88,6 +88,39 @@ class AUV():
         else:
             raise Exception('No implementation for motor name: ', motor)
 
+    def run_motors(self, x, y):
+        # stops auv
+        self.mc.zero_out_motors()
+
+        forward_speed = 0
+        turn_speed = 0
+
+        # turn right
+        if (y > 0):
+            turn_speed = 90
+        # turn left
+        elif (y < 0):
+            turn_speed = -90
+
+        # turn auv
+        self.mc.update_motor_speeds([0, turn_speed, 0, 0])
+
+        # TODO implement so motors run until we've turned y degrees
+
+        sleep(5)
+
+        self.mc.zero_out_motors()
+
+        # move forward
+        if (x != 0):
+            forward_speed = 90
+            self.mc.update_motor_speeds([forward_speed, 0, 0, 0])
+
+            # TODO implement so motors run until we've moved x meters
+            sleep(5)
+
+        self.mc.zero_out_motors()
+
     def main_loop(self):
         """ Main connection loop for the AUV. """
 
@@ -186,32 +219,52 @@ class AUV():
                         elif len(line) > 1:
                             # Line was read, but it was not equal to a BS_PING
                             log(
-                                "Possible command found. Line read was: " + str(line))
+                                "Possible command found. Line read was: " + bin(line))
 
                             # Decode into a normal utd-8 encoded string and delete newline character
                             message = line.decode('utf-8').replace("\n", "")
 
-                            if len(message) > 2 and "(" in message and ")" in message:
-                                # Get possible function name
-                                possible_func_name = message[0:message.find(
-                                    "(")]
+                            # 0000001XSY or 0000000X
 
-                                if possible_func_name in self.methods:
-                                    log(
-                                        "Recieved command from base station: " + message)
-                                    self.time_since_last_ping = time.time()
-                                    self.connected_to_bs = True
+                            # navigation command
+                            if (message & 0x020000 > 0):
+                                x = (message & 0x01F600) >> 9
+                                sign = (message & 0x000100) >> 8
+                                y = (message & 0x0000FF)
 
-                                    try:  # Attempt to evaluate command.
-                                        # Append "self." to all commands.
-                                        eval('self.' + message)
-                                        #self.radio.write(str.encode("log(\"[AUV]\tSuccessfully evaluated command: " + possible_func_name + "()\")\n"))
-                                    except Exception as e:
-                                        # log error message
-                                        log(str(e))
-                                        # Send verification of command back to base station.
-                                        self.radio.write(str.encode("log(\"[AUV]\tEvaluation of command " +
-                                                                    possible_func_name + "() failed.\")\n"))
+                                if (sign == 1):
+                                    y = y * -1
+
+                                self.run_motors(x, y)
+
+                                log("Running motor command with (x, y): ", x, ",", y)
+
+                            # misison command
+                            else:
+                                # TODO
+                                continue
+
+                                # if len(message) > 2 and "(" in message and ")" in message:
+                                #     # Get possible function name
+                                #     possible_func_name = message[0:message.find(
+                                #         "(")]
+
+                                #     if possible_func_name in self.methods:
+                                #         log(
+                                #             "Recieved command from base station: " + message)
+                                #         self.time_since_last_ping = time.time()
+                                #         self.connected_to_bs = True
+
+                                #         try:  # Attempt to evaluate command.
+                                #             # Append "self." to all commands.
+                                #             eval('self.' + message)
+                                #             #self.radio.write(str.encode("log(\"[AUV]\tSuccessfully evaluated command: " + possible_func_name + "()\")\n"))
+                                #         except Exception as e:
+                                #             # log error message
+                                #             log(str(e))
+                                #             # Send verification of command back to base station.
+                                #             self.radio.write(str.encode("log(\"[AUV]\tEvaluation of command " +
+                                #                                         possible_func_name + "() failed.\")\n"))
 
                 except Exception as e:
                     log("Error: " + str(e))
