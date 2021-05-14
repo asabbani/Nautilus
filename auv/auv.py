@@ -223,7 +223,8 @@ class AUV():
 
                             # Decode into a normal utd-8 encoded string and delete newline character
                             message = line.decode('utf-8').replace("\n", "")
-
+                            print(type(message))
+                            message = int(message)
                             # 0000001XSY or 0000000X
 
                             # navigation command
