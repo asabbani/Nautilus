@@ -19,7 +19,7 @@ from missions import *
 # Constants for the AUV
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 IMU_PATH = '/dev/serial0'
-PING = b'PING\n'
+PING = 0xFFFFFF
 THREAD_SLEEP_DELAY = 0.05
 CONNECTION_TIMEOUT = 3
 
@@ -201,71 +201,71 @@ class AUV():
 
                         self.radio.write(str.encode("auv_data(" + str(heading) + ", " + str(temperature) + ", " + str(pressure) + ")\n"))
 
-                    # Read ALL lines stored in buffer (probably around 2-3 commands)
-                    lines = self.radio.readlines()
-                    self.radio.flush()
-                    for line in lines:
-                        if line == PING:  # We have a ping!
-                            self.time_since_last_ping = time.time()
-                            if self.connected_to_bs is False:
-                                log("Connection to BS verified.")
-                                self.connected_to_bs = True
+                    # Read three bytes
+                    line = self.radio.read(3)
+                    # self.radio.flush()
+                    # for line in lines:
+                    if line == PING:  # We have a ping!
+                        self.time_since_last_ping = time.time()
+                        if self.connected_to_bs is False:
+                            log("Connection to BS verified.")
+                            self.connected_to_bs = True
 
-                                # TODO test case: set motor speeds
-                                data = [1, 2, 3, 4]
-                                self.x(data)
+                            # TODO test case: set motor speeds
+                            data = [1, 2, 3, 4]
+                            self.x(data)
 
-                        elif len(line) > 1:
-                            print("HELLO")
-                            # Line was read, but it was not equal to a BS_PING
-                            
-                            # Decode into a normal utd-8 encoded string and delete newline character
-                            #message = line.decode('utf-8').replace("\n", "")
-                            message = int.from_bytes(line, "big")
-                            log("Possible command found. Line read was: " + str(message))
-                            print(type(message))
-                            message = int(message)
-                            # 0000001XSY or 0000000X
+                    else:
+                        print("HELLO")
+                        # Line was read, but it was not equal to a BS_PING
 
-                            # navigation command
-                            if (message & 0x020000 > 0):
-                                x = (message & 0x01F600) >> 9
-                                sign = (message & 0x000100) >> 8
-                                y = (message & 0x0000FF)
+                        # Decode into a normal utd-8 encoded string and delete newline character
+                        #message = line.decode('utf-8').replace("\n", "")
+                        message = int.from_bytes(line, "big")
+                        log("Possible command found. Line read was: " + str(message))
+                        print(type(message))
+                        message = int(message)
+                        # 0000001XSY or 0000000X
 
-                                if (sign == 1):
-                                    y = y * -1
+                        # navigation command
+                        if (message & 0x020000 > 0):
+                            x = (message & 0x01F600) >> 9
+                            sign = (message & 0x000100) >> 8
+                            y = (message & 0x0000FF)
 
-                                self.run_motors(x, y)
+                            if (sign == 1):
+                                y = y * -1
 
-                                log("Running motor command with (x, y): ", x, ",", y)
+                            self.run_motors(x, y)
 
-                            # misison command
-                            else:
-                                # TODO
-                                continue
+                            log("Running motor command with (x, y): ", x, ",", y)
 
-                                # if len(message) > 2 and "(" in message and ")" in message:
-                                #     # Get possible function name
-                                #     possible_func_name = message[0:message.find(
-                                #         "(")]
+                        # misison command
+                        else:
+                            # TODO
+                            continue
 
-                                #     if possible_func_name in self.methods:
-                                #         log(
-                                #             "Recieved command from base station: " + message)
-                                #         self.time_since_last_ping = time.time()
-                                #         self.connected_to_bs = True
+                            # if len(message) > 2 and "(" in message and ")" in message:
+                            #     # Get possible function name
+                            #     possible_func_name = message[0:message.find(
+                            #         "(")]
 
-                                #         try:  # Attempt to evaluate command.
-                                #             # Append "self." to all commands.
-                                #             eval('self.' + message)
-                                #             #self.radio.write(str.encode("log(\"[AUV]\tSuccessfully evaluated command: " + possible_func_name + "()\")\n"))
-                                #         except Exception as e:
-                                #             # log error message
-                                #             log(str(e))
-                                #             # Send verification of command back to base station.
-                                #             self.radio.write(str.encode("log(\"[AUV]\tEvaluation of command " +
-                                #                                         possible_func_name + "() failed.\")\n"))
+                            #     if possible_func_name in self.methods:
+                            #         log(
+                            #             "Recieved command from base station: " + message)
+                            #         self.time_since_last_ping = time.time()
+                            #         self.connected_to_bs = True
+
+                            #         try:  # Attempt to evaluate command.
+                            #             # Append "self." to all commands.
+                            #             eval('self.' + message)
+                            #             #self.radio.write(str.encode("log(\"[AUV]\tSuccessfully evaluated command: " + possible_func_name + "()\")\n"))
+                            #         except Exception as e:
+                            #             # log error message
+                            #             log(str(e))
+                            #             # Send verification of command back to base station.
+                            #             self.radio.write(str.encode("log(\"[AUV]\tEvaluation of command " +
+                            #                                         possible_func_name + "() failed.\")\n"))
 
                 except Exception as e:
                     log("Error: " + str(e))

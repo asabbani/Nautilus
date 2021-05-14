@@ -30,6 +30,12 @@ class Radio:
         """
         self.ser.write(message)
 
+    def read(self, n_bytes=1):
+        """
+        Returns array of bytes
+        """
+        return self.ser.read(n_bytes)
+
     def readlines(self):
         """
         Returns a list of lines from buffer.
