@@ -19,7 +19,7 @@ from api import Joystick
 from api import Xbox
 from api import NavController
 from api import GPS
-from api import checksum
+#from api import checksum
 from gui import Main
 
 # Constants
@@ -263,7 +263,7 @@ class BaseStation(threading.Thread):
             else:
                 # Try to read line from radio.
                 try:
-                    self.radio.write(PING)
+                    self.radio.write(0xFFFFFF)
                     # This is where secured/synchronous code should go.
                     if self.connected_to_auv and self.manual_mode:
                         if self.joy is not None:  # and self.joy.connected() and self.nav_controller is not None:
