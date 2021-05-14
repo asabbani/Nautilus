@@ -192,7 +192,7 @@ class AUV():
                                 # TODO print statement, something went wrong!
                                 heading = 0
                                 temperature = 0
-                                self.radio.write(str.encode("log(\"[AUV]\tAn error occurred while trying to read heading and temperature.\")\n"))
+                                #self.radio.write(str.encode("log(\"[AUV]\tAn error occurred while trying to read heading and temperature.\")\n"))
 
                         if self.pressure_sensor is not None:
                             self.pressure_sensor.read()
@@ -204,7 +204,6 @@ class AUV():
                     # Read ALL lines stored in buffer (probably around 2-3 commands)
                     lines = self.radio.readlines()
                     self.radio.flush()
-
                     for line in lines:
                         if line == PING:  # We have a ping!
                             self.time_since_last_ping = time.time()
@@ -217,12 +216,13 @@ class AUV():
                                 self.x(data)
 
                         elif len(line) > 1:
+                            print("HELLO")
                             # Line was read, but it was not equal to a BS_PING
-                            log(
-                                "Possible command found. Line read was: " + bin(line))
-
+                            
                             # Decode into a normal utd-8 encoded string and delete newline character
-                            message = line.decode('utf-8').replace("\n", "")
+                            #message = line.decode('utf-8').replace("\n", "")
+                            message = int.from_bytes(line, "big")
+                            log("Possible command found. Line read was: " + str(message))
                             print(type(message))
                             message = int(message)
                             # 0000001XSY or 0000000X
