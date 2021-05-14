@@ -34,6 +34,7 @@ class Radio():
             self.ser.write(encoded)
 
         elif isinstance(message, bytes):
+            print("bytes written")
             self.ser.write(message)
 
     def readlines(self):
