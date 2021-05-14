@@ -19,7 +19,7 @@ from missions import *
 # Constants for the AUV
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 IMU_PATH = '/dev/serial0'
-PING = 0xFFFFFF
+PING = 'PING'
 THREAD_SLEEP_DELAY = 0.05
 CONNECTION_TIMEOUT = 3
 
@@ -205,7 +205,7 @@ class AUV():
                     line = self.radio.read(3)
                     # self.radio.flush()
                     # for line in lines:
-                    if line == PING:  # We have a ping!
+                    if int.from_bytes(line, "big") == 0xFFFFFF:  # We have a ping!
                         self.time_since_last_ping = time.time()
                         if self.connected_to_bs is False:
                             log("Connection to BS verified.")
