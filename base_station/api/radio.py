@@ -34,8 +34,8 @@ class Radio():
 
         elif isinstance(message, int):
 
-            print("bytes written")
-            byte_arr = message.to_bytes(3,'big')
+            # print("bytes written")
+            byte_arr = message.to_bytes(3, 'big')
             self.ser.write(byte_arr)
 
     def readlines(self):

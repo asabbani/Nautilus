@@ -163,8 +163,8 @@ class BaseStation(threading.Thread):
                 self.out_q.put("add_auv_coordinates(" + self.auv_utm_coordinates[0] + ", " + self.auv_utm_coordinates[1] + ")")
             except:
                 self.log("Failed to convert the AUV's gps coordinates to UTM.")
-        else:
-            self.log("The AUV did not report its latitude and longitude.")
+        # else:
+        #    self.log("The AUV did not report its latitude and longitude.")
 
     def test_motor(self, motor):
         """ Attempts to send the AUV a signal to test a given motor. """
@@ -190,7 +190,7 @@ class BaseStation(threading.Thread):
             self.log(
                 "Cannot abort mission because there is no connection to the AUV.")
         else:
-            self.radio.write("abort_mission()")
+            # self.radio.write("abort_mission()")
             self.log("Sending task: abort_mission()")
             self.manual_mode = True
 
@@ -210,7 +210,7 @@ class BaseStation(threading.Thread):
             self.log("Cannot start mission " + str(mission) +
                      " because there is no connection to the AUV.")
         else:
-            self.radio.write("start_mission(" + str(mission) + ")")
+            #self.radio.write("start_mission(" + str(mission) + ")")
             self.log('Sending task: start_mission(' + str(mission) + ')')
 
     def run(self):
@@ -269,7 +269,7 @@ class BaseStation(threading.Thread):
                         if self.joy is not None:  # and self.joy.connected() and self.nav_controller is not None:
                             try:
                                 self.nav_controller.handle()
-                                self.radio.write("x(" + str(self.nav_controller.get_data()) + ")")
+                                #self.radio.write("x(" + str(self.nav_controller.get_data()) + ")")
                                 print("[XBOX]\t" + str(self.nav_controller.get_data()))
                             except Exception as e:
                                 self.log("Error with Xbox data: " + str(e))
@@ -335,7 +335,7 @@ class BaseStation(threading.Thread):
     def download_data(self):
         """ Function calls download data function """
         if self.connected_to_auv is True:
-            self.radio.write("d_data()")
+            # self.radio.write("d_data()")
             self.log("Sending download data command to AUV.")
         else:
             self.log("Cannot download data because there is no connection to the AUV.")
