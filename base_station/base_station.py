@@ -315,7 +315,7 @@ class BaseStation(threading.Thread):
                                 # reads in remaining bytes
                                 remain = self.radio.read(2)
 
-                                # contains X and y data
+                                # contains x and y data
                                 data = remain | ((line & 0b00000111) << 16)
 
                                 x = (data >> 9)

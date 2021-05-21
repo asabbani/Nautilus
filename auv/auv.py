@@ -19,7 +19,7 @@ from missions import *
 # Constants for the AUV
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 IMU_PATH = '/dev/serial0'
-PING = b'PING'
+PING = 0xFF
 THREAD_SLEEP_DELAY = 0.05
 CONNECTION_TIMEOUT = 3
 
@@ -33,7 +33,7 @@ MISSION_STAT_DATA = 0b10101
 FLOODED_DATA = 0b10110
 PRESSURE_DATA = 0b10111
 
-PRESSURE_ENCODE = PRESSURE_DATA << 10 #TODO 10 is placeholder
+PRESSURE_ENCODE = PRESSURE_DATA << 10  # TODO 10 is placeholder
 
 MAX_TIME = 600
 MAX_ITERATION_COUNT = MAX_TIME / THREAD_SLEEP_DELAY / 7
@@ -210,16 +210,15 @@ class AUV():
                             self.pressure_sensor.read()
                             pressure = self.pressure_sensor.pressure()
                             PRESSURE_ENCODE = (PRESSURE_ENCODE | pressure)
-                            log(str(self.pressure_sensor.pressure())) #TODO Heading and temperature
+                            log(str(self.pressure_sensor.pressure()))  # TODO Heading and temperature
 
                         self.radio.write(str.encode("auv_data(" + str(heading) + ", " + str(temperature) + ", " + str(pressure) + ")\n"))
 
                     # Read three bytes
                     line = self.radio.read(3)
                     print("Line read ", line)
-                    #self.radio.flush()
+                    # self.radio.flush()
 
-                    
                     while(line != b'' and len(line) == 3):
 
                         if int.from_bytes(line, "big") == 0xFFFFFF:  # We have a ping!
@@ -253,17 +252,15 @@ class AUV():
                                 if (sign == 1):
                                     y = y * -1
 
-
-                                log("Running motor command with (x, y): "+ str(x) + "," + str(y))
+                                log("Running motor command with (x, y): " + str(x) + "," + str(y))
                                 self.run_motors(x, y)
 
                             # misison command
                             else:
                                 # TODO
                                 x = (message & 0x3)
-                                log("Start Command Run with (x): "+ str(x))
+                                log("Start Command Run with (x): " + str(x))
                                 self.start_mission(x)
-
 
                                 # if len(message) > 2 and "(" in message and ")" in message:
                                 #     # Get possible function name
@@ -291,7 +288,6 @@ class AUV():
 
                     # end while
                     self.radio.flush()
-
 
                 except Exception as e:
                     log("Error: " + str(e))
