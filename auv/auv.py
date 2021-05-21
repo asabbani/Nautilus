@@ -247,7 +247,10 @@ class AUV():
                             # misison command
                             else:
                                 # TODO
-                                continue
+                                x = (message & 0x3)
+                                log("Start Command Run with (x): "+ str(x))
+                                self.start_mission(x)
+
 
                                 # if len(message) > 2 and "(" in message and ")" in message:
                                 #     # Get possible function name
