@@ -214,7 +214,6 @@ class BaseStation(threading.Thread):
 
         self.log("The current mission has failed.")
 
-    # TODO
     def start_mission(self, mission):
         """  Attempts to start a mission and send to AUV. """
 
@@ -302,9 +301,7 @@ class BaseStation(threading.Thread):
 
                     print("Line read ", line)
 
-                    # self.radio.flush()
-
-                    while(line != b'' and len(line) == 3):
+                    while(line != b'' and len(line) == 1):
                         # PING case
                         if header == PING:
                             self.time_since_last_ping = time.time()
@@ -315,21 +312,31 @@ class BaseStation(threading.Thread):
                         # Data cases
                         else:
                             if header == POSITION_DATA:
+                                # reads in remaining bytes
+                                remain = self.radio.read(2)
+
+                                # contains X and y data
+                                data = remain | ((line & 0b00000111) << 16)
+
+                                x = (data >> 9)
+                                y = (data & 0b111111111)
+
+                                # TODO, call function and update positioning in gui
 
                             elif header == HEADING_DATA:
-
+                                x
                             elif header == VOLTAGE_DATA:
-
+                                x
                             elif header == TEMP_DATA:
-
+                                x
                             elif header == MOVEMENT_STAT_DATA:
-
+                                x
                             elif header == MISSION_STAT_DATA:
-
+                                x
                             elif header == FLOODED_DATA:
-
+                                x
                             elif header == PRESSURE_DATA:
-
+                                x
                                 # Line is greater than 0, but not equal to the AUV_PING
                                 # which means a possible command was found.
                                 # message = line
@@ -346,7 +353,9 @@ class BaseStation(threading.Thread):
                                 #         # Put task received into our in_q to be processed later.
                                 #         self.in_q.put(message)
 
-                        line = self.radio.read(3)
+                        line = self.radio.read(1)
+
+                    self.radio.flush()
 
                 except Exception as e:
                     print(str(e))
