@@ -25,7 +25,19 @@ from gui import Main
 # Constants
 THREAD_SLEEP_DELAY = 0.1  # Since we are the slave to AUV, we must run faster.
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
-PING = 'PING'
+
+PING = 0xFF
+
+# Encoding headers
+POSITION_DATA = 0b10000
+HEADING_DATA = 0b10001
+VOLTAGE_DATA = 0b10010
+TEMP_DATA = 0b10011
+MOVEMENT_STAT_DATA = 0b10100
+MISSION_STAT_DATA = 0b10101
+FLOODED_DATA = 0b10110
+PRESSURE_DATA = 0b10111
+
 CONNECTION_TIMEOUT = 4
 
 # AUV Constants (these are also in auv.py)
@@ -202,7 +214,6 @@ class BaseStation(threading.Thread):
 
         self.log("The current mission has failed.")
 
-    # TODO
     def start_mission(self, mission):
         """  Attempts to start a mission and send to AUV. """
 
@@ -282,30 +293,69 @@ class BaseStation(threading.Thread):
                     lines = self.radio.readlines()
                     # self.radio.flush()
 
-                    for line in lines:
-                        if line == PING:
+                    #
+
+                    # Read three bytes
+                    line = self.radio.read(1)   # first 8 bits
+                    header = line >> 3      # first 5 bits
+
+                    print("Line read ", line)
+
+                    while(line != b'' and len(line) == 1):
+                        # PING case
+                        if header == PING:
                             self.time_since_last_ping = time.time()
                             if self.connected_to_auv is False:
                                 self.log("Connection to AUV verified.")
                                 self.out_q.put("set_connection(True)")
                                 self.connected_to_auv = True
+                        # Data cases
+                        else:
+                            if header == POSITION_DATA:
+                                # reads in remaining bytes
+                                remain = self.radio.read(2)
 
-                        elif len(line) > 3:
-                            # Line is greater than 0, but not equal to the AUV_PING
-                            # which means a possible command was found.
-                            message = line
+                                # contains X and y data
+                                data = remain | ((line & 0b00000111) << 16)
 
-                            # Check if message is a possible python function
-                            if "(" in message and ")" in message:
-                                # Get possible function name
-                                possible_func_name = message[0:message.find(
-                                    "(")]
-                                if possible_func_name in self.methods:
-                                    if possible_func_name != "auv_data" and possible_func_name != "log":
-                                        self.log(
-                                            "Received command from AUV: " + message)
-                                    # Put task received into our in_q to be processed later.
-                                    self.in_q.put(message)
+                                x = (data >> 9)
+                                y = (data & 0b111111111)
+
+                                # TODO, call function and update positioning in gui
+
+                            elif header == HEADING_DATA:
+                                x
+                            elif header == VOLTAGE_DATA:
+                                x
+                            elif header == TEMP_DATA:
+                                x
+                            elif header == MOVEMENT_STAT_DATA:
+                                x
+                            elif header == MISSION_STAT_DATA:
+                                x
+                            elif header == FLOODED_DATA:
+                                x
+                            elif header == PRESSURE_DATA:
+                                x
+                                # Line is greater than 0, but not equal to the AUV_PING
+                                # which means a possible command was found.
+                                # message = line
+
+                                # # Check if message is a possible python function
+                                # if "(" in message and ")" in message:
+                                #     # Get possible function name
+                                #     possible_func_name = message[0:message.find(
+                                #         "(")]
+                                #     if possible_func_name in self.methods:
+                                #         if possible_func_name != "auv_data" and possible_func_name != "log":
+                                #             self.log(
+                                #                 "Received command from AUV: " + message)
+                                #         # Put task received into our in_q to be processed later.
+                                #         self.in_q.put(message)
+
+                        line = self.radio.read(1)
+
+                    self.radio.flush()
 
                 except Exception as e:
                     print(str(e))
