@@ -222,7 +222,7 @@ class BaseStation(threading.Thread):
             self.log("Cannot start mission " + str(mission) +
                      " because there is no connection to the AUV.")
         else:
-            #self.radio.write("start_mission(" + str(mission) + ")")
+            self.radio.write(MISSION_ENCODE | mission)
             self.log('Sending task: start_mission(' + str(mission) + ')')
 
     def run(self):
