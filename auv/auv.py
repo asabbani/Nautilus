@@ -32,6 +32,7 @@ MOVEMENT_STAT_DATA = 0b10100
 MISSION_STAT_DATA = 0b10101
 FLOODED_DATA = 0b10110
 PRESSURE_DATA = 0b10111
+WATER_DEPTH_DATA = 0
 
 PRESSURE_ENCODE = PRESSURE_DATA << 10  # TODO 10 is placeholder
 
@@ -209,8 +210,18 @@ class AUV():
                         if self.pressure_sensor is not None:
                             self.pressure_sensor.read()
                             pressure = self.pressure_sensor.pressure()
-                            PRESSURE_ENCODE = (PRESSURE_ENCODE | pressure)
+                            for_pressure_sensor = math.modf(pressure)
+                            y = round(for_pressure_sensor[0],1)
+                            x = int(for_pressure_sensor[1])
+                            x = x << 7
+                            PRESSURE_ENCODE = (PRESSURE_ENCODE | x | y)
                             log(str(self.pressure_sensor.pressure()))  # TODO Heading and temperature
+
+                            #conversion for kilopascals
+                            WATER_DEPTH_DATA = pressure * 0.102
+
+                            #conversion for bars
+                            WATER_DEPTH_DATA = pressure * 10.2
 
                         self.radio.write(str.encode("auv_data(" + str(heading) + ", " + str(temperature) + ", " + str(pressure) + ")\n"))
 
