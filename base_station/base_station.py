@@ -36,7 +36,7 @@ TEMP_DATA = 0b10011
 MOVEMENT_STAT_DATA = 0b10100
 MISSION_STAT_DATA = 0b10101
 FLOODED_DATA = 0b10110
-PRESSURE_DATA = 0b10111
+DEPTH_DATA = 0b10111
 
 CONNECTION_TIMEOUT = 4
 
@@ -290,20 +290,22 @@ class BaseStation(threading.Thread):
                     # lines = lines.decode('utf-8')
                     # lines = lines.split("\n")
 
-                    lines = self.radio.readlines()
+                    #lines = self.radio.readlines()
                     # self.radio.flush()
 
                     #
 
                     # Read three bytes
                     line = self.radio.read(1)   # first 8 bits
-                    header = line >> 3      # first 5 bits
+                    header = int.from_bytes(line, "big") >> 3     # first 5 bits
 
-                    print("Line read ", line)
+                    print("Line read ", line, " Header ", header)
 
                     while(line != b'' and len(line) == 1):
+                        line = int.from_bytes(line, "big")
+
                         # PING case
-                        if header == PING:
+                        if line == PING:
                             self.time_since_last_ping = time.time()
                             if self.connected_to_auv is False:
                                 self.log("Connection to AUV verified.")
@@ -314,7 +316,7 @@ class BaseStation(threading.Thread):
                             if header == POSITION_DATA:
                                 # reads in remaining bytes
                                 remain = self.radio.read(2)
-
+                                remain = int.from_bytes(remain, "big")
                                 # contains x and y data
                                 data = remain | ((line & 0b00000111) << 16)
 
@@ -335,22 +337,21 @@ class BaseStation(threading.Thread):
                                 x
                             elif header == FLOODED_DATA:
                                 x
-                            elif header == PRESSURE_DATA:
-                                x
-                                # Line is greater than 0, but not equal to the AUV_PING
-                                # which means a possible command was found.
-                                # message = line
+                            elif header == DEPTH_DATA:
+                                print("Depth Case")
 
-                                # # Check if message is a possible python function
-                                # if "(" in message and ")" in message:
-                                #     # Get possible function name
-                                #     possible_func_name = message[0:message.find(
-                                #         "(")]
-                                #     if possible_func_name in self.methods:
-                                #         if possible_func_name != "auv_data" and possible_func_name != "log":
-                                #             self.log(
-                                #                 "Received command from AUV: " + message)
-                                #         # Put task received into our in_q to be processed later.
+                                # reads in remaining bytes
+                                remain = self.radio.read(1)
+                                remain = int.from_bytes(remain, "big")
+                                # contains x and y data
+                                data = remain | ((line & 0b00000111) << 8)
+                                x = data >> 4       # first 7 bits
+                                y = float(data & 0xF)      # last 5 bits
+                                depth = x + y/10
+                                print("Depth: ", depth)
+
+                                self.out_q.put("set_depth(" + str(depth) + ")")
+
                                 #         self.in_q.put(message)
 
                         line = self.radio.read(1)
