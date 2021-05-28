@@ -30,7 +30,7 @@ class Radio:
     #     """
     #     self.ser.write(message)
 
-    def write(self, message):
+    def write(self, message, length):
         """
         Sends provided message over serial connection.
 
@@ -44,7 +44,7 @@ class Radio:
         elif isinstance(message, int):
 
             # print("bytes written")
-            byte_arr = message.to_bytes(3, 'big')
+            byte_arr = message.to_bytes(length, 'big')
             self.ser.write(byte_arr)
 
     def read(self, n_bytes=1):

@@ -31,10 +31,10 @@ TEMP_DATA = 0b10011
 MOVEMENT_STAT_DATA = 0b10100
 MISSION_STAT_DATA = 0b10101
 FLOODED_DATA = 0b10110
-PRESSURE_DATA = 0b10111
+DEPTH_DATA = 0b10111
 WATER_DEPTH_DATA = 0
 
-PRESSURE_ENCODE = PRESSURE_DATA << 10  # TODO 10 is placeholder
+DEPTH_ENCODE = DEPTH_DATA << 11 
 
 MAX_TIME = 600
 MAX_ITERATION_COUNT = MAX_TIME / THREAD_SLEEP_DELAY / 7
@@ -166,7 +166,7 @@ class AUV():
                 try:
                     # Always send a connection verification packet and attempt to read one.
                     # self.radio.write(AUV_PING)
-                    self.radio.write(PING)
+                    self.radio.write(0xFF, 1)
 
                     if self.connected_to_bs is True:  # Send our AUV packet as well.
 
@@ -209,21 +209,28 @@ class AUV():
 
                         if self.pressure_sensor is not None:
                             self.pressure_sensor.read()
-                            pressure = self.pressure_sensor.pressure()
-                            for_pressure_sensor = math.modf(pressure)
-                            y = round(for_pressure_sensor[0],1)
-                            x = int(for_pressure_sensor[1])
-                            x = x << 7
-                            PRESSURE_ENCODE = (PRESSURE_ENCODE | x | y)
-                            log(str(self.pressure_sensor.pressure()))  # TODO Heading and temperature
 
-                            #conversion for kilopascals
-                            WATER_DEPTH_DATA = pressure * 0.102
+                            # defaults to mbars
+                            pressure = self.pressure_sensor.pressure()
+                            mbar_to_depth = (pressure-1013.25)/1000 * 10.2
+                            if mbar_to_depth < 0:
+                                mbar_to_depth = 0
+                            for_depth = math.modf(mbar_to_depth)
+                            # standard depth of 10.2
+                            y = int(round(for_depth[0],1) * 10)
+                            x = int(for_depth[1])
+                            x = x << 4
+                            depth_encode = (DEPTH_ENCODE | x | y)
+                            log("Pressure Read: " + str(self.pressure_sensor.pressure())
+                                + ", x: " + str((x >> 4)) + ", y: " + str(y))  # TODO Heading and temperature
+
 
                             #conversion for bars
                             WATER_DEPTH_DATA = pressure * 10.2
 
-                        self.radio.write(str.encode("auv_data(" + str(heading) + ", " + str(temperature) + ", " + str(pressure) + ")\n"))
+                            self.radio.write(depth_encode, 2)
+
+
 
                     # Read three bytes
                     line = self.radio.read(3)
@@ -327,7 +334,7 @@ class AUV():
                     self, self.mc, self.pressure_sensor, self.imu)
                 self.timer = 0
                 log("Successfully started mission " + str(mission) + ".")
-                self.radio.write(str.encode("mission_started("+str(mission)+")\n"))
+                #self.radio.write(str.encode("mission_started("+str(mission)+")\n"))
             except Exception as e:
                 raise Exception("Mission " + str(mission) +
                                 " failed to start. Error: " + str(e))
@@ -346,7 +353,7 @@ class AUV():
         self.current_mission = None
         aborted_mission.abort_loop()
         log("Successfully aborted the current mission.")
-        self.radio.write(str.encode("mission_failed()\n"))
+        #self.radio.write(str.encode("mission_failed()\n"))
 
 
 def main():
