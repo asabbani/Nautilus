@@ -1,6 +1,15 @@
+# Encoding headers
+POSITION_DATA = 0b10000
+HEADING_DATA = 0b10001
+VOLTAGE_DATA = 0b10010
+TEMP_DATA = 0b10011
+MOVEMENT_STAT_DATA = 0b10100
+MISSION_STAT_DATA = 0b10101
+FLOODED_DATA = 0b10110
+DEPTH_DATA = 0b10111
 
 
-def decode_command(header_str, self_obj):
+def decode_command(self_obj, header_str, line):
     if header_str == POSITION_DATA:
         # reads in remaining byte
         remain = self_obj.radio.read(2)

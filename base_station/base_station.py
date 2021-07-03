@@ -29,16 +29,6 @@ RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Contr
 
 PING = 0xFF
 
-# Encoding headers
-POSITION_DATA = 0b10000
-HEADING_DATA = 0b10001
-VOLTAGE_DATA = 0b10010
-TEMP_DATA = 0b10011
-MOVEMENT_STAT_DATA = 0b10100
-MISSION_STAT_DATA = 0b10101
-FLOODED_DATA = 0b10110
-DEPTH_DATA = 0b10111
-
 CONNECTION_TIMEOUT = 4
 
 # AUV Constants (these are also in auv.py)
@@ -314,7 +304,7 @@ class BaseStation(threading.Thread):
                                 self.connected_to_auv = True
                         # Data cases
                         else:
-                            decode_command(header, self)
+                            decode_command(self, header, line)
 
                         line = self.radio.read(1)
 
