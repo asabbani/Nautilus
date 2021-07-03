@@ -1,7 +1,7 @@
 
 
 def decode_command(header_str, self_obj):
-    if header == POSITION_DATA:
+    if header_str == POSITION_DATA:
         # reads in remaining byte
         remain = self_obj.radio.read(2)
         remain = int.from_bytes(remain, "big")
@@ -14,19 +14,19 @@ def decode_command(header_str, self_obj):
 
         # TODO, call function and update positioning in gui
 
-    elif header == HEADING_DATA:
+    elif header_str == HEADING_DATA:
         x
-    elif header == VOLTAGE_DATA:
+    elif header_str == VOLTAGE_DATA:
         x
-    elif header == TEMP_DATA:
+    elif header_str == TEMP_DATA:
         x
-    elif header == MOVEMENT_STAT_DATA:
+    elif header_str == MOVEMENT_STAT_DATA:
         x
-    elif header == MISSION_STAT_DATA:
+    elif header_str == MISSION_STAT_DATA:
         x
-    elif header == FLOODED_DATA:
+    elif header_str == FLOODED_DATA:
         x
-    elif header == DEPTH_DATA:
+    elif header_str == DEPTH_DATA:
         print("Depth Case")
 
         # reads in remaining bytes
