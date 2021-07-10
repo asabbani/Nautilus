@@ -343,12 +343,15 @@ class BaseStation(threading.Thread):
                                 # reads in remaining bytes
                                 remain = self.radio.read(1)
                                 remain = int.from_bytes(remain, "big")
-                                # contains x and y data
+                                # construct last 11 bits, contains x and y data
                                 data = remain | ((line & 0b00000111) << 8)
                                 x = data >> 4       # first 7 bits
-                                y = float(data & 0xF)      # last 5 bits
+                                y = float(data & 0xF)      # last 4 bits
                                 depth = x + y/10
                                 print("Depth: ", depth)
+
+                                #check = radio.read(4)
+                                #header + x + y == decode(check)
 
                                 self.out_q.put("set_depth(" + str(depth) + ")")
 
