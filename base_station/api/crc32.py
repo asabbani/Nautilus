@@ -1,6 +1,5 @@
 crc_divisor = 0x104c11db7
 
-
 class Crc32():
 
     # create the crc 32 bytes
@@ -18,3 +17,9 @@ class Crc32():
             return True
         else:
             return False
+
+    testMessage = 0b1101000100001111
+    
+    print(generate(testMessage, 16))
+
+    print(confirm(testMessage))
