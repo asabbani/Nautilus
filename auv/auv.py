@@ -32,10 +32,10 @@ TEMP_DATA = 0b10011
 MOVEMENT_STAT_DATA = 0b10100
 MISSION_STAT_DATA = 0b10101
 FLOODED_DATA = 0b10110
-DEPTH_DATA = 0b10111
+DEPTH_DATA = 0b011
 WATER_DEPTH_DATA = 0
 
-DEPTH_ENCODE = DEPTH_DATA << 11
+DEPTH_ENCODE = DEPTH_DATA << 21
 
 MAX_TIME = 600
 MAX_ITERATION_COUNT = MAX_TIME / THREAD_SLEEP_DELAY / 7
@@ -218,17 +218,17 @@ class AUV():
                                 mbar_to_depth = 0
                             for_depth = math.modf(mbar_to_depth)
                             # standard depth of 10.2
-                            y = int(round(for_depth[0], 1) * 10)
-                            x = int(for_depth[1])
-                            x = x << 4
-                            depth_encode = (DEPTH_ENCODE | x | y)
+                            decimal = int(round(for_depth[0], 1) * 10)
+                            whole = int(for_depth[1])
+                            whole = whole << 4
+                            depth_encode = (DEPTH_ENCODE | whole | decimal)
                             log("Pressure Read: " + str(self.pressure_sensor.pressure())
-                                + ", x: " + str((x >> 4)) + ", y: " + str(y))  # TODO Heading and temperature
+                                + ", whole: " + str((whole >> 4)) + ", decimal: " + str(decimal))  # TODO Heading and temperature
 
                             # conversion for bars
                             WATER_DEPTH_DATA = pressure * 10.2
 
-                            self.radio.write(depth_encode, 2)
+                            self.radio.write(depth_encode, 3)
 
                     # Read seven bytes (3 byte message, 4 byte checksum)
                     line = self.radio.read(7)
