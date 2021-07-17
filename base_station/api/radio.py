@@ -2,6 +2,7 @@
 The radio class enables communication over wireless serial radios.
 """
 import serial
+from crc32 import Crc32
 TIMEOUT_DURATION = 0
 DEFAULT_BAUDRATE = 115200
 
@@ -35,6 +36,7 @@ class Radio():
         elif isinstance(message, int):
 
             # print("bytes written")
+            message = Crc32.generate(message)
             byte_arr = message.to_bytes(3, 'big')
             self.ser.write(byte_arr)
 
