@@ -11,6 +11,7 @@ import time
 import math
 import argparse
 import threading
+from crc32 import Crc32
 from queue import Queue
 
 # Custom imports
@@ -27,7 +28,7 @@ from gui import Main
 THREAD_SLEEP_DELAY = 0.1  # Since we are the slave to AUV, we must run faster.
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 
-PING = 0xFF
+PING = 0xFFFFFF
 
 CONNECTION_TIMEOUT = 4
 
@@ -281,22 +282,25 @@ class BaseStation(threading.Thread):
                     # lines = lines.decode('utf-8')
                     # lines = lines.split("\n")
 
-                    #lines = self.radio.readlines()
+                    # lines = self.radio.readlines()
                     # self.radio.flush()
 
                     #
 
-                    # Read three bytes
-                    line = self.radio.read(1)   # first 8 bits
-                    header = int.from_bytes(line, "big") >> 3     # first 5 bits
+                    # Read 7 bytes
+                    line = self.radio.read(7)
 
                     print("Line read ", line, " Header ", header)
 
-                    while(line != b'' and len(line) == 1):
-                        line = int.from_bytes(line, "big")
-
+                    while(line != b'' and len(line) == 7):
+                        intline = int.from_bytes(line, "big")
+                        checksum = Crc32.confirm(intline)
+                        if not checksum:
+                            continue
+                        intline = intline >> 32
+                        header = intline >> 21     # get first 3 bits
                         # PING case
-                        if line == PING:
+                        if intline == PING:
                             self.time_since_last_ping = time.time()
                             if self.connected_to_auv is False:
                                 self.log("Connection to AUV verified.")
@@ -304,9 +308,9 @@ class BaseStation(threading.Thread):
                                 self.connected_to_auv = True
                         # Data cases
                         else:
-                            decode_command(self, header, line)
+                            decode_command(self, header, intline)
 
-                        line = self.radio.read(1)
+                        line = self.radio.read(7)
 
                     self.radio.flush()
 

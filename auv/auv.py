@@ -8,6 +8,7 @@ import sys
 import threading
 import time
 import math
+from crc32 import Crc32
 
 # Custom imports
 from api import Radio
@@ -34,7 +35,7 @@ FLOODED_DATA = 0b10110
 DEPTH_DATA = 0b10111
 WATER_DEPTH_DATA = 0
 
-DEPTH_ENCODE = DEPTH_DATA << 11 
+DEPTH_ENCODE = DEPTH_DATA << 11
 
 MAX_TIME = 600
 MAX_ITERATION_COUNT = MAX_TIME / THREAD_SLEEP_DELAY / 7
@@ -166,7 +167,7 @@ class AUV():
                 try:
                     # Always send a connection verification packet and attempt to read one.
                     # self.radio.write(AUV_PING)
-                    self.radio.write(0xFF, 1)
+                    self.radio.write(0xFFFFFF, 3)
 
                     if self.connected_to_bs is True:  # Send our AUV packet as well.
 
@@ -217,29 +218,30 @@ class AUV():
                                 mbar_to_depth = 0
                             for_depth = math.modf(mbar_to_depth)
                             # standard depth of 10.2
-                            y = int(round(for_depth[0],1) * 10)
+                            y = int(round(for_depth[0], 1) * 10)
                             x = int(for_depth[1])
                             x = x << 4
                             depth_encode = (DEPTH_ENCODE | x | y)
                             log("Pressure Read: " + str(self.pressure_sensor.pressure())
                                 + ", x: " + str((x >> 4)) + ", y: " + str(y))  # TODO Heading and temperature
 
-
-                            #conversion for bars
+                            # conversion for bars
                             WATER_DEPTH_DATA = pressure * 10.2
 
                             self.radio.write(depth_encode, 2)
 
-
-
-                    # Read three bytes
-                    line = self.radio.read(3)
+                    # Read seven bytes (3 byte message, 4 byte checksum)
+                    line = self.radio.read(7)
                     print("Line read ", line)
                     # self.radio.flush()
 
-                    while(line != b'' and len(line) == 3):
-
-                        if int.from_bytes(line, "big") == 0xFFFFFF:  # We have a ping!
+                    while(line != b'' and len(line) == 7):
+                        intline = int.from_bytes(line, "big")
+                        checksum = Crc32.confirm(intline)
+                        if not checksum:
+                            continue
+                        intline = intline >> 32
+                        if intline == 0xFFFFFF:  # We have a ping!
                             self.time_since_last_ping = time.time()
                             if self.connected_to_bs is False:
                                 log("Connection to BS verified.")
@@ -255,7 +257,7 @@ class AUV():
                             # Decode into a normal utd-8 encoded string and delete newline character
                             #message = line.decode('utf-8').replace("\n", "")
                             print(line)
-                            message = int.from_bytes(line, "big")
+                            message = intline
                             log("Possible command found. Line read was: " + str(message))
                             print(type(message))
                             message = int(message)
@@ -302,7 +304,7 @@ class AUV():
                                 #             self.radio.write(str.encode("log(\"[AUV]\tEvaluation of command " +
                                 #                                         possible_func_name + "() failed.\")\n"))
 
-                        line = self.radio.read(3)
+                        line = self.radio.read(7)
 
                     # end while
                     self.radio.flush()
@@ -334,7 +336,7 @@ class AUV():
                     self, self.mc, self.pressure_sensor, self.imu)
                 self.timer = 0
                 log("Successfully started mission " + str(mission) + ".")
-                #self.radio.write(str.encode("mission_started("+str(mission)+")\n"))
+                # self.radio.write(str.encode("mission_started("+str(mission)+")\n"))
             except Exception as e:
                 raise Exception("Mission " + str(mission) +
                                 " failed to start. Error: " + str(e))
@@ -353,7 +355,7 @@ class AUV():
         self.current_mission = None
         aborted_mission.abort_loop()
         log("Successfully aborted the current mission.")
-        #self.radio.write(str.encode("mission_failed()\n"))
+        # self.radio.write(str.encode("mission_failed()\n"))
 
 
 def main():

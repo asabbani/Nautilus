@@ -1,12 +1,8 @@
 # Encoding headers
-POSITION_DATA = 0b10000
-HEADING_DATA = 0b10001
-VOLTAGE_DATA = 0b10010
-TEMP_DATA = 0b10011
-MOVEMENT_STAT_DATA = 0b10100
-MISSION_STAT_DATA = 0b10101
-FLOODED_DATA = 0b10110
-DEPTH_DATA = 0b10111
+POSITION_DATA = 0b000
+HEADING_DATA = 0b001
+COMBINATION_DATA = 0b010
+DEPTH_DATA = 0b011
 
 
 def decode_command(self_obj, header_str, line):
@@ -22,19 +18,6 @@ def decode_command(self_obj, header_str, line):
         y = (data & 0b111111111)
 
         # TODO, call function and update positioning in gui
-
-    elif header_str == HEADING_DATA:
-        x
-    elif header_str == VOLTAGE_DATA:
-        x
-    elif header_str == TEMP_DATA:
-        x
-    elif header_str == MOVEMENT_STAT_DATA:
-        x
-    elif header_str == MISSION_STAT_DATA:
-        x
-    elif header_str == FLOODED_DATA:
-        x
     elif header_str == DEPTH_DATA:
         print("Depth Case")
 
@@ -47,6 +30,49 @@ def decode_command(self_obj, header_str, line):
         x = data >> 4            # first 7 bits
         y = float(data & 0xF)    # last 5 bits
         depth = x + y/10
+        print("Depth: ", depth)
+
+        self_obj.out_q.put("set_depth(" + str(depth) + ")")
+
+        #         self.in_q.put(message)
+
+
+def decode_command(self_obj, header, line):
+    remain = line & 0x1FFFFF
+    if header == POSITION_DATA:
+        data = remain & 0x7FFFF
+        x = data >> 9
+        y = data & 0x1FF
+        # TODO: Update gui
+        print("x: " + str(int(x)))
+        print("y: " + str(int(y)))
+    elif header == HEADING_DATA:
+        data = remain & 0x1FFFF
+        x = data >> 7
+        y = data & 0x7F
+        print("x: " + str(int(x)))
+        print("y: " + str(int(y)))
+    elif header == COMBINATION_DATA:
+        data = remain & 0x7FFFF
+        battery = data >> 12  # bits 13-19
+        temp_sign = (data & 0x800) >> 11  # bit 12
+        temp_mag = (data & 0x7E0) >> 5  # bits 6-11
+        # Combine temp data
+        temp = (temp_mag * -1) if (temp_sign == 1) else temp_mag
+        mvmt = (data & 0x18) >> 3  # bits 4-5
+        mission_stat = (data & 0x6) >> 1  # bits 2-3
+        flooded = data & 0x1  # bit 1
+        # TODO: Update gui
+        print("Battery: " + str(int(battery)))
+        print("Temperature: " + str(int(temp)))
+        print("Movement status: " + str(int(mvmt)))
+        print("Mission status: " + str(int(mission_stat)))
+        print("Flooded: " + str(int(flooded)))
+    elif header == DEPTH_DATA:
+        data = remain & 0x7FF
+        whole = data >> 4
+        decimal = float(data & 0xF)
+        depth = whole + decimal/10
         print("Depth: ", depth)
 
         self_obj.out_q.put("set_depth(" + str(depth) + ")")
