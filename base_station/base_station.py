@@ -290,8 +290,6 @@ class BaseStation(threading.Thread):
                     # Read 7 bytes
                     line = self.radio.read(7)
 
-                    print("Line read ", line, " Header ", header)
-
                     while(line != b'' and len(line) == 7):
 
                         intline = int.from_bytes(line, "big")
