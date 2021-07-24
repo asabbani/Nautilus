@@ -45,8 +45,9 @@ class Radio:
         elif isinstance(message, int):
 
             # print("bytes written")
-            message = Crc32.generate(message)
-            byte_arr = message.to_bytes(length, 'big')
+            # message = Crc32.generate(message)
+            message_double = Crc32.generate(message)
+            byte_arr = message_double.to_bytes(length+4, 'big')
             self.ser.write(byte_arr)
 
     def read(self, n_bytes=1):

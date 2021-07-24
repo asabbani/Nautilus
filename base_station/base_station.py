@@ -293,7 +293,9 @@ class BaseStation(threading.Thread):
                     print("Line read ", line, " Header ", header)
 
                     while(line != b'' and len(line) == 7):
+
                         intline = int.from_bytes(line, "big")
+                        # intline = int(line,2)
                         checksum = Crc32.confirm(intline)
                         if not checksum:
                             continue

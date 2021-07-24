@@ -8,6 +8,7 @@ import sys
 import threading
 import time
 import math
+import struct
 
 # Custom imports
 from api import Radio
@@ -168,6 +169,7 @@ class AUV():
                     # Always send a connection verification packet and attempt to read one.
                     # self.radio.write(AUV_PING)
                     self.radio.write(0xFFFFFF, 3)
+                    
 
                     if self.connected_to_bs is True:  # Send our AUV packet as well.
 
@@ -237,7 +239,8 @@ class AUV():
                     # self.radio.flush()
 
                     while(line != b'' and len(line) == 7):
-                        intline = int.from_bytes(line, "big")
+                        intline = struct.unpack('d',line)[0]
+                        # intline = int.from_bytes(line, "big")
                         checksum = Crc32.confirm(intline)
                         if not checksum:
                             continue
@@ -257,11 +260,11 @@ class AUV():
 
                             # Decode into a normal utd-8 encoded string and delete newline character
                             #message = line.decode('utf-8').replace("\n", "")
-                            print(line)
+                            log(line)
                             message = intline
                             log("Possible command found. Line read was: " + str(message))
-                            print(type(message))
-                            message = int(message)
+                            log(type(message))
+                            # message = int(message)
                             # 0000001XSY or 0000000X
 
                             # navigation command

@@ -20,10 +20,3 @@ class Crc32():
             return True
         else:
             return False
-
-    testMessage = 0xFFFFF
-
-    result = generate(testMessage)
-    print(hex(result))
-
-    print(confirm(result))
