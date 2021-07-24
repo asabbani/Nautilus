@@ -8,7 +8,6 @@ import sys
 import threading
 import time
 import math
-import struct
 
 # Custom imports
 from api import Radio
@@ -235,18 +234,19 @@ class AUV():
 
                     # Read seven bytes (3 byte message, 4 byte checksum)
                     line = self.radio.read(7)
-                    print("Line read ", line)
+                    
                     # self.radio.flush()
 
                     while(line != b'' and len(line) == 7):
-                        intline = struct.unpack('d',line)[0]
-                        # intline = int.from_bytes(line, "big")
+                        print("Line read ", line)
+                        intline = int.from_bytes(line, "big")
                         checksum = Crc32.confirm(intline)
                         if not checksum:
                             continue
                         intline = intline >> 32
                         if intline == 0xFFFFFF:  # We have a ping!
                             self.time_since_last_ping = time.time()
+                            print("ping if statement")
                             if self.connected_to_bs is False:
                                 log("Connection to BS verified.")
                                 self.connected_to_bs = True
