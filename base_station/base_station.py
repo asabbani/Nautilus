@@ -11,6 +11,7 @@ import time
 import math
 import argparse
 import threading
+from crc32 import Crc32
 from queue import Queue
 
 # Custom imports
@@ -19,6 +20,7 @@ from api import Joystick
 from api import Xbox
 from api import NavController
 from api import GPS
+from api import decode_command
 #from api import checksum
 from gui import Main
 
@@ -26,17 +28,7 @@ from gui import Main
 THREAD_SLEEP_DELAY = 0.1  # Since we are the slave to AUV, we must run faster.
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 
-PING = 0xFF
-
-# Encoding headers
-POSITION_DATA = 0b10000
-HEADING_DATA = 0b10001
-VOLTAGE_DATA = 0b10010
-TEMP_DATA = 0b10011
-MOVEMENT_STAT_DATA = 0b10100
-MISSION_STAT_DATA = 0b10101
-FLOODED_DATA = 0b10110
-DEPTH_DATA = 0b10111
+PING = 0xFFFFFF
 
 CONNECTION_TIMEOUT = 4
 
@@ -290,22 +282,25 @@ class BaseStation(threading.Thread):
                     # lines = lines.decode('utf-8')
                     # lines = lines.split("\n")
 
-                    #lines = self.radio.readlines()
+                    # lines = self.radio.readlines()
                     # self.radio.flush()
 
                     #
 
-                    # Read three bytes
-                    line = self.radio.read(1)   # first 8 bits
-                    header = int.from_bytes(line, "big") >> 3     # first 5 bits
+                    # Read 7 bytes
+                    line = self.radio.read(7)
 
                     print("Line read ", line, " Header ", header)
 
-                    while(line != b'' and len(line) == 1):
-                        line = int.from_bytes(line, "big")
-
+                    while(line != b'' and len(line) == 7):
+                        intline = int.from_bytes(line, "big")
+                        checksum = Crc32.confirm(intline)
+                        if not checksum:
+                            continue
+                        intline = intline >> 32
+                        header = intline >> 21     # get first 3 bits
                         # PING case
-                        if line == PING:
+                        if intline == PING:
                             self.time_since_last_ping = time.time()
                             if self.connected_to_auv is False:
                                 self.log("Connection to AUV verified.")
@@ -313,48 +308,9 @@ class BaseStation(threading.Thread):
                                 self.connected_to_auv = True
                         # Data cases
                         else:
-                            if header == POSITION_DATA:
-                                # reads in remaining bytes
-                                remain = self.radio.read(2)
-                                remain = int.from_bytes(remain, "big")
-                                # contains x and y data
-                                data = remain | ((line & 0b00000111) << 16)
+                            decode_command(self, header, intline)
 
-                                x = (data >> 9)
-                                y = (data & 0b111111111)
-
-                                # TODO, call function and update positioning in gui
-
-                            elif header == HEADING_DATA:
-                                x
-                            elif header == VOLTAGE_DATA:
-                                x
-                            elif header == TEMP_DATA:
-                                x
-                            elif header == MOVEMENT_STAT_DATA:
-                                x
-                            elif header == MISSION_STAT_DATA:
-                                x
-                            elif header == FLOODED_DATA:
-                                x
-                            elif header == DEPTH_DATA:
-                                print("Depth Case")
-
-                                # reads in remaining bytes
-                                remain = self.radio.read(1)
-                                remain = int.from_bytes(remain, "big")
-                                # contains x and y data
-                                data = remain | ((line & 0b00000111) << 8)
-                                x = data >> 4       # first 7 bits
-                                y = float(data & 0xF)      # last 5 bits
-                                depth = x + y/10
-                                print("Depth: ", depth)
-
-                                self.out_q.put("set_depth(" + str(depth) + ")")
-
-                                #         self.in_q.put(message)
-
-                        line = self.radio.read(1)
+                        line = self.radio.read(7)
 
                     self.radio.flush()
 
