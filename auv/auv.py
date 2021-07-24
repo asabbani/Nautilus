@@ -221,8 +221,10 @@ class AUV():
                             x = int(for_depth[1])
                             x = x << 4
                             depth_encode = (DEPTH_ENCODE | x | y)
-                            log("Pressure Read: " + str(self.pressure_sensor.pressure())
-                                + ", x: " + str((x >> 4)) + ", y: " + str(y))  # TODO Heading and temperature
+                            #log("Pressure Read: " + str(self.pressure_sensor.pressure())
+                            #    + ", x: " + str((x >> 4)) + ", y: " + str(y))  
+                            # 
+                            # # TODO Heading and temperature
 
 
                             #conversion for bars
