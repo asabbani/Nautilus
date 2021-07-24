@@ -11,10 +11,10 @@ import time
 import math
 import argparse
 import threading
-from crc32 import Crc32
 from queue import Queue
 
 # Custom imports
+from api import Crc32
 from api import Radio
 from api import Joystick
 from api import Xbox

@@ -8,11 +8,11 @@ import sys
 import threading
 import time
 import math
-from crc32 import Crc32
 
 # Custom imports
 from api import Radio
 from api import IMU
+from api import Crc32
 from api import PressureSensor
 from api import MotorController
 from missions import *

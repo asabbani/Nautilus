@@ -2,7 +2,7 @@
 The radio class enables communication over wireless serial radios.
 """
 import serial
-from crc32 import Crc32
+from .crc32 import Crc32
 TIMEOUT_DURATION = 0
 DEFAULT_BAUDRATE = 115200
 
