@@ -218,9 +218,10 @@ class BaseStation(threading.Thread):
 
     def run(self):
         """ Main threaded loop for the base station. """
-
+        inc = 0
         # Begin our main loop for this thread.
         while True:
+            time.sleep(0.5)
             self.check_tasks()
 
             # Always try to update connection status
@@ -267,6 +268,8 @@ class BaseStation(threading.Thread):
                 # Try to read line from radio.
                 try:
                     self.radio.write(0xFFFFFF)
+                    print(str(inc))
+                    inc += 1
                     # This is where secured/synchronous code should go.
                     if self.connected_to_auv and self.manual_mode:
                         if self.joy is not None:  # and self.joy.connected() and self.nav_controller is not None:
