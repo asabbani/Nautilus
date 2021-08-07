@@ -2,3 +2,4 @@
 *.pyc
 .DS_Store
 test/
+base_station/lib/
