@@ -140,7 +140,7 @@ class AUV():
 
         log("Starting main connection loop.")
         while True:
-
+            time.sleep(0.5)
             # Always try to update connection status.
             if time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT:
                 # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
