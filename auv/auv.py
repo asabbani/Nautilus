@@ -40,12 +40,18 @@ DEPTH_ENCODE = DEPTH_DATA << 21
 MAX_TIME = 600
 MAX_ITERATION_COUNT = MAX_TIME / THREAD_SLEEP_DELAY / 7
 
+# determines if connected to BS
+connected = False
+
 
 def log(val):
     print("[AUV]\t" + val)
 
 
-class AUV():
+# Responsibilites:
+#   - receive data/commands
+#   - update connected global variable
+class AUV_Receive():
     """ Class for the AUV object. Acts as the main file for the AUV. """
 
     def __init__(self):
@@ -83,6 +89,7 @@ class AUV():
 
         self.main_loop()
 
+    # TODO delete
     def x(self, data):
         self.mc.update_motor_speeds(data)
 
@@ -140,7 +147,8 @@ class AUV():
 
         log("Starting main connection loop.")
         while True:
-            time.sleep(0.5)
+            time.sleep(THREAD_SLEEP_DELAY)
+
             # Always try to update connection status.
             if time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT:
                 # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
@@ -155,7 +163,7 @@ class AUV():
                     if self.radio is not None:
                         self.radio.flush()
 
-                    self.connected_to_bs = False
+                    connected = False
 
             if self.radio is None or self.radio.is_open() is False:
                 try:  # Try to connect to our devices.
@@ -165,76 +173,9 @@ class AUV():
                     pass
             else:
                 try:
-                    # Always send a connection verification packet and attempt to read one.
-                    # self.radio.write(AUV_PING)
-                    self.radio.write(0xFFFFFF, 3)
-                    
-
-                    if self.connected_to_bs is True:  # Send our AUV packet as well.
-
-                        # TODO Data sending logic
-                        #
-                        # if (sending_data):
-                        #    if(data.read(500000) != EOF)
-                        #        send("d("+data.nextBytes+")")
-                        #    else:
-                        #        send("d_done()")
-                        #        sending_data = False
-
-                        # TODO default values in case we could not read anything
-                        heading = 0
-                        temperature = 0
-                        pressure = 0
-
-                        if self.imu is not None:
-                            try:
-                                #heading = self.imu.quaternion[0]
-                                compass = self.imu.magnetic
-                                if compass is not None:
-                                    heading = math.degrees(math.atan2(compass[1], compass[0]))
-
-                                    # heading = round(
-                                    #    abs(heading * 360) * 100.0) / 100.0
-
-                                temperature = self.imu.temperature
-                                # (Heading, Temperature)
-                                if temperature is not None:
-                                    temperature = str(temperature)
-                                else:
-                                    temperature = 0
-
-                            except:
-                                # TODO print statement, something went wrong!
-                                heading = 0
-                                temperature = 0
-                                #self.radio.write(str.encode("log(\"[AUV]\tAn error occurred while trying to read heading and temperature.\")\n"))
-
-                        if self.pressure_sensor is not None:
-                            self.pressure_sensor.read()
-
-                            # defaults to mbars
-                            pressure = self.pressure_sensor.pressure()
-                            mbar_to_depth = (pressure-1013.25)/1000 * 10.2
-                            if mbar_to_depth < 0:
-                                mbar_to_depth = 0
-                            for_depth = math.modf(mbar_to_depth)
-                            # standard depth of 10.2
-                            # # TODO Heading and temperature
-                            decimal = int(round(for_depth[0], 1) * 10)
-                            whole = int(for_depth[1])
-                            whole = whole << 4
-                            depth_encode = (DEPTH_ENCODE | whole | decimal)
-                            log("Pressure Read: " + str(self.pressure_sensor.pressure())
-                                + ", whole: " + str((whole >> 4)) + ", decimal: " + str(decimal))  # TODO Heading and temperature
-
-                            # conversion for bars
-                            WATER_DEPTH_DATA = pressure * 10.2
-
-                            self.radio.write(depth_encode, 3)
-
                     # Read seven bytes (3 byte message, 4 byte checksum)
                     line = self.radio.read(7)
-                    
+
                     # self.radio.flush()
 
                     while(line != b'' and len(line) == 7):
@@ -330,8 +271,6 @@ class AUV():
                     # kill mission, we exceeded time
                     self.abort_mission()
 
-            time.sleep(THREAD_SLEEP_DELAY)
-
     def start_mission(self, mission):
         """ Method that uses the mission selected and begin that mission """
         if(mission == 0):  # Echo-location.
@@ -362,9 +301,135 @@ class AUV():
         # self.radio.write(str.encode("mission_failed()\n"))
 
 
+# Responsibilites:
+#   - send data
+#   - send ping
+class AUV_Send():
+    """ Class for the AUV object. Acts as the main file for the AUV. """
+
+    def __init__(self):
+        """ Constructor for the AUV """
+        self.radio = None
+        self.pressure_sensor = None
+        self.imu = None
+        self.mc = MotorController()
+        self.connected_to_bs = False
+        self.time_since_last_ping = 0.0
+        self.current_mission = None
+        self.timer = 0
+
+        # Get all non-default callable methods in this class
+        self.methods = [m for m in dir(AUV) if not m.startswith('__')]
+
+        try:
+            self.pressure_sensor = PressureSensor()
+            self.pressure_sensor.init()
+            log("Pressure sensor has been found")
+        except:
+            log("Pressure sensor is not connected to the AUV.")
+
+        try:
+            self.imu = IMU(IMU_PATH)
+            log("IMU has been found.")
+        except:
+            log("IMU is not connected to the AUV on IMU_PATH.")
+
+        try:
+            self.radio = Radio(RADIO_PATH)
+            log("Radio device has been found.")
+        except:
+            log("Radio device is not connected to AUV on RADIO_PATH.")
+
+        self.main_loop()
+
+    def main_loop(self):
+        """ Main connection loop for the AUV. """
+        global connected
+
+        log("Starting main sending connection loop.")
+        while True:
+            time.sleep(THREAD_SLEEP_DELAY)
+
+            if self.radio is None or self.radio.is_open() is False:
+                try:  # Try to connect to our devices.
+                    self.radio = Radio(RADIO_PATH)
+                    log("Radio device has been found!")
+                except:
+                    pass
+
+            else:
+                try:
+                    # Always send a connection verification packet and attempt to read one.
+                    # self.radio.write(AUV_PING)
+                    self.radio.write(0xFFFFFF, 3)
+
+                    if connected is True:  # Send our AUV packet as well.
+
+                        # TODO Data sending logic
+                        #
+                        # if (sending_data):
+                        #    if(data.read(500000) != EOF)
+                        #        send("d("+data.nextBytes+")")
+                        #    else:
+                        #        send("d_done()")
+                        #        sending_data = False
+
+                        # TODO default values in case we could not read anything
+                        heading = 0
+                        temperature = 0
+                        pressure = 0
+
+                        if self.imu is not None:
+                            try:
+                                #heading = self.imu.quaternion[0]
+                                compass = self.imu.magnetic
+                                if compass is not None:
+                                    heading = math.degrees(math.atan2(compass[1], compass[0]))
+
+                                    # heading = round(
+                                    #    abs(heading * 360) * 100.0) / 100.0
+
+                                temperature = self.imu.temperature
+                                # (Heading, Temperature)
+                                if temperature is not None:
+                                    temperature = str(temperature)
+                                else:
+                                    temperature = 0
+
+                            except:
+                                # TODO print statement, something went wrong!
+                                heading = 0
+                                temperature = 0
+                                #self.radio.write(str.encode("log(\"[AUV]\tAn error occurred while trying to read heading and temperature.\")\n"))
+
+                        if self.pressure_sensor is not None:
+                            self.pressure_sensor.read()
+
+                            # defaults to mbars
+                            pressure = self.pressure_sensor.pressure()
+                            mbar_to_depth = (pressure-1013.25)/1000 * 10.2
+                            if mbar_to_depth < 0:
+                                mbar_to_depth = 0
+                            for_depth = math.modf(mbar_to_depth)
+                            # standard depth of 10.2
+                            # # TODO Heading and temperature
+                            decimal = int(round(for_depth[0], 1) * 10)
+                            whole = int(for_depth[1])
+                            whole = whole << 4
+                            depth_encode = (DEPTH_ENCODE | whole | decimal)
+                            log("Pressure Read: " + str(self.pressure_sensor.pressure())
+                                + ", whole: " + str((whole >> 4)) + ", decimal: " + str(decimal))  # TODO Heading and temperature
+
+                            # conversion for bars
+                            WATER_DEPTH_DATA = pressure * 10.2
+
+                            self.radio.write(depth_encode, 3)
+
+
 def main():
     """ Main function that is run upon execution of auv.py """
     auv = AUV()
+    # TODO create threads
 
 
 if __name__ == '__main__':  # If we are executing this file as main
