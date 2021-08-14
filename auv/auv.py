@@ -10,12 +10,12 @@ import time
 import math
 
 # Custom imports
-from api import Radio
-from api import IMU
-from api import Crc32
-from api import PressureSensor
-from api import MotorController
-from missions import *
+from .api import Radio
+from .api import IMU
+from .api import Crc32
+from .api import PressureSensor
+from .api import MotorController
+from .missions import *
 
 # Constants for the AUV
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
@@ -41,7 +41,7 @@ MAX_TIME = 600
 MAX_ITERATION_COUNT = MAX_TIME / THREAD_SLEEP_DELAY / 7
 
 # determines if connected to BS
-connected = False
+connected = False  # TODO locks
 
 
 def log(val):
@@ -227,28 +227,6 @@ class AUV_Receive():
                                 log("Start Command Run with (x): " + str(x))
                                 self.start_mission(x)
 
-                                # if len(message) > 2 and "(" in message and ")" in message:
-                                #     # Get possible function name
-                                #     possible_func_name = message[0:message.find(
-                                #         "(")]
-
-                                #     if possible_func_name in self.methods:
-                                #         log(
-                                #             "Recieved command from base station: " + message)
-                                #         self.time_since_last_ping = time.time()
-                                #         self.connected_to_bs = True
-
-                                #         try:  # Attempt to evaluate command.
-                                #             # Append "self." to all commands.
-                                #             eval('self.' + message)
-                                #             #self.radio.write(str.encode("log(\"[AUV]\tSuccessfully evaluated command: " + possible_func_name + "()\")\n"))
-                                #         except Exception as e:
-                                #             # log error message
-                                #             log(str(e))
-                                #             # Send verification of command back to base station.
-                                #             self.radio.write(str.encode("log(\"[AUV]\tEvaluation of command " +
-                                #                                         possible_func_name + "() failed.\")\n"))
-
                         line = self.radio.read(7)
 
                     # end while
@@ -365,15 +343,6 @@ class AUV_Send():
 
                     if connected is True:  # Send our AUV packet as well.
 
-                        # TODO Data sending logic
-                        #
-                        # if (sending_data):
-                        #    if(data.read(500000) != EOF)
-                        #        send("d("+data.nextBytes+")")
-                        #    else:
-                        #        send("d_done()")
-                        #        sending_data = False
-
                         # TODO default values in case we could not read anything
                         heading = 0
                         temperature = 0
@@ -424,12 +393,17 @@ class AUV_Send():
                             WATER_DEPTH_DATA = pressure * 10.2
 
                             self.radio.write(depth_encode, 3)
+                except Exception as e:
+                    raise Exception("Error occured : " + str(e))
 
 
 def main():
     """ Main function that is run upon execution of auv.py """
-    auv = AUV()
-    # TODO create threads
+    auv_r_thread = threading.Thread(target=AUV_Receive(), args=[])
+    auv_s_thread = threading.Thread(target=AUV_Send(), args=[])
+    auv_r_thread.start()
+    auv_s_thread.start()
+    # TODO test
 
 
 if __name__ == '__main__':  # If we are executing this file as main
