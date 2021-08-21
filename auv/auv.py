@@ -10,18 +10,18 @@ import time
 import math
 
 # Custom imports
-from .api import Radio
-from .api import IMU
-from .api import Crc32
-from .api import PressureSensor
-from .api import MotorController
-from .missions import *
+from api import Radio
+from api import IMU
+from api import Crc32
+from api import PressureSensor
+from api import MotorController
+from missions import *
 
 # Constants for the AUV
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 IMU_PATH = '/dev/serial0'
 PING = 0xFF
-THREAD_SLEEP_DELAY = 0.05
+THREAD_SLEEP_DELAY = 0.1
 CONNECTION_TIMEOUT = 3
 
 # Encoding headers
@@ -51,22 +51,21 @@ def log(val):
 # Responsibilites:
 #   - receive data/commands
 #   - update connected global variable
-class AUV_Receive():
+class AUV_Receive(threading.Thread):
     """ Class for the AUV object. Acts as the main file for the AUV. """
 
-    def __init__(self):
+    def run(self):
         """ Constructor for the AUV """
         self.radio = None
         self.pressure_sensor = None
         self.imu = None
         self.mc = MotorController()
-        self.connected_to_bs = False
         self.time_since_last_ping = 0.0
         self.current_mission = None
         self.timer = 0
 
         # Get all non-default callable methods in this class
-        self.methods = [m for m in dir(AUV) if not m.startswith('__')]
+        self.methods = [m for m in dir(AUV_Receive) if not m.startswith('__')]
 
         try:
             self.pressure_sensor = PressureSensor()
@@ -143,6 +142,7 @@ class AUV_Receive():
         self.mc.zero_out_motors()
 
     def main_loop(self):
+        global connected
         """ Main connection loop for the AUV. """
 
         log("Starting main connection loop.")
@@ -152,7 +152,7 @@ class AUV_Receive():
             # Always try to update connection status.
             if time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT:
                 # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
-                if self.connected_to_bs is True:
+                if connected is True:
                     log("Lost connection to BS.")
 
                     # reset motor speed to 0 immediately and flush buffer
@@ -188,9 +188,10 @@ class AUV_Receive():
                         if intline == 0xFFFFFF:  # We have a ping!
                             self.time_since_last_ping = time.time()
                             print("ping if statement")
-                            if self.connected_to_bs is False:
+                            #print(line)
+                            if connected is False:
                                 log("Connection to BS verified.")
-                                self.connected_to_bs = True
+                                connected = True
 
                                 # TODO test case: set motor speeds
                                 data = [1, 2, 3, 4]
@@ -282,22 +283,21 @@ class AUV_Receive():
 # Responsibilites:
 #   - send data
 #   - send ping
-class AUV_Send():
+class AUV_Send(threading.Thread):
     """ Class for the AUV object. Acts as the main file for the AUV. """
 
-    def __init__(self):
+    def run(self):
         """ Constructor for the AUV """
         self.radio = None
         self.pressure_sensor = None
         self.imu = None
         self.mc = MotorController()
-        self.connected_to_bs = False
         self.time_since_last_ping = 0.0
         self.current_mission = None
         self.timer = 0
 
         # Get all non-default callable methods in this class
-        self.methods = [m for m in dir(AUV) if not m.startswith('__')]
+        self.methods = [m for m in dir(AUV_Send) if not m.startswith('__')]
 
         try:
             self.pressure_sensor = PressureSensor()
@@ -329,6 +329,7 @@ class AUV_Send():
             time.sleep(THREAD_SLEEP_DELAY)
 
             if self.radio is None or self.radio.is_open() is False:
+                print("TEST radio not connected")
                 try:  # Try to connect to our devices.
                     self.radio = Radio(RADIO_PATH)
                     log("Radio device has been found!")
@@ -339,6 +340,7 @@ class AUV_Send():
                 try:
                     # Always send a connection verification packet and attempt to read one.
                     # self.radio.write(AUV_PING)
+                    print("write")
                     self.radio.write(0xFFFFFF, 3)
 
                     if connected is True:  # Send our AUV packet as well.
@@ -399,8 +401,10 @@ class AUV_Send():
 
 def main():
     """ Main function that is run upon execution of auv.py """
-    auv_r_thread = threading.Thread(target=AUV_Receive(), args=[])
-    auv_s_thread = threading.Thread(target=AUV_Send(), args=[])
+    # auv_r_thread = threading.Thread(target=AUV_Receive(), args=[])
+    # auv_s_thread = threading.Thread(target=AUV_Send(), args=[])
+    auv_r_thread = AUV_Receive()
+    auv_s_thread = AUV_Send()
     auv_r_thread.start()
     auv_s_thread.start()
     # TODO test
