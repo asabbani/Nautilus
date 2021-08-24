@@ -1,8 +1,9 @@
 import signal
 import time
-from xbox360controller import Xbox360Controller
+from .xbox import Joystick
 
-class Xbox(Xbox360Controller):
+
+class Xbox(Joystick):
 
     def __init__(self):
         print("attempting superclass")
@@ -10,12 +11,10 @@ class Xbox(Xbox360Controller):
         print("superclass did something")
 
     def leftX(self):
-        return self.axis_l.x #TODO
+        return self.axis_l.x  # TODO
 
     def rightTrigger(self):
         return self.trigger_r.value
 
     def leftTrigger(self):
         return self.trigger_l.value
-
-
