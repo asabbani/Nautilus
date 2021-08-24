@@ -294,7 +294,7 @@ class BaseStation(threading.Thread):
                     line = self.radio.read(7)
 
                     while(line != b'' and len(line) == 7):
-
+                        print('read line')
                         intline = int.from_bytes(line, "big")
                         # intline = int(line,2)
                         checksum = Crc32.confirm(intline)
