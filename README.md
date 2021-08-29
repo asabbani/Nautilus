@@ -78,40 +78,35 @@ The Nautilus AUV is designed to perform a wide variety of aquatic "missions", ma
   * Sonar echolocation 
 
 # Development
-Most development takes place at the MESOM Laboratory in the Scripps Institution of Oceanography at the University of California, San Diego. Due to the COVID-19 epidemic, software development will continue remotely for the forseeable future.
+Most development takes place at the MESOM Laboratory in the Scripps Institution of Oceanography at the University of California, San Diego. Due to the COVID-19 pandemic, software development will continue remotely for the forseeable future.
 
 # Contributors
-Kevin Medzorian,
+Stephen Boussarov,
 Software Team Lead
 * Computer Science
 * UCSD Graduation: 2022
 
-
 Ryan Xu,
 Software Development
 * Computer Science
-* UCSD Graduation: 2022
-
-
-Travis Davis,
-Software Development
-* Electrical Engineering
-* UCSD Graduation: 2022
-
-
-Stephen Boussarov,
-Software Development
-* Computer Science
-* UCSD Graduation: 2022
-
+* UCSD Graduation: 2021
 
 Eric Estabaya,
 Software Development
 * Computer Science
 * UCSD Graduation: 2022
 
-
-Ethan Lew,
+Abirami Sabbani,
 Software Development
-* Mathematics-Computer Science
+* Math - Computer Science
+* UCSD Graduation: 2022
+
+Clair Ma,
+Software Development
+* Computer Science - Bioinformatics
+* UCSD Graduation: 2023
+
+Kevin Medzorian,
+Former Software Team Lead
+* Computer Science
 * UCSD Graduation: 2021
