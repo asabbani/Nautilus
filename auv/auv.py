@@ -23,7 +23,9 @@ from missions import *
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 IMU_PATH = '/dev/serial0'
 PING = 0xFF
-THREAD_SLEEP_DELAY = 0.1
+SEND_SLEEP_DELAY = 1
+RECEIVE_SLEEP_DELAY = 0.1
+PING_SLEEP_DELAY = 0.1
 CONNECTION_TIMEOUT = 3
 
 # Encoding headers
@@ -40,7 +42,7 @@ WATER_DEPTH_DATA = 0
 DEPTH_ENCODE = DEPTH_DATA << 21
 
 MAX_TIME = 600
-MAX_ITERATION_COUNT = MAX_TIME / THREAD_SLEEP_DELAY / 7
+MAX_ITERATION_COUNT = MAX_TIME / SEND_SLEEP_DELAY / 7
 
 # determines if connected to BS
 connected = False
@@ -123,7 +125,7 @@ class AUV_Receive(threading.Thread):
 
         log("Starting main connection loop.")
         while True:
-            time.sleep(THREAD_SLEEP_DELAY)
+            time.sleep(RECEIVE_SLEEP_DELAY)
 
             # Always try to update connection status.
             if time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT:
@@ -158,7 +160,7 @@ class AUV_Receive(threading.Thread):
                     # self.radio.flush()
 
                     while(line != b'' and len(line) == 7):
-                        print("Line read ", line)
+                        # print("Line read ", line)
                         intline = int.from_bytes(line, "big")
                         checksum = Crc32.confirm(intline)
                         if not checksum:
@@ -166,7 +168,7 @@ class AUV_Receive(threading.Thread):
                         intline = intline >> 32
                         if intline == 0xFFFFFF:  # We have a ping!
                             self.time_since_last_ping = time.time()
-                            print("ping if statement")
+                            # print("ping if statement")
                             # print(line)
                             lock.acquire()
                             if connected is False:
@@ -285,11 +287,8 @@ class AUV_Send(threading.Thread):
         except:
             log("Pressure sensor is not connected to the AUV.")
 
-        try:
-            self.imu = IMU(IMU_PATH)
-            log("IMU has been found.")
-        except:
-            log("IMU is not connected to the AUV on IMU_PATH.")
+        self.imu = IMU.BNO055(serial_port='/dev/serial0', rst=18)
+        log("IMU has been found.")
 
         try:
             self.radio = Radio(RADIO_PATH)
@@ -305,7 +304,7 @@ class AUV_Send(threading.Thread):
 
         log("Starting main sending connection loop.")
         while True:
-            time.sleep(THREAD_SLEEP_DELAY)
+            time.sleep(SEND_SLEEP_DELAY)
 
             if self.radio is None or self.radio.is_open() is False:
                 print("TEST radio not connected")
@@ -331,20 +330,11 @@ class AUV_Send(threading.Thread):
 
                         if self.imu is not None:
                             try:
-                                #heading = self.imu.quaternion[0]
-                                compass = self.imu.magnetic
-                                if compass is not None:
-                                    heading = math.degrees(math.atan2(compass[1], compass[0]))
+                                heading,_,_ = self.imu.read_euler()
+                                print('HEADING=',heading)
 
-                                    # heading = round(
-                                    #    abs(heading * 360) * 100.0) / 100.0
-
-                                temperature = self.imu.temperature
-                                # (Heading, Temperature)
-                                if temperature is not None:
-                                    temperature = str(temperature)
-                                else:
-                                    temperature = 0
+                                temperature = self.imu.read_temp()
+                                print('TEMPERATURE=', temperature)
 
                             except:
                                 # TODO print statement, something went wrong!
