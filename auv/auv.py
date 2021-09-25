@@ -23,14 +23,16 @@ from missions import *
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 IMU_PATH = '/dev/serial0'
 PING = 0xFF
-THREAD_SLEEP_DELAY = 0.1
+SEND_SLEEP_DELAY = 1
+RECEIVE_SLEEP_DELAY = 0.1
+PING_SLEEP_DELAY = 0.1
 CONNECTION_TIMEOUT = 3
 
 # Encoding headers
 POSITION_DATA = 0b10000
-HEADING_DATA = 0b10001
+HEADING_DATA = 0b0010000
 VOLTAGE_DATA = 0b10010
-TEMP_DATA = 0b10011
+MISC_DATA = 0b010
 MOVEMENT_STAT_DATA = 0b10100
 MISSION_STAT_DATA = 0b10101
 FLOODED_DATA = 0b10110
@@ -38,9 +40,11 @@ DEPTH_DATA = 0b011
 WATER_DEPTH_DATA = 0
 
 DEPTH_ENCODE = DEPTH_DATA << 21
+HEADING_ENCODE = HEADING_DATA << 17
+MISC_ENCODE = MISC_DATA << 21
 
 MAX_TIME = 600
-MAX_ITERATION_COUNT = MAX_TIME / THREAD_SLEEP_DELAY / 7
+MAX_ITERATION_COUNT = MAX_TIME / SEND_SLEEP_DELAY / 7
 
 # determines if connected to BS
 connected = False
@@ -123,7 +127,7 @@ class AUV_Receive(threading.Thread):
 
         log("Starting main connection loop.")
         while True:
-            time.sleep(THREAD_SLEEP_DELAY)
+            time.sleep(RECEIVE_SLEEP_DELAY)
 
             # Always try to update connection status.
             if time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT:
@@ -158,7 +162,7 @@ class AUV_Receive(threading.Thread):
                     # self.radio.flush()
 
                     while(line != b'' and len(line) == 7):
-                        print("Line read ", line)
+                        # print("Line read ", line)
                         intline = int.from_bytes(line, "big")
                         checksum = Crc32.confirm(intline)
                         if not checksum:
@@ -166,7 +170,7 @@ class AUV_Receive(threading.Thread):
                         intline = intline >> 32
                         if intline == 0xFFFFFF:  # We have a ping!
                             self.time_since_last_ping = time.time()
-                            print("ping if statement")
+                            # print("ping if statement")
                             # print(line)
                             lock.acquire()
                             if connected is False:
@@ -285,11 +289,8 @@ class AUV_Send(threading.Thread):
         except:
             log("Pressure sensor is not connected to the AUV.")
 
-        try:
-            self.imu = IMU(IMU_PATH)
-            log("IMU has been found.")
-        except:
-            log("IMU is not connected to the AUV on IMU_PATH.")
+        self.imu = IMU.BNO055(serial_port='/dev/serial0', rst=18)
+        log("IMU has been found.")
 
         try:
             self.radio = Radio(RADIO_PATH)
@@ -305,7 +306,7 @@ class AUV_Send(threading.Thread):
 
         log("Starting main sending connection loop.")
         while True:
-            time.sleep(THREAD_SLEEP_DELAY)
+            time.sleep(SEND_SLEEP_DELAY)
 
             if self.radio is None or self.radio.is_open() is False:
                 print("TEST radio not connected")
@@ -328,33 +329,29 @@ class AUV_Send(threading.Thread):
                         heading = 0
                         temperature = 0
                         pressure = 0
-
+                        #IMU
                         if self.imu is not None:
                             try:
-                                #heading = self.imu.quaternion[0]
-                                compass = self.imu.magnetic
-                                if compass is not None:
-                                    heading = math.degrees(math.atan2(compass[1], compass[0]))
+                                heading,_,_ = self.imu.read_euler()
+                                print('HEADING=',heading)
 
-                                    # heading = round(
-                                    #    abs(heading * 360) * 100.0) / 100.0
-
-                                temperature = self.imu.temperature
-                                # (Heading, Temperature)
-                                if temperature is not None:
-                                    temperature = str(temperature)
-                                else:
-                                    temperature = 0
+                                temperature = self.imu.read_temp()
+                                print('TEMPERATURE=', temperature)
 
                             except:
                                 # TODO print statement, something went wrong!
                                 heading = 0
                                 temperature = 0
                                 #self.radio.write(str.encode("log(\"[AUV]\tAn error occurred while trying to read heading and temperature.\")\n"))
-
+                            split_heading = math.modf(heading)
+                            decimal_heading = int(round(split_heading[0], 2) * 100)
+                            whole_heading = int(split_heading[1])
+                            whole_heading = whole_heading << 7
+                            heading_encode = (HEADING_ENCODE | whole_heading | decimal_heading)
+                            self.radio.write(heading_encode, 3)
+                        #Pressure
                         if self.pressure_sensor is not None:
                             self.pressure_sensor.read()
-
                             # defaults to mbars
                             pressure = self.pressure_sensor.pressure()
                             mbar_to_depth = (pressure-1013.25)/1000 * 10.2
@@ -362,18 +359,24 @@ class AUV_Send(threading.Thread):
                                 mbar_to_depth = 0
                             for_depth = math.modf(mbar_to_depth)
                             # standard depth of 10.2
-                            # # TODO Heading and temperature
                             decimal = int(round(for_depth[0], 1) * 10)
                             whole = int(for_depth[1])
                             whole = whole << 4
                             depth_encode = (DEPTH_ENCODE | whole | decimal)
-                            #log("Pressure Read: " + str(self.pressure_sensor.pressure())
-                            #    + ", whole: " + str((whole >> 4)) + ", decimal: " + str(decimal))  # TODO Heading and temperature
-
-                            # conversion for bars
-                            WATER_DEPTH_DATA = pressure * 10.2
-
                             self.radio.write(depth_encode, 3)
+                        #Temperature radio 
+                        whole_temperature = int(temperature)
+                        sign = 0
+                        if whole_temperature < 0:
+                            sign = 1
+                            whole_temperature *= -1
+                        whole_temperature = whole_temperature << 5
+                        sign = sign << 11
+                        temperature_encode = (MISC_ENCODE | sign | whole_temperature)
+                        self.radio.write(temperature_encode, 3)
+
+
+
                     else:
                         lock.release()
 
