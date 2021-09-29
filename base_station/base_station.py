@@ -17,7 +17,7 @@ from queue import Queue
 from api import Crc32
 from api import Radio
 from api import Joystick
-from api import Xbox
+from api import xbox
 from api import NavController
 from api import GPS
 from api import decode_command
@@ -56,7 +56,6 @@ class BaseStation_Receive(threading.Thread):
         # Call super-class constructor
         # Instance variables
         self.radio = None
-        self.joy = None
         self.nav_controller = None
         self.gps = None
         self.in_q = in_q
@@ -81,26 +80,6 @@ class BaseStation_Receive(threading.Thread):
                 "Warning: Cannot find radio device. Ensure RADIO_PATH is correct.")
 
         # Try to connect our Xbox 360 controller.
-
-# XXX ---------------------- XXX ---------------------------- XXX TESTING AREA
-        try:
-            print("case0")
-            self.joy = Xbox()
-            print("case1")
-
-            # self.joy = Joystick()
-            self.log("Successfuly found Xbox 360 controller.")
-            print("case2")
-
-            self.nav_controller = NavController(self.joy)
-            print("case3")
-
-            self.log("Successfully created a Navigation with Controller object.")
-            print("case4")
-
-        except Exception as e:  # TODO
-            self.log(str(e))
-            self.log("Warning: Cannot find Xbox 360 controller.")
 
 # XXX ---------------------- XXX ---------------------------- XXX TESTING AREA
 
@@ -286,23 +265,24 @@ class BaseStation_Send(threading.Thread):
 
 # XXX ---------------------- XXX ---------------------------- XXX TESTING AREA
         try:
-            print("case0")
-            self.joy = Xbox()
+            print("case0-----------------")
+            self.joy = xbox.Joystick()
             print("case1")
 
-            # self.joy = Joystick()
             self.log("Successfuly found Xbox 360 controller.")
             print("case2")
+        except:
+            self.log("Warning: Cannot find xbox controller")
 
+        try:
             self.nav_controller = NavController(self.joy)
             print("case3")
 
             self.log("Successfully created a Navigation with Controller object.")
             print("case4")
+        except:
+            self.log("Warning: Cannot find nav controller")
 
-        except Exception as e:  # TODO
-            self.log(str(e))
-            self.log("Warning: Cannot find Xbox 360 controller.")
 
 # XXX ---------------------- XXX ---------------------------- XXX TESTING AREA
 
