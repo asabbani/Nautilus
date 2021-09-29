@@ -221,56 +221,65 @@ class Main():
             FONT, STATUS_SIZE), justify=LEFT)
         self.heading_label.pack()
         self.heading_label_string.set("Heading: N/A")
-        self.heading_label.place(relx=0.05, rely=0.35, anchor='sw')
+        self.heading_label.place(relx=0.05, rely=0.37, anchor='sw')
 
         self.battery_status_string = StringVar()
         self.battery_voltage = Label(
             self.status_frame, textvariable=self.battery_status_string, font=(FONT, STATUS_SIZE))
         self.battery_voltage.pack()
         self.battery_status_string.set("Battery Voltage: N/A")
-        self.battery_voltage.place(relx=0.05, rely=0.40, anchor='sw')
+        self.battery_voltage.place(relx=0.05, rely=0.45, anchor='sw')
 
         self.temperature_string = StringVar()
         self.temperature = Label(
             self.status_frame, textvariable=self.temperature_string, font=(FONT, STATUS_SIZE))
         self.temperature.pack()
         self.temperature_string.set("Internal Temperature: N/A")
-        self.temperature.place(relx=0.05, rely=0.45, anchor='sw')
+        self.temperature.place(relx=0.05, rely=0.52, anchor='sw')
 
         self.movement_status_string = StringVar()
         self.movement_status = Label(
             self.status_frame, textvariable=self.movement_status_string, font=(FONT, STATUS_SIZE))
         self.movement_status.pack()
         self.movement_status_string.set("Movement Status: ")
-        self.movement_status.place(relx=0.05, rely=0.50, anchor='sw')
+        self.movement_status.place(relx=0.05, rely=0.59, anchor='sw')
 
         self.mission_status_string = StringVar()
         self.mission_status = Label(
             self.status_frame, textvariable=self.mission_status_string, font=(FONT, STATUS_SIZE))
         self.mission_status.pack()
         self.mission_status_string.set("Mission Status: ")
-        self.mission_status.place(relx=0.05, rely=0.55, anchor='sw')
+        self.mission_status.place(relx=0.05, rely=0.66, anchor='sw')
 
         self.flooded_string = StringVar()
         self.flooded = Label(
             self.status_frame, textvariable=self.flooded_string, font=(FONT, STATUS_SIZE))
         self.flooded.pack()
         self.flooded_string.set("Flooded: ")
-        self.flooded.place(relx=0.05, rely=0.60, anchor='sw')
+        self.flooded.place(relx=0.05, rely=0.73, anchor='sw')
 
         self.depth_string = StringVar()
         self.depth = Label(
             self.status_frame, textvariable=self.depth_string, font=(FONT, STATUS_SIZE))
         self.depth.pack()
         self.depth_string.set("Depth: 0meters")
-        self.depth.place(relx=0.05, rely=0.65, anchor='sw')
+        self.depth.place(relx=0.05, rely=0.80, anchor='sw')
 
         self.control_string = StringVar()
         self.control = Label(
             self.status_frame, textvariable=self.control_string, font=(FONT, STATUS_SIZE))
         self.control.pack()
         self.control_string.set("Control: (distance/angle or xbox) (calculated locally)")
-        self.control.place(relx=0.05, rely=0.65, anchor='sw')
+        self.control.place(relx=0.05, rely=0.87, anchor='sw')
+
+        self.comms_status_string = StringVar()
+        self.comms_status_string = Label(
+            self.status_frame, textvariable=self.comms_status_string, font=(FONT, STATUS_SIZE))
+        self.comms_status_string.pack()
+        self.comms_status_string.set("Control: (distance/angle or xbox) (calculated locally)")
+        self.comms_status.place(relx=0.05, rely=0.94, anchor='sw')
+
+
         # self.calibrate_xbox_button           = Button(self.status_frame, text = "Calibrate Controller", takefocus = False, width = BUTTON_WIDTH + 10, height = BUTTON_HEIGHT,
         #                                      padx = BUTTON_PAD_X, pady = BUTTON_PAD_Y, font = (FONT, BUTTON_SIZE), command = self.base_station.calibrate_controller )
         # self.calibrate_xbox_button.pack()
@@ -386,12 +395,12 @@ class Main():
         self.forward_calibrate_button.grid(
             row=1, column=1, pady=CALIBRATE_PAD_Y)
 
-        self.vertical_up_calibrate_button = Button(self.calibrate_frame, text="Vertical Up", takefocus=False,  # width = 15, height = 3,
+        self.backward_calibrate_button = Button(self.calibrate_frame, text="Backward", takefocus=False,  # width = 15, height = 3,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                                  FONT, BUTTON_SIZE),
-                                             command=lambda: self.out_q.put("test_motor('Vertical Up')"))
+                                             command=lambda: self.out_q.put("test_motor('Backward')"))
 
-        self.vertical_up_calibrate_button.grid(row=2, column=1, pady=CALIBRATE_PAD_Y)
+        self.backward_calibrate_button.grid(row=2, column=1, pady=CALIBRATE_PAD_Y)
 
         # TODO ask about these tests
         # self.calibrate_all_button = Button(self.calibrate_frame, text="All", takefocus=False,  # width = 15, height = 3,
@@ -408,12 +417,19 @@ class Main():
 
         self.vertical_down_calibrate_button.grid(row=3, column=1, pady=CALIBRATE_PAD_Y)
 
-        self.turn_calibrate_button = Button(self.calibrate_frame, text="Right", takefocus=False,  # width = 15, height = 3,
+        self.left_calibrate_button = Button(self.calibrate_frame, text="left", takefocus=False,  # width = 15, height = 3,
+                                        padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
+                                            FONT, BUTTON_SIZE),
+                                        command=lambda: self.out_q.put("test_motor('Left')"))
+        # X = 10, Y = 90
+        self.left_calibrate_button.grid(row=4, column=1, pady=CALIBRATE_PAD_Y)
+
+        self.right_calibrate_button = Button(self.calibrate_frame, text="right", takefocus=False,  # width = 15, height = 3,
                                         padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
                                             FONT, BUTTON_SIZE),
                                         command=lambda: self.out_q.put("test_motor('Right')"))
         # X = 10, Y = 90
-        self.turn_calibrate_button.grid(row=4, column=1, pady=CALIBRATE_PAD_Y)
+        self.right_calibrate_button.grid(row=4, column=1, pady=CALIBRATE_PAD_Y)
 
 
     def init_mission_frame(self):
