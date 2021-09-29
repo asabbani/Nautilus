@@ -273,12 +273,11 @@ class Main():
         self.control.place(relx=0.05, rely=0.87, anchor='sw')
 
         self.comms_status_string = StringVar()
-        self.comms_status_string = Label(
+        self.comms_status = Label(
             self.status_frame, textvariable=self.comms_status_string, font=(FONT, STATUS_SIZE))
-        self.comms_status_string.pack()
-        self.comms_status_string.set("Control: (distance/angle or xbox) (calculated locally)")
+        self.comms_status.pack()
+        self.comms_status_string.set("Comms: not connected")
         self.comms_status.place(relx=0.05, rely=0.94, anchor='sw')
-
 
         # self.calibrate_xbox_button           = Button(self.status_frame, text = "Calibrate Controller", takefocus = False, width = BUTTON_WIDTH + 10, height = BUTTON_HEIGHT,
         #                                      padx = BUTTON_PAD_X, pady = BUTTON_PAD_Y, font = (FONT, BUTTON_SIZE), command = self.base_station.calibrate_controller )
@@ -346,13 +345,13 @@ class Main():
         except Exception as e:
             print(str(e))
             print("failed to set heading of " + str(direction))
-    
+
     def set_mission_status(self, mission):
         self.mission_status_string.set("Mission Status: " + str(mission))
-    
+
     def set_flooded(self, flooded):
         self.flooded_string.set("Flooded: " + str(flooded))
-    
+
     def set_control(self, control):
         self.control_string.set("Mission Status: " + str(control))
 
@@ -396,9 +395,9 @@ class Main():
             row=1, column=1, pady=CALIBRATE_PAD_Y)
 
         self.backward_calibrate_button = Button(self.calibrate_frame, text="Backward", takefocus=False,  # width = 15, height = 3,
-                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
-                                                 FONT, BUTTON_SIZE),
-                                             command=lambda: self.out_q.put("test_motor('Backward')"))
+                                                padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
+                                                    FONT, BUTTON_SIZE),
+                                                command=lambda: self.out_q.put("test_motor('Backward')"))
 
         self.backward_calibrate_button.grid(row=2, column=1, pady=CALIBRATE_PAD_Y)
 
@@ -410,27 +409,26 @@ class Main():
 
         # self.calibrate_all_button.grid(row=5, column=1, pady=CALIBRATE_PAD_Y)
 
-        self.vertical_down_calibrate_button = Button(self.calibrate_frame, text="Vertical Down", takefocus=False,  # width = 15, height = 3,
-                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
-                                                FONT, BUTTON_SIZE),
-                                            command=lambda: self.out_q.put("test_motor('BACK')"))
+        self.vertical_down_calibrate_button = Button(self.calibrate_frame, text="Down", takefocus=False,  # width = 15, height = 3,
+                                                     padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
+                                                         FONT, BUTTON_SIZE),
+                                                     command=lambda: self.out_q.put("test_motor('Down')"))
 
         self.vertical_down_calibrate_button.grid(row=3, column=1, pady=CALIBRATE_PAD_Y)
 
-        self.left_calibrate_button = Button(self.calibrate_frame, text="left", takefocus=False,  # width = 15, height = 3,
-                                        padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
-                                            FONT, BUTTON_SIZE),
-                                        command=lambda: self.out_q.put("test_motor('Left')"))
+        self.left_calibrate_button = Button(self.calibrate_frame, text="Left", takefocus=False,  # width = 15, height = 3,
+                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
+                                                FONT, BUTTON_SIZE),
+                                            command=lambda: self.out_q.put("test_motor('Left')"))
         # X = 10, Y = 90
         self.left_calibrate_button.grid(row=4, column=1, pady=CALIBRATE_PAD_Y)
 
-        self.right_calibrate_button = Button(self.calibrate_frame, text="right", takefocus=False,  # width = 15, height = 3,
-                                        padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
-                                            FONT, BUTTON_SIZE),
-                                        command=lambda: self.out_q.put("test_motor('Right')"))
+        self.right_calibrate_button = Button(self.calibrate_frame, text="Right", takefocus=False,  # width = 15, height = 3,
+                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(
+                                                 FONT, BUTTON_SIZE),
+                                             command=lambda: self.out_q.put("test_motor('Right')"))
         # X = 10, Y = 90
-        self.right_calibrate_button.grid(row=4, column=1, pady=CALIBRATE_PAD_Y)
-
+        self.right_calibrate_button.grid(row=5, column=1, pady=CALIBRATE_PAD_Y)
 
     def init_mission_frame(self):
         self.mission_frame = Frame(
@@ -454,21 +452,21 @@ class Main():
                                            pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE+5), command=self.confirm_mission)
         self.start_mission_button.pack(expand=YES)  # TODO
 
-        self.depth_entry = Entry(self.mission_frame) #TODO -finish Depth and Time
+        self.depth_entry = Entry(self.mission_frame)  # TODO -finish Depth and Time
 
 
 #  canvas1 = tk.Canvas(root, width = 400, height = 300)
 # canvas1.pack()
 
-# entry1 = tk.Entry (root) 
+# entry1 = tk.Entry (root)
 # canvas1.create_window(200, 140, window=entry1)
 
-# def getSquareRoot ():  
+# def getSquareRoot ():
 #     x1 = entry1.get()
-    
+
 #     label1 = tk.Label(root, text= float(x1)**0.5)
 #     canvas1.create_window(200, 230, window=label1)
-    
+
 # button1 = tk.Button(text='Get the Square Root', command=getSquareRoot)
 # canvas1.create_window(200, 180, window=button1)
 
@@ -483,7 +481,6 @@ class Main():
 # e2.grid(row=1, column=1)
 
 # master.mainloop()
-
 
         self.abort_button = Button(self.mission_frame, text="ABORT MISSION", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE), command=self.abort_mission)
