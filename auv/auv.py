@@ -25,8 +25,8 @@ IMU_PATH = '/dev/serial0'
 PING = 0xFFFFFF
 SEND_SLEEP_DELAY = 1
 RECEIVE_SLEEP_DELAY = 0.1
-PING_SLEEP_DELAY = 0.1
-CONNECTION_TIMEOUT = 3
+PING_SLEEP_DELAY = 3
+CONNECTION_TIMEOUT = 6
 
 # Encoding headers
 POSITION_DATA = 0b000
@@ -45,6 +45,7 @@ MAX_ITERATION_COUNT = MAX_TIME / SEND_SLEEP_DELAY / 7
 # determines if connected to BS
 connected = False
 lock = threading.Lock()
+radio_lock = threading.Lock()
 
 
 def log(val):
@@ -337,7 +338,10 @@ class AUV_Send_Data(threading.Thread):
                             whole_heading = int(split_heading[1])
                             whole_heading = whole_heading << 7
                             heading_encode = (HEADING_ENCODE | whole_heading | decimal_heading)
+                            
+                            radio_lock.acquire()
                             self.radio.write(heading_encode, 3)
+                            radio_lock.release()
                         #Pressure
                         if self.pressure_sensor is not None:
                             self.pressure_sensor.read()
@@ -352,19 +356,20 @@ class AUV_Send_Data(threading.Thread):
                             whole = int(for_depth[1])
                             whole = whole << 4
                             depth_encode = (DEPTH_ENCODE | whole | decimal)
+                            
+                            radio_lock.acquire()
                             self.radio.write(depth_encode, 3)
-                        
+                            radio_lock.release()
                         #Temperature radio 
-                        whole_temperature = int(temperature)
-                        sign = 0
-                        if whole_temperature < 0:
                             sign = 1
                             whole_temperature *= -1
                         whole_temperature = whole_temperature << 5
                         sign = sign << 11
                         temperature_encode = (MISC_ENCODE | sign | whole_temperature)
+                        
+                        radio_lock.acquire()
                         self.radio.write(temperature_encode, 3)
-
+                        radio_lock.release()
 
 
                     else:
@@ -408,7 +413,9 @@ class AUV_Send_Ping(threading.Thread):
             else:
                 try:
                     # Always send a connection verification packet
+                    radio_lock.acquire()
                     self.radio.write(PING, 3)
+                    radio_lock.release()
 
                 except Exception as e:
                     raise Exception("Error occured : " + str(e))
