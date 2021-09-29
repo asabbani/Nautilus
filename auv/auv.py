@@ -22,22 +22,18 @@ from missions import *
 # Constants for the AUV
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
 IMU_PATH = '/dev/serial0'
-PING = 0xFF
+PING = 0xFFFFFF
 SEND_SLEEP_DELAY = 1
 RECEIVE_SLEEP_DELAY = 0.1
-PING_SLEEP_DELAY = 0.1
-CONNECTION_TIMEOUT = 3
+PING_SLEEP_DELAY = 3
+CONNECTION_TIMEOUT = 6
 
 # Encoding headers
-POSITION_DATA = 0b10000
-HEADING_DATA = 0b0010000
-VOLTAGE_DATA = 0b10010
+POSITION_DATA = 0b000
+HEADING_DATA = 0b001
 MISC_DATA = 0b010
-MOVEMENT_STAT_DATA = 0b10100
-MISSION_STAT_DATA = 0b10101
-FLOODED_DATA = 0b10110
+TEMP_DATA = 0b10011
 DEPTH_DATA = 0b011
-WATER_DEPTH_DATA = 0
 
 DEPTH_ENCODE = DEPTH_DATA << 21
 HEADING_ENCODE = HEADING_DATA << 17
@@ -49,6 +45,7 @@ MAX_ITERATION_COUNT = MAX_TIME / SEND_SLEEP_DELAY / 7
 # determines if connected to BS
 connected = False
 lock = threading.Lock()
+radio_lock = threading.Lock()
 
 
 def log(val):
@@ -71,7 +68,6 @@ class AUV_Receive(threading.Thread):
         self.timer = 0
         self.motor_queue = queue
         threading.Thread.__init__(self)
-
 
     def run(self):
         """ Constructor for the AUV """
@@ -119,7 +115,6 @@ class AUV_Receive(threading.Thread):
             self.mc.test_all()
         else:
             raise Exception('No implementation for motor name: ', motor)
-
 
     def main_loop(self):
         global connected
@@ -202,7 +197,7 @@ class AUV_Receive(threading.Thread):
                                     y = y * -1
 
                                 log("Running motor command with (x, y): " + str(x) + "," + str(y))
-                                self.motor_queue.put((x,y))
+                                self.motor_queue.put((x, y))
 
                             # misison command
                             else:
@@ -265,8 +260,7 @@ class AUV_Receive(threading.Thread):
 
 # Responsibilites:
 #   - send data
-#   - send ping
-class AUV_Send(threading.Thread):
+class AUV_Send_Data(threading.Thread):
     """ Class for the AUV object. Acts as the main file for the AUV. """
 
     def run(self):
@@ -280,7 +274,7 @@ class AUV_Send(threading.Thread):
         self.timer = 0
 
         # Get all non-default callable methods in this class
-        self.methods = [m for m in dir(AUV_Send) if not m.startswith('__')]
+        self.methods = [m for m in dir(AUV_Send_Data) if not m.startswith('__')]
 
         try:
             self.pressure_sensor = PressureSensor()
@@ -318,10 +312,6 @@ class AUV_Send(threading.Thread):
 
             else:
                 try:
-                    # Always send a connection verification packet and attempt to read one.
-                    # self.radio.write(AUV_PING)
-                    # print("write")
-                    self.radio.write(0xFFFFFF, 3)
                     lock.acquire()
                     if connected is True:  # Send our AUV packet as well.
                         lock.release()
@@ -332,8 +322,8 @@ class AUV_Send(threading.Thread):
                         #IMU
                         if self.imu is not None:
                             try:
-                                heading,_,_ = self.imu.read_euler()
-                                print('HEADING=',heading)
+                                heading, _, _ = self.imu.read_euler()
+                                print('HEADING=', heading)
 
                                 temperature = self.imu.read_temp()
                                 print('TEMPERATURE=', temperature)
@@ -348,7 +338,10 @@ class AUV_Send(threading.Thread):
                             whole_heading = int(split_heading[1])
                             whole_heading = whole_heading << 7
                             heading_encode = (HEADING_ENCODE | whole_heading | decimal_heading)
+                            
+                            radio_lock.acquire()
                             self.radio.write(heading_encode, 3)
+                            radio_lock.release()
                         #Pressure
                         if self.pressure_sensor is not None:
                             self.pressure_sensor.read()
@@ -363,7 +356,10 @@ class AUV_Send(threading.Thread):
                             whole = int(for_depth[1])
                             whole = whole << 4
                             depth_encode = (DEPTH_ENCODE | whole | decimal)
+                            
+                            radio_lock.acquire()
                             self.radio.write(depth_encode, 3)
+                            radio_lock.release()
                         #Temperature radio 
                         whole_temperature = int(temperature)
                         sign = 0
@@ -373,12 +369,56 @@ class AUV_Send(threading.Thread):
                         whole_temperature = whole_temperature << 5
                         sign = sign << 11
                         temperature_encode = (MISC_ENCODE | sign | whole_temperature)
+                        
+                        radio_lock.acquire()
                         self.radio.write(temperature_encode, 3)
-
+                        radio_lock.release()
 
 
                     else:
                         lock.release()
+
+                except Exception as e:
+                    raise Exception("Error occured : " + str(e))
+
+
+# Responsibilites:
+#   - send ping
+class AUV_Send_Ping(threading.Thread):
+    def run(self):
+        """ Constructor for the AUV """
+        self.radio = None
+
+        try:
+            self.radio = Radio(RADIO_PATH)
+            log("Radio device has been found.")
+        except:
+            log("Radio device is not connected to AUV on RADIO_PATH.")
+
+        self.main_loop()
+
+    def main_loop(self):
+        """ Main connection loop for the AUV. """
+        global connected
+
+        log("Starting main ping sending connection loop.")
+        while True:
+            time.sleep(PING_SLEEP_DELAY)
+
+            if self.radio is None or self.radio.is_open() is False:
+                print("TEST radio not connected")
+                try:  # Try to connect to our devices.
+                    self.radio = Radio(RADIO_PATH)
+                    log("Radio device has been found!")
+                except Exception as e:
+                    log("Failed to connect to radio: " + str(e))
+
+            else:
+                try:
+                    # Always send a connection verification packet
+                    radio_lock.acquire()
+                    self.radio.write(PING, 3)
+                    radio_lock.release()
 
                 except Exception as e:
                     raise Exception("Error occured : " + str(e))
@@ -389,10 +429,13 @@ def main():
     queue = Queue()
     auv_motor_thread = MotorQueue(queue)
     auv_r_thread = AUV_Receive(queue)
-    auv_s_thread = AUV_Send()
+    auv_s_thread = AUV_Send_Data()
+    auv_ping_thread = AUV_Send_Ping()
+
     auv_motor_thread.start()
     auv_r_thread.start()
     auv_s_thread.start()
+    auv_ping_thread.start()
 
 
 if __name__ == '__main__':  # If we are executing this file as main
