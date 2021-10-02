@@ -328,7 +328,7 @@ class Main():
 
     def set_movement(self, manual):
         """ Sets the movement status text in the status frame. """
-        if (manual):
+        if (not manual):
             self.movement_status_string.set("Movement Status: Manual Control")
         else:
             self.movement_status_string.set(
@@ -353,7 +353,7 @@ class Main():
         self.flooded_string.set("Flooded: " + str(flooded))
 
     def set_control(self, control):
-        self.control_string.set("Mission Status: " + str(control))
+        self.control_string.set("Control: " + str(control))
 
     def set_temperature(self, temperature):
         """ Sets internal temperature text """
@@ -373,7 +373,6 @@ class Main():
     def set_position(self, xPos, yPos):
         self.position_label_string.set(
             "Position \n \tX: " + xPos + "\t Y: " + yPos)
-            
 
     def init_calibrate_frame(self):
         self.calibrate_frame = Frame(
