@@ -18,6 +18,7 @@ class MotorQueue(threading.Thread):
                 x, y = self.queue.get()
                 self.run_motors(x,y)
 
+    # for tests only
     def run_motors(self, x, y):
         # stops auv
         self.mc.zero_out_motors()
@@ -50,3 +51,6 @@ class MotorQueue(threading.Thread):
             time.sleep(5)
 
         self.mc.zero_out_motors()
+
+    def xbox_commands(x, y):
+        self.mc.update_motor_speeds([x, y, 0, 0])
