@@ -373,6 +373,7 @@ class Main():
     def set_position(self, xPos, yPos):
         self.position_label_string.set(
             "Position \n \tX: " + xPos + "\t Y: " + yPos)
+            
 
     def init_calibrate_frame(self):
         self.calibrate_frame = Frame(
