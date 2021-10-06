@@ -439,24 +439,25 @@ class Main():
                                 pady=0, side=LEFT, expand=NO)
         self.mission_frame.pack_propagate(0)
 
-        Label(self.mission_frame, text="Depth", font=(FONT, FONT_SIZE)).grid(row=1)
-        Label(self.mission_frame, text="Time", font=(FONT, FONT_SIZE)).grid(row=2)
+        Label(self.mission_frame, text="Depth", font=(FONT, FONT_SIZE)).grid(row=3)
+        Label(self.mission_frame, text="Time", font=(FONT, FONT_SIZE)).grid(row=4)
         prompt_input_depth = Entry(self.mission_frame, bd=5, font=(FONT, FONT_SIZE))
-        prompt_input_depth.grid(row=1, column=1)
+        prompt_input_depth.grid(row=3, column=1)
         prompt_input_time = Entry(self.mission_frame, bd=5, font=(FONT, FONT_SIZE))
-        prompt_input_time.grid(row=2, column=1)
+        prompt_input_time.grid(row=4, column=1)
 
         self.mission_label = Label(
-            self.mission_frame, text="Mission Control", takefocus=False, font=(FONT, HEADING_SIZE))
+            self.mission_frame, text="Mission Control", takefocus=False, font=(FONT, HEADING_SIZE)).grid(row=1)
 
-        self.mission_label.pack(expand=YES)
+        # self.mission_label.pack(expand=YES)
         self.mission_list = Combobox(self.mission_frame, state="readonly", values=MISSIONS, font=(FONT, BUTTON_SIZE))
         self.mission_list.set("Select Mission...")
         self.mission_list.pack(expand=YES, fill=X, pady=COMBO_PAD_Y)
+        self.mission_list.grid(row=2)
         # self.mission_list.bind("<<ComboboxSelected>>", lambda _ : out_q.put(missions.index(self_mission_list.get())))
 
         self.start_mission_button = Button(self.mission_frame, text="Start Mission", takefocus=False,
-                                           width=BUTTON_WIDTH, height=BUTTON_HEIGHT, padx=BUTTON_PAD_X,
+                                           width=BUTTON_WIDTH, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
                                            pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE+5), command=self.confirm_mission(prompt_input_depth.get(), prompt_input_time.get()))
         self.start_mission_button.pack(expand=YES)  # TODO
 
