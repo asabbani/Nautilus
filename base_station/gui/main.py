@@ -44,6 +44,7 @@ MISSION_FRAME_WIDTH = 300
 LOG_FRAME_WIDTH = 650
 # Font Constants
 FONT = "Arial"
+FONT_SIZE = 11
 HEADING_SIZE = 20
 BUTTON_SIZE = 15
 STATUS_SIZE = 17
@@ -438,6 +439,13 @@ class Main():
                                 pady=0, side=LEFT, expand=NO)
         self.mission_frame.pack_propagate(0)
 
+        Label(self.mission_frame, text="Depth", font=(FONT, FONT_SIZE)).grid(row=1)
+        Label(self.mission_frame, text="Time", font=(FONT, FONT_SIZE)).grid(row=2)
+        prompt_input_depth = Entry(self.mission_frame, bd=5, font=(FONT, FONT_SIZE))
+        prompt_input_depth.grid(row=1, column=1)
+        prompt_input_time = Entry(self.mission_frame, bd=5, font=(FONT, FONT_SIZE))
+        prompt_input_time.grid(row=2, column=1)
+
         self.mission_label = Label(
             self.mission_frame, text="Mission Control", takefocus=False, font=(FONT, HEADING_SIZE))
 
@@ -449,10 +457,8 @@ class Main():
 
         self.start_mission_button = Button(self.mission_frame, text="Start Mission", takefocus=False,
                                            width=BUTTON_WIDTH, height=BUTTON_HEIGHT, padx=BUTTON_PAD_X,
-                                           pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE+5), command=self.confirm_mission)
+                                           pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE+5), command=self.confirm_mission(prompt_input_depth.get(), prompt_input_time.get()))
         self.start_mission_button.pack(expand=YES)  # TODO
-
-        self.depth_entry = Entry(self.mission_frame)  # TODO -finish Depth and Time
 
 
 #  canvas1 = tk.Canvas(root, width = 400, height = 300)
@@ -486,7 +492,7 @@ class Main():
                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE), command=self.abort_mission)
         self.abort_button.pack(expand=YES)
 
-    def confirm_mission(self):
+    def confirm_mission(self, depth, time):
         # TODO messages
         mission = self.mission_list.get()
 
