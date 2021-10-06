@@ -501,8 +501,7 @@ class Main():
 
         if mission == "Select Mission...":
             # Prevent mission from starting if a mission was not properly selected
-            messagebox.showerror(
-                "Mission Select", "Please select a mission before starting.")
+            self.log("Please select a mission before starting.")
         else:
             # Prompt mission start
             prompt = "Start mission: " + mission + "?"
