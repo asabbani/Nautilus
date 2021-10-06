@@ -447,9 +447,9 @@ class Main():
         prompt_input_time.grid(row=4, column=1)
 
         self.mission_label = Label(
-            self.mission_frame, text="Mission Control", takefocus=False, font=(FONT, HEADING_SIZE)).grid(row=1)
-
-        # self.mission_label.pack(expand=YES)
+            self.mission_frame, text="Mission Control", takefocus=False, font=(FONT, HEADING_SIZE))
+        self.mission_label.pack(expand=YES)
+        self.mission_label.grid(row=1)
         self.mission_list = Combobox(self.mission_frame, state="readonly", values=MISSIONS, font=(FONT, BUTTON_SIZE))
         self.mission_list.set("Select Mission...")
         self.mission_list.pack(expand=YES, fill=X, pady=COMBO_PAD_Y)
@@ -460,6 +460,7 @@ class Main():
                                            width=BUTTON_WIDTH, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
                                            pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE+5), command=self.confirm_mission(prompt_input_depth.get(), prompt_input_time.get()))
         self.start_mission_button.pack(expand=YES)  # TODO
+        self.start_mission_button.grid(row=5)
 
 
 #  canvas1 = tk.Canvas(root, width = 400, height = 300)
@@ -489,9 +490,10 @@ class Main():
 
 # master.mainloop()
 
-        self.abort_button = Button(self.mission_frame, text="ABORT MISSION", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+        self.abort_button = Button(self.mission_frame, text="ABORT MISSION", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT - 10,
                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE), command=self.abort_mission)
         self.abort_button.pack(expand=YES)
+        self.abort_button.grid(row=6)
 
     def confirm_mission(self, depth, time):
         # TODO messages
