@@ -458,7 +458,7 @@ class Main():
 
         self.start_mission_button = Button(self.mission_frame, text="Start Mission", takefocus=False,
                                            width=BUTTON_WIDTH, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
-                                           pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE+5), command=self.confirm_mission(prompt_input_depth.get(), prompt_input_time.get()))
+                                           pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE+5), command=lambda : self.confirm_mission(prompt_input_depth.get(), prompt_input_time.get()))
         self.start_mission_button.pack(expand=YES)  # TODO
         self.start_mission_button.grid(row=5)
 
