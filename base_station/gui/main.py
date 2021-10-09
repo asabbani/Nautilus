@@ -439,16 +439,6 @@ class Main():
                                 pady=0, side=LEFT, expand=NO)
         self.mission_frame.pack_propagate(0)
 
-        # self.status_frame = Frame(
-        #     self.top_frame, height=TOP_FRAME_HEIGHT, width=STATUS_FRAME_WIDTH, bd=1, relief=SUNKEN)
-        # self.status_frame.pack(padx=MAIN_PAD_X,
-        #                        pady=MAIN_PAD_Y, side=LEFT, expand=NO)
-        # self.status_frame.pack_propagate(0)
-        # self.status_label = Label(
-        #     self.status_frame, text="AUV Data", font=(FONT, HEADING_SIZE))
-        # self.status_label.pack()
-        # self.status_label.place(relx=0.22, rely=0.075)
-
         self.depth_label = Label(self.mission_frame, text="Depth(m):", font=(FONT, FONT_SIZE))
         self.depth_label.pack()
         self.depth_label.place(relx=0.06, rely=0.41)
@@ -460,29 +450,26 @@ class Main():
         prompt_input_depth = Entry(self.mission_frame, bd=5, font=(FONT, FONT_SIZE))
         prompt_input_depth.pack()
         prompt_input_depth.place(relx=0.3, rely=0.4)
-        # prompt_input_depth.grid(row=3, column=1)
+        
         prompt_input_time = Entry(self.mission_frame, bd=5, font=(FONT, FONT_SIZE))
         prompt_input_time.pack()
         prompt_input_time.place(relx=0.3, rely=0.525)
-        # prompt_input_time.grid(row=4, column=1)
-
+        
         self.mission_label = Label(
             self.mission_frame, text="Mission Control", takefocus=False, font=(FONT, HEADING_SIZE))
         self.mission_label.pack(expand=YES)
         self.mission_label.place(relx=0.24, rely=0.1)
-        # self.mission_label.grid(row=1)
+        
         self.mission_list = Combobox(self.mission_frame, state="readonly", values=MISSIONS, font=(FONT, BUTTON_SIZE))
         self.mission_list.set("Select Mission...")
         self.mission_list.pack(expand=YES, fill=X, pady=COMBO_PAD_Y)
         self.mission_list.place(relx=0.15, rely=0.25)
-        # self.mission_list.grid(row=2)
-        # self.mission_list.bind("<<ComboboxSelected>>", lambda _ : out_q.put(missions.index(self_mission_list.get())))
+        
 
         self.start_mission_button = Button(self.mission_frame, text="Start Mission", takefocus=False,
                                            width=BUTTON_WIDTH, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
                                            pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE+5), command=lambda: self.confirm_mission(prompt_input_depth.get(), prompt_input_time.get()))
-        self.start_mission_button.pack(expand=YES)  # TODO
-        # self.start_mission_button.grid(row=5)
+        self.start_mission_button.pack(expand=YES)  
         self.start_mission_button.place(relx=0.1, rely=0.65)
 
 
@@ -530,9 +517,16 @@ class Main():
             prompt = "Start mission: " + mission + "?"
             ans = messagebox.askquestion("Mission Select", prompt)
             if ans == 'yes':  # Send index of mission (0, 1, 2, etc...)
+                
+                if (1 <= depth <= 50) or (15 < time < 300):
+                   messagebox.showerror("Select a depth between 1 and 50 meters inclusive. ", "Select a time between 15 and 300 seconds. ")
+                   return
 
                 self.out_q.put(
                     "start_mission(" + str(self.mission_list.current()) + ")")
+
+
+        
 
     def abort_mission(self):
         ans = messagebox.askquestion(
