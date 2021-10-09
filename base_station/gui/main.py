@@ -450,26 +450,25 @@ class Main():
         prompt_input_depth = Entry(self.mission_frame, bd=5, font=(FONT, FONT_SIZE))
         prompt_input_depth.pack()
         prompt_input_depth.place(relx=0.3, rely=0.4)
-        
+
         prompt_input_time = Entry(self.mission_frame, bd=5, font=(FONT, FONT_SIZE))
         prompt_input_time.pack()
         prompt_input_time.place(relx=0.3, rely=0.525)
-        
+
         self.mission_label = Label(
             self.mission_frame, text="Mission Control", takefocus=False, font=(FONT, HEADING_SIZE))
         self.mission_label.pack(expand=YES)
         self.mission_label.place(relx=0.24, rely=0.1)
-        
+
         self.mission_list = Combobox(self.mission_frame, state="readonly", values=MISSIONS, font=(FONT, BUTTON_SIZE))
         self.mission_list.set("Select Mission...")
         self.mission_list.pack(expand=YES, fill=X, pady=COMBO_PAD_Y)
         self.mission_list.place(relx=0.15, rely=0.25)
-        
 
         self.start_mission_button = Button(self.mission_frame, text="Start Mission", takefocus=False,
                                            width=BUTTON_WIDTH, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
-                                           pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE+5), command=lambda: self.confirm_mission(prompt_input_depth.get(), prompt_input_time.get()))
-        self.start_mission_button.pack(expand=YES)  
+                                           pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE+5), command=lambda: self.confirm_mission(int(prompt_input_depth.get()), int(prompt_input_time.get())))
+        self.start_mission_button.pack(expand=YES)
         self.start_mission_button.place(relx=0.1, rely=0.65)
 
 
@@ -513,20 +512,18 @@ class Main():
             # Prevent mission from starting if a mission was not properly selected
             self.log("Please select a mission before starting.")
         else:
+            if (depth < 1 or depth > 50) or (time < 15 or time > 300):
+                messagebox.showerror("ERROR", "Select a depth between 1 and 50 meters inclusive and select a time between 15 and 300 seconds. ")
+                return
+
             # Prompt mission start
             prompt = "Start mission: " + mission + "?"
             ans = messagebox.askquestion("Mission Select", prompt)
+
             if ans == 'yes':  # Send index of mission (0, 1, 2, etc...)
-                
-                if (1 <= depth <= 50) or (15 < time < 300):
-                   messagebox.showerror("Select a depth between 1 and 50 meters inclusive. ", "Select a time between 15 and 300 seconds. ")
-                   return
 
                 self.out_q.put(
                     "start_mission(" + str(self.mission_list.current()) + ")")
-
-
-        
 
     def abort_mission(self):
         ans = messagebox.askquestion(
