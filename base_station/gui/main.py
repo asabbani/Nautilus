@@ -217,8 +217,7 @@ class Main():
             padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(4/5), side=LEFT, fill=BOTH, expand=NO)
         self.motor_control_frame.pack_propagate(0)
 
-
-        self.header_label = Label(self.motor_control_frame, text="Motor Control", font=(FONT, HEADING_SIZE)) 
+        self.header_label = Label(self.motor_control_frame, text="Motor Control", font=(FONT, HEADING_SIZE))
         self.header_label.pack()
         self.header_label.place(relx=0.1, rely=0.2)
 
@@ -240,13 +239,13 @@ class Main():
 
         # Add commands to halt and send buttons
         self.halt_button = Button(self.motor_control_frame, text="Halt", takefocus=False,
-                                           width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
-                                           pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE))
+                                  width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
+                                  pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE))
         self.halt_button.pack(expand=YES)
         self.halt_button.place(relx=0.3, rely=0)
 
         self.send_button = Button(self.motor_control_frame, text="Send", takefocus=False, width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10,
-                                   padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE))
+                                  padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE))
         self.send_button.pack(expand=YES)
         self.send_button.place(relx=0.6, rely=0)
 
@@ -638,11 +637,11 @@ class Main():
         self.clear_button.pack(expand=YES)
 
     def create_buttons(self):
-        self.download_data_button = Button(self.functions_frame, text="Download Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+        self.download_data_button = Button(self.buttons_frame, text="Download Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
-        #Add calibrate depth button command to the below button
-        self.calibrate_depth_button = Button(self.functions_frame, text="Calibrate Depth", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE))
+        # Add calibrate depth button command to the below button
+        self.calibrate_depth_button = Button(self.buttons_frame, text="Calibrate Depth", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE))
 
         self.download_data_button.pack(expand=YES)
         self.download_data_button.place(relx=0, rely=0)
