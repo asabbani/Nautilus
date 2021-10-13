@@ -139,14 +139,18 @@ class Main():
         self.bot_frame.pack(fill=BOTH, side=BOTTOM,
                             padx=MAIN_PAD_X, pady=MAIN_PAD_Y, expand=YES)
 
-        self.init_function_frame()
+        # self.init_function_frame()
+        self.init_camera_frame()
+        self.init_buttons_frame()
+        self.init_motor_control_frame()
         self.init_map_frame()
         self.init_status_frame()
         self.init_calibrate_frame()
         self.init_log_frame()
         self.init_mission_frame()
         self.create_map(self.map_frame)
-        self.create_function_buttons()
+        # self.create_function_buttons()
+        self.create_buttons()
 
         # Save our last received BS coordinates
         self.bs_coordinates = None
@@ -188,6 +192,63 @@ class Main():
         self.functions_frame.pack(
             padx=MAIN_PAD_X, pady=MAIN_PAD_Y, side=LEFT, fill=BOTH, expand=NO)
         self.functions_frame.pack_propagate(0)
+
+    def init_camera_frame(self):
+        """ Creates the frame for camera window. """
+        self.camera_frame = Frame(
+            self.top_frame, height=TOP_FRAME_HEIGHT*(2/5), width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
+        self.camera_frame.pack(
+            padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(2/5), side=LEFT, fill=BOTH, expand=NO)
+        self.camera_frame.pack_propagate(0)
+
+    def init_buttons_frame(self):
+        """ Creates the frame for buttons. """
+        self.buttons_frame = Frame(
+            self.top_frame, height=TOP_FRAME_HEIGHT*(1/5), width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
+        self.buttons_frame.pack(
+            padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(3/5), side=LEFT, fill=BOTH, expand=NO)
+        self.buttons_frame.pack_propagate(0)
+
+    def init_motor_control_frame(self):
+        """ Creates the frame for motor control. """
+        self.motor_control_frame = Frame(
+            self.top_frame, height=TOP_FRAME_HEIGHT*(2/5), width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
+        self.motor_control_frame.pack(
+            padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(4/5), side=LEFT, fill=BOTH, expand=NO)
+        self.motor_control_frame.pack_propagate(0)
+
+
+        self.header_label = Label(self.motor_control_frame, text="Motor Control", font=(FONT, HEADING_SIZE)) 
+        self.header_label.pack()
+        self.header_label.place(relx=0.1, rely=0.2)
+
+        self.distance_label = Label(self.motor_control_frame, text="Distance (0-100m)", font=(FONT, FONT_SIZE))
+        self.distance_label.pack()
+        self.distance_label.place(relx=0.1, rely=0.4)
+
+        self.angle_label = Label(self.motor_control_frame, text="Angle (-180 - 180\N{DEGREE SIGN})", font=(FONT, FONT_SIZE))
+        self.angle_label.pack()
+        self.angle_label.place(relx=0.1, rely=0.6)
+
+        prompt_input_distance = Entry(self.motor_control_frame, bd=5, font=(FONT, FONT_SIZE))
+        prompt_input_distance.pack()
+        prompt_input_distance.place(relx=0.4, rely=0.4)
+
+        prompt_input_angle = Entry(self.motor_control_frame, bd=5, font=(FONT, FONT_SIZE))
+        prompt_input_angle.pack()
+        prompt_input_angle.place(relx=0.4, rely=0.6)
+
+        # Add commands to halt and send buttons
+        self.halt_button = Button(self.motor_control_frame, text="Halt", takefocus=False,
+                                           width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
+                                           pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE))
+        self.halt_button.pack(expand=YES)
+        self.halt_button.place(relx=0.3, rely=0)
+
+        self.send_button = Button(self.motor_control_frame, text="Send", takefocus=False, width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10,
+                                   padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE))
+        self.send_button.pack(expand=YES)
+        self.send_button.place(relx=0.6, rely=0)
 
     def init_map_frame(self):
         """ Create the frame for the x, y map """
@@ -575,6 +636,19 @@ class Main():
         self.nav_to_waypoint_button.pack(expand=YES)
         self.download_data_button.pack(expand=YES)
         self.clear_button.pack(expand=YES)
+
+    def create_buttons(self):
+        self.download_data_button = Button(self.functions_frame, text="Download Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                           padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
+        #Add calibrate depth button command to the below button
+        self.calibrate_depth_button = Button(self.functions_frame, text="Calibrate Depth", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE))
+
+        self.download_data_button.pack(expand=YES)
+        self.download_data_button.place(relx=0, rely=0)
+
+        self.calibrate_depth_button.pack(expand=YES)
+        self.calibrate_depth_button.place(relx=0.5, rely=0)
 
     def create_map(self, frame):
         self.map = Map(frame, self)
