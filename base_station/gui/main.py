@@ -140,6 +140,7 @@ class Main():
                             padx=MAIN_PAD_X, pady=MAIN_PAD_Y, expand=YES)
 
         # self.init_function_frame()
+        self.init_stack_frame()
         self.init_camera_frame()
         self.init_buttons_frame()
         self.init_motor_control_frame()
@@ -193,29 +194,39 @@ class Main():
             padx=MAIN_PAD_X, pady=MAIN_PAD_Y, side=LEFT, fill=BOTH, expand=NO)
         self.functions_frame.pack_propagate(0)
 
+    def init_stack_frame(self):
+        self.stack_frame = Frame(
+            self.top_frame, height=TOP_FRAME_HEIGHT, width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
+        self.stack_frame.pack(
+            padx=MAIN_PAD_X, pady=MAIN_PAD_Y, side=LEFT, fill=BOTH, expand=NO)
+        self.stack_frame.pack_propagate(0)
+
     def init_camera_frame(self):
         """ Creates the frame for camera window. """
         self.camera_frame = Frame(
-            self.top_frame, height=TOP_FRAME_HEIGHT*(2/5), width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
-        self.camera_frame.pack(
-            padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(2/5), side=LEFT, fill=BOTH, expand=NO)
-        self.camera_frame.pack_propagate(0)
+            self.stack_frame, height=TOP_FRAME_HEIGHT*(3/7), width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
+        # self.camera_frame.pack(
+        #    padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(2/5), side=LEFT, fill=BOTH, expand=NO)
+        self.camera_frame.grid(
+            row=1, column=1, pady=CALIBRATE_PAD_Y)
 
     def init_buttons_frame(self):
         """ Creates the frame for buttons. """
         self.buttons_frame = Frame(
-            self.top_frame, height=TOP_FRAME_HEIGHT*(1/5), width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
-        self.buttons_frame.pack(
-            padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(3/5), side=LEFT, fill=BOTH, expand=NO)
-        self.buttons_frame.pack_propagate(0)
+            self.stack_frame, height=TOP_FRAME_HEIGHT*(1/7), width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
+        # self.buttons_frame.pack(
+        #    padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(3/5), side=LEFT, fill=BOTH, expand=NO)
+        self.buttons_frame.grid(
+            row=2, column=1, pady=CALIBRATE_PAD_Y)
 
     def init_motor_control_frame(self):
         """ Creates the frame for motor control. """
         self.motor_control_frame = Frame(
-            self.top_frame, height=TOP_FRAME_HEIGHT*(2/5), width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
-        self.motor_control_frame.pack(
-            padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(4/5), side=LEFT, fill=BOTH, expand=NO)
-        self.motor_control_frame.pack_propagate(0)
+            self.stack_frame, height=TOP_FRAME_HEIGHT*(3/7), width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
+        # self.motor_control_frame.pack(
+        #    padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(4/5), side=LEFT, fill=BOTH, expand=NO)
+        self.motor_control_frame.grid(
+            row=3, column=1, pady=CALIBRATE_PAD_Y)
 
         self.header_label = Label(self.motor_control_frame, text="Motor Control", font=(FONT, HEADING_SIZE))
         self.header_label.pack()
