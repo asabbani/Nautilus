@@ -141,9 +141,9 @@ class Main():
 
         # self.init_function_frame()
         self.init_stack_frame()
-        self.init_camera_frame() #for left panel
-        self.init_buttons_frame() #for left panel
-        self.init_motor_control_frame() #for left panel
+        self.init_camera_frame()  # for left panel
+        self.init_buttons_frame()  # for left panel
+        self.init_motor_control_frame()  # for left panel
         self.init_map_frame()
         self.init_status_frame()
         self.init_calibrate_frame()
@@ -214,7 +214,7 @@ class Main():
         """ Creates the frame for buttons. """
         self.buttons_frame = Frame(
             self.stack_frame, height=TOP_FRAME_HEIGHT*(1/7), width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
-        
+
         # self.buttons_frame.pack(
         #    padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(3/5), side=LEFT, fill=BOTH, expand=NO)
         self.buttons_frame.grid(
@@ -629,11 +629,11 @@ class Main():
 
     def create_download_data_button(self):
         self.download_data_button = Button(self.functions_frame, text="Download Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                     padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
+                                           padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
 
     def create_calibrate_data_button(self):
         self.calibrate_data_button = Button(self.functions_frame, text="Calibrate Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                     padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font= (FONT,BUTTON_SIZE), command=lambda: self.out_q.put("calibrate_data()"))   
+                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("calibrate_data()"))
 
     def create_function_buttons(self):
         self.heading_button = Button(self.functions_frame, text="Calibrate Heading", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
@@ -644,7 +644,7 @@ class Main():
                                           padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.new_waypoint_prompt)
         self.nav_to_waypoint_button = Button(self.functions_frame, text="Nav. to Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.nav_to_waypoint)
-        #this does not actually have a button --- placed outside, test this                                     
+        # this does not actually have a button --- placed outside, test this
         # self.download_data_button = Button(self.functions_frame, text="Download Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
         #                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
         self.clear_button = Button(self.functions_frame, text="Clear Map", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
@@ -658,10 +658,10 @@ class Main():
         self.clear_button.pack(expand=YES)
 
     def create_buttons(self):
-        self.download_data_button = Button(self.buttons_frame, text="Download Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+        self.download_data_button = Button(self.buttons_frame, text="Download\nData", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
         # Add calibrate depth button command to the below button
-        self.calibrate_depth_button = Button(self.buttons_frame, text="Calibrate Depth", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+        self.calibrate_depth_button = Button(self.buttons_frame, text="Calibrate\nDepth", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                              padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("calibrate_depth()"))
 
         self.download_data_button.pack(expand=YES)
