@@ -150,8 +150,6 @@ class Main():
         self.init_log_frame()
         self.init_mission_frame()
         self.create_map(self.map_frame)
-        # self.create_function_buttons()
-        self.create_buttons()
 
         # Save our last received BS coordinates
         self.bs_coordinates = None
@@ -194,6 +192,27 @@ class Main():
             padx=MAIN_PAD_X, pady=MAIN_PAD_Y, side=LEFT, fill=BOTH, expand=NO)
         self.functions_frame.pack_propagate(0)
 
+        self.heading_button = Button(self.functions_frame, text="Calibrate Heading", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                     padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.calibrate_heading_on_map)
+        self.origin_button = Button(self.functions_frame, text="Calibrate Origin", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.calibrate_origin_on_map)
+        self.add_waypoint_button = Button(self.functions_frame, text="Add Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                          padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.new_waypoint_prompt)
+        self.nav_to_waypoint_button = Button(self.functions_frame, text="Nav. to Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.nav_to_waypoint)
+        # this does not actually have a button --- placed outside, test this
+        self.download_data_button = Button(self.functions_frame, text="Download Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
+        self.clear_button = Button(self.functions_frame, text="Clear Map", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                   padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.clear)
+
+        self.heading_button.pack(expand=YES)
+        self.origin_button.pack(expand=YES)
+        self.add_waypoint_button.pack(expand=YES)
+        self.nav_to_waypoint_button.pack(expand=YES)
+        self.download_data_button.pack(expand=YES)
+        self.clear_button.pack(expand=YES)
+
     def init_stack_frame(self):
         self.stack_frame = Frame(
             self.top_frame, height=TOP_FRAME_HEIGHT, width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
@@ -219,6 +238,18 @@ class Main():
         #    padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(3/5), side=LEFT, fill=BOTH, expand=NO)
         self.buttons_frame.grid(
             row=2, column=1, pady=CALIBRATE_PAD_Y)
+
+        self.download_data_button = Button(self.buttons_frame, text="Download\nData", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                           padx=BUTTON_PAD_X-10, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
+        # Add calibrate depth button command to the below button
+        self.calibrate_depth_button = Button(self.buttons_frame, text="Calibrate\nDepth", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                             padx=BUTTON_PAD_X-10, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("calibrate_depth()"))
+
+        self.download_data_button.pack(expand=YES)
+        self.download_data_button.place(relx=0, rely=0)
+
+        self.calibrate_depth_button.pack(expand=YES)
+        self.calibrate_depth_button.place(relx=0.5, rely=0)
 
     def init_motor_control_frame(self):
         """ Creates the frame for motor control. """
@@ -626,49 +657,6 @@ class Main():
             self.log("Cannot calibrate heading because the base station has not reported heading data.")
 
     # def get_angle(self):
-
-    def create_download_data_button(self):
-        self.download_data_button = Button(self.functions_frame, text="Download Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                           padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
-
-    def create_calibrate_data_button(self):
-        self.calibrate_data_button = Button(self.functions_frame, text="Calibrate Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                            padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("calibrate_data()"))
-
-    def create_function_buttons(self):
-        self.heading_button = Button(self.functions_frame, text="Calibrate Heading", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                     padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.calibrate_heading_on_map)
-        self.origin_button = Button(self.functions_frame, text="Calibrate Origin", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.calibrate_origin_on_map)
-        self.add_waypoint_button = Button(self.functions_frame, text="Add Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                          padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.new_waypoint_prompt)
-        self.nav_to_waypoint_button = Button(self.functions_frame, text="Nav. to Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.nav_to_waypoint)
-        # this does not actually have a button --- placed outside, test this
-        # self.download_data_button = Button(self.functions_frame, text="Download Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-        #                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
-        self.clear_button = Button(self.functions_frame, text="Clear Map", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                   padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.clear)
-
-        self.heading_button.pack(expand=YES)
-        self.origin_button.pack(expand=YES)
-        self.add_waypoint_button.pack(expand=YES)
-        self.nav_to_waypoint_button.pack(expand=YES)
-        self.download_data_button.pack(expand=YES)
-        self.clear_button.pack(expand=YES)
-
-    def create_buttons(self):
-        self.download_data_button = Button(self.buttons_frame, text="Download\nData", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                           padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
-        # Add calibrate depth button command to the below button
-        self.calibrate_depth_button = Button(self.buttons_frame, text="Calibrate\nDepth", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("calibrate_depth()"))
-
-        self.download_data_button.pack(expand=YES)
-        self.download_data_button.place(relx=0, rely=0)
-
-        self.calibrate_depth_button.pack(expand=YES)
-        self.calibrate_depth_button.place(relx=0.5, rely=0)
 
     def create_map(self, frame):
         self.map = Map(frame, self)
