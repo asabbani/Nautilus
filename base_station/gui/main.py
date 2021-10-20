@@ -239,10 +239,10 @@ class Main():
         self.buttons_frame.grid(
             row=2, column=1, pady=CALIBRATE_PAD_Y)
 
-        self.download_data_button = Button(self.buttons_frame, text="Download\nData", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+        self.download_data_button = Button(self.buttons_frame, anchor=tkinter.W, text="Download\nData", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                            padx=BUTTON_PAD_X-10, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
         # Add calibrate depth button command to the below button
-        self.calibrate_depth_button = Button(self.buttons_frame, text="Calibrate\nDepth", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+        self.calibrate_depth_button = Button(self.buttons_frame, anchor=tkinter.W, text="Calibrate\nDepth", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                              padx=BUTTON_PAD_X-10, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("calibrate_depth()"))
 
         self.download_data_button.pack(expand=YES)
