@@ -14,7 +14,7 @@ matplotlib.use('TkAgg')
 
 # Object & Map Constants
 DEFAULT_FIGURE_SIZE = 30  # Window Size
-DEFAULT_GRID_SIZE = 1000  # Grid Size in Meters
+DEFAULT_GRID_SIZE = 550  # Grid Size in Meters
 
 # String Constants
 KILOMETERS = "Kilometers (km)"
@@ -40,7 +40,7 @@ ZOOM_SCALAR = 1.15
 CLOSE_ENOUGH = 0.25
 
 # Popup Window Contstants
-PROMPT_WINDOW_WIDTH = 600
+PROMPT_WINDOW_WIDTH = 620
 PROMPT_WINDOW_HEIGHT = 400
 
 # Font Constants
@@ -77,9 +77,9 @@ class Map:
         self.canvas = self.init_canvas()
 
         # Start listening for mouse-clicks
-        self.fig.canvas.mpl_connect('button_press_event',   self.on_press)
-        self.fig.canvas.mpl_connect('button_release_event', self.on_release)
-        self.fig.canvas.mpl_connect('motion_notify_event',  self.on_move)
+        #self.fig.canvas.mpl_connect('button_press_event',   self.on_press)
+        #self.fig.canvas.mpl_connect('button_release_event', self.on_release)
+        #self.fig.canvas.mpl_connect('motion_notify_event',  self.on_move)
 
         # Assign default values.
         self.set_range()  # Set to default range
@@ -93,18 +93,6 @@ class Map:
         PROMPT_WINDOW_HEIGHT = int(PROMPT_WINDOW_HEIGHT * self.main.multiplier_y)
         FONT_SIZE = int(FONT_SIZE * self.main.multiplier_x)
 
-        # Add random data to test line/path functionality.
-        # self.add_auv_data(100, 100)
-        # self.add_auv_data(110, 105)
-        # self.add_auv_data(130, 109)
-        # self.add_auv_data(200, 225)
-        # self.add_auv_data(240, 250)
-        # self.add_auv_data(350, 330)
-        # self.add_auv_data(360, 200)
-        # self.add_auv_data(370, 260)
-        # self.add_auv_data(360, 230)
-        # self.add_auv_data(350, 200)
-        # self.clear()
         self.draw_canvas()
 
     def clear(self):
@@ -377,7 +365,6 @@ class Map:
 
         return graph
 
-
     def nav_to_waypoint(self):
         print("[MAP] Opening nav-to-waypoint prompt.")
         prompt_window = Toplevel(self.window)
@@ -393,7 +380,6 @@ class Map:
         prompt_window.wm_attributes('-topmost')
         Label(prompt_window, text="Waypoint", font=(FONT, FONT_SIZE)).grid(row=1)
 
-
         buttonList = list()
 
         # creates combo box of waypoints
@@ -402,8 +388,8 @@ class Map:
 
         self.waypoint_list.grid(row=2, column=0, padx=5, pady=5)
 
-
         # saves the selected waypoint when save is pressed
+
         def set_waypoint():
             self.nav_x = self.waypoints[self.waypoint_list.current()][0]
             self.nav_y = self.waypoints[self.waypoint_list.current()][1]
@@ -418,7 +404,6 @@ class Map:
         ])
 
         prompt_submit.grid(row=3, column=0, padx=5, pady=5)
-
 
     def add_waypoint(self, x=0, y=0, label="My Waypoint"):
         self.main.log("Added waypoint \"" + label + "\" at map-position (" + str(int(x)) + ", " + str(int(y)) + ") " +
