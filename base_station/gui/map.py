@@ -112,24 +112,24 @@ class Map:
         self.auv_data[0].clear()  # clear all x values
         self.auv_data[1].clear()  # clear all y values
 
-    def undraw_waypoints(self):
-        """ Clears waypoints from the map """
-        for waypoint in self.waypoints:
-            # Remove waypoint from map.
-            if waypoint[3] != None and type(waypoint[3]) != tuple:
-                waypoint[3].pop(0).remove()
-                waypoint[3] = None
+    # def undraw_waypoints(self):
+    #     """ Clears waypoints from the map """
+    #     for waypoint in self.waypoints:
+    #         # Remove waypoint from map.
+    #         if waypoint[3] != None and type(waypoint[3]) != tuple:
+    #             waypoint[3].pop(0).remove()
+    #             waypoint[3] = None
 
-            if waypoint[4] != None:
-                waypoint[4].remove()
-                waypoint[4] = None
+    #         if waypoint[4] != None:
+    #             waypoint[4].remove()
+    #             waypoint[4] = None
 
-        self.draw_canvas()
+    #     self.draw_canvas()
 
-    def clear_waypoints(self):
-        """ Clears and removes waypoints """
-        self.undraw_waypoints()
-        del self.waypoints[:]
+    # def clear_waypoints(self):
+    #     """ Clears and removes waypoints """
+    #     self.undraw_waypoints()
+    #     del self.waypoints[:]
 
     def zero_map(self, x=0, y=0):
         """ Sets the origin of our coordinate system to (x,y) in UTM northing/eastings values"""
@@ -172,15 +172,15 @@ class Map:
 
             self.draw_canvas()
 
-    def redraw_waypoints(self):
-        """ Undraws waypoint and redraws a waypoint """
-        self.undraw_waypoints()
-        for waypoint in self.waypoints:
-            # Draw waypoint again.
-            waypoint[3] = self.map.plot(
-                waypoint[0], waypoint[1], marker='o', markersize=5, color="red"),
-            waypoint[4] = self.map.annotate(xy=(waypoint[0], waypoint[1]), s=waypoint[2] + ", UTM: (" +
-                                            str(round(waypoint[0]+self.zero_offset_x, 5))+","+str(round(waypoint[1]+self.zero_offset_y, 5))+")")
+    # def redraw_waypoints(self):
+    #     """ Undraws waypoint and redraws a waypoint """
+    #     self.undraw_waypoints()
+    #     for waypoint in self.waypoints:
+    #         # Draw waypoint again.
+    #         waypoint[3] = self.map.plot(
+    #             waypoint[0], waypoint[1], marker='o', markersize=5, color="red"),
+    #         waypoint[4] = self.map.annotate(xy=(waypoint[0], waypoint[1]), s=waypoint[2] + ", UTM: (" +
+    #                                         str(round(waypoint[0]+self.zero_offset_x, 5))+","+str(round(waypoint[1]+self.zero_offset_y, 5))+")")
 
         # Redraw canvas.
         self.draw_canvas()
@@ -311,6 +311,11 @@ class Map:
 
         # Re-draw the canvas.
         self.draw_canvas()
+
+    def blinking_dot(i=0):
+        colors = (AUV_PATH_COLOR, "red")
+        self.canvas.itemconfigure(self.auv_path_obj, fill=colors[i])
+        self.canvas.after(250, self.auv_path_obj, 1-i)
 
     def draw_canvas(self):
         return self.canvas.draw()
