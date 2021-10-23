@@ -201,7 +201,7 @@ class AUV_Receive(threading.Thread):
                             # mission command
                             else:
                                 # TODO
-                                x = int(bin(message)[-3:], 2)
+                                x = message & 0b111
                                 log("Start Command Run with (x): " + bin(x))
                                 if (x == 0) or (x == 1):
                                     self.start_mission(x)  # 0 for mission 1, and 1 for mission 2
@@ -221,11 +221,11 @@ class AUV_Receive(threading.Thread):
 
                             # decode time
                             t = message >> 3
-                            time_1 = int(bin(t)[-9:], 2)
+                            time_1 = t & 0b111111111
 
                             # decode depth
                             d = t >> 9
-                            depth = int(bin(d)[-6:], 2)
+                            depth = d & 0b111111
 
                         line = self.radio.read(7)
 
