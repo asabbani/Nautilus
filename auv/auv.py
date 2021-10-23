@@ -153,7 +153,6 @@ class AUV_Receive(threading.Thread):
                 try:
                     # Read seven bytes (3 byte message, 4 byte checksum)
                     line = self.radio.read(7)
-
                     # self.radio.flush()
 
                     while(line != b'' and len(line) == 7):
@@ -180,7 +179,7 @@ class AUV_Receive(threading.Thread):
                             # Line was read, but it was not equal to a BS_PING
 
                             # Decode into a normal utd-8 encoded string and delete newline character
-                            #message = line.decode('utf-8').replace("\n", "")
+                            # message = line.decode('utf-8').replace("\n", "")
                             print("NON-PING LINE READ WAS", str(line))
                             message = intline
                             log("Possible command found. Line read was: " + str(message))
@@ -199,12 +198,34 @@ class AUV_Receive(threading.Thread):
                                 log("Running motor command with (x, y): " + str(x) + "," + str(y))
                                 self.motor_queue.put((x, y))
 
-                            # misison command
+                            # mission command
                             else:
                                 # TODO
-                                x = (message & 0x3)
-                                log("Start Command Run with (x): " + str(x))
-                                self.start_mission(x)
+                                x = int(bin(message)[-3:], 2)
+                                log("Start Command Run with (x): " + bin(x))
+                                if (x == 0) or (x == 1):
+                                    self.start_mission(x)  # 0 for mission 1, and 1 for mission 2
+                                    # audioSampleMission() if x == 0 else mission2()
+                                if (x == 2):
+                                    # halt
+                                    self.mc.update_motor_speeds([0, 0, 0, 0])  # stop motors
+                                if (x == 3):
+                                    # calibrate
+                                    depth = 0
+                                if (x == 4):
+                                    # abort()
+                                    pass
+                                if (x == 5):
+                                    # downloadData()
+                                    pass
+
+                            # decode time
+                            t = message >> 3
+                            time_1 = int(bin(t)[-9:], 2)
+
+                            # decode depth
+                            d = t >> 9
+                            depth = int(bin(d)[-6:], 2)
 
                         line = self.radio.read(7)
 
@@ -319,7 +340,7 @@ class AUV_Send_Data(threading.Thread):
                         heading = 0
                         temperature = 0
                         pressure = 0
-                        #IMU
+                        # IMU
                         if self.imu is not None:
                             try:
                                 heading, _, _ = self.imu.read_euler()
@@ -338,11 +359,11 @@ class AUV_Send_Data(threading.Thread):
                             whole_heading = int(split_heading[1])
                             whole_heading = whole_heading << 7
                             heading_encode = (HEADING_ENCODE | whole_heading | decimal_heading)
-                            
+
                             radio_lock.acquire()
                             self.radio.write(heading_encode, 3)
                             radio_lock.release()
-                        #Pressure
+                        # Pressure
                         if self.pressure_sensor is not None:
                             self.pressure_sensor.read()
                             # defaults to mbars
@@ -356,21 +377,20 @@ class AUV_Send_Data(threading.Thread):
                             whole = int(for_depth[1])
                             whole = whole << 4
                             depth_encode = (DEPTH_ENCODE | whole | decimal)
-                            
+
                             radio_lock.acquire()
                             self.radio.write(depth_encode, 3)
                             radio_lock.release()
-                        #Temperature radio 
+                        # Temperature radio
                             sign = 1
                             whole_temperature *= -1
                         whole_temperature = whole_temperature << 5
                         sign = sign << 11
                         temperature_encode = (MISC_ENCODE | sign | whole_temperature)
-                        
+
                         radio_lock.acquire()
                         self.radio.write(temperature_encode, 3)
                         radio_lock.release()
-
 
                     else:
                         lock.release()
