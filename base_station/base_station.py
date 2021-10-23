@@ -42,6 +42,12 @@ MAX_TURN_SPEED = 50
 NAV_ENCODE = 0b000000100000000000000000           # | with XSY (forward, angle sign, angle)
 MISSION_ENCODE = 0b000000000000000000000000       # | with X   (mission)
 
+# Action Encodings
+HALT = 0b010
+CAL_DEPTH = 0b011
+ABORT = 0b100
+DL_DATA = 0b101
+
 # determines if connected to BS
 connected = False
 lock = threading.Lock()
@@ -384,6 +390,18 @@ class BaseStation_Send(threading.Thread):
             self.radio.write(MISSION_ENCODE | depth | t | mission)
             radio_lock.release()
             self.log('Sending task: start_mission(' + str(mission) + ')')
+
+    def send_halt(self):
+        self.start_mission(HALT, 0, 0)
+
+    def send_cal_depth(self):
+        self.start_mission(CAL_DEPTH, 0, 0)
+
+    def send_abort(self):
+        self.start_mission(ABORT, 0, 0)
+
+    def send_dl_data(self):
+        self.start_mission(DL_DATA, 0, 0)
 
     def run(self):
         """ Main sending threaded loop for the base station. """
