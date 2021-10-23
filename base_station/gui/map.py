@@ -94,6 +94,7 @@ class Map:
         FONT_SIZE = int(FONT_SIZE * self.main.multiplier_x)
 
         self.draw_canvas()
+        self.blinking_dot()
 
     def clear(self):
         """ Clears the map data """
@@ -298,6 +299,11 @@ class Map:
         self.auv_data[1].append(y)
         self.draw_auv_path()
 
+    def blinking_dot(self, i=0):
+        colors = (AUV_PATH_COLOR, "red")
+        self.canvas.itemconfigure(self.auv_path_obj, fill=colors[i])
+        self.canvas.after(250, self.auv_path_obj, 1-i)
+
     def draw_auv_path(self):
         print("[MAP] Drawing (really re-drawing) AUV path.")
 
@@ -312,10 +318,11 @@ class Map:
         # Re-draw the canvas.
         self.draw_canvas()
 
-    def blinking_dot(i=0):
-        colors = (AUV_PATH_COLOR, "red")
-        self.canvas.itemconfigure(self.auv_path_obj, fill=colors[i])
-        self.canvas.after(250, self.auv_path_obj, 1-i)
+    # need to see where to put this and what its parameters are
+    # def blinking_dot(i=0):
+    #     colors = (AUV_PATH_COLOR, "red")
+    #     self.canvas.itemconfigure(self.auv_path_obj, fill=colors[i])
+    #     self.canvas.after(250, self.auv_path_obj, 1-i)
 
     def draw_canvas(self):
         return self.canvas.draw()
