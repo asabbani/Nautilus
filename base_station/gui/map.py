@@ -2,6 +2,7 @@
 # Begin imports for MatplotLib
 from tkinter import *
 from matplotlib.pyplot import scatter
+from matplotlib.pyplot import plt
 from matplotlib.lines import Line2D
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -75,7 +76,7 @@ class Map:
         self.fig = self.init_fig()
         self.map = self.init_map()
         self.canvas = self.init_canvas()
-
+        self.map.plot(self.auv_data[0]+self.zero_offset_x, self.auv_data[1]+self.zero_offset_y, label="AUV Path", color=AUV_PATH_COLOR)
         # Start listening for mouse-clicks
         #self.fig.canvas.mpl_connect('button_press_event',   self.on_press)
         #self.fig.canvas.mpl_connect('button_release_event', self.on_release)
