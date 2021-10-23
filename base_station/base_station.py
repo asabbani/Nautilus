@@ -369,7 +369,7 @@ class BaseStation_Send(threading.Thread):
             self.log("Sending task: abort_mission()")
             self.manual_mode = True
 
-    def start_mission(self, mission):
+    def start_mission(self, mission, depth, t):
         """  Attempts to start a mission and send to AUV. """
         lock.acquire()
         if connected is False:
@@ -378,8 +378,10 @@ class BaseStation_Send(threading.Thread):
                      " because there is no connection to the AUV.")
         else:
             lock.release()
+            depth = depth << 12
+            t = t << 3
             radio_lock.acquire()
-            self.radio.write(MISSION_ENCODE | mission)
+            self.radio.write(MISSION_ENCODE | depth | t | mission)
             radio_lock.release()
             self.log('Sending task: start_mission(' + str(mission) + ')')
 
