@@ -169,7 +169,6 @@ class AUV_Receive(threading.Thread):
                 try:
                     # Read seven bytes (3 byte message, 4 byte checksum)
                     line = self.radio.read(7)
-
                     # self.radio.flush()
 
                     while(line != b'' and len(line) == 7):
@@ -209,14 +208,14 @@ class AUV_Receive(threading.Thread):
                             # Line was read, but it was not equal to a BS_PING
 
                             # Decode into a normal utd-8 encoded string and delete newline character
-                            #message = line.decode('utf-8').replace("\n", "")
+                            # message = line.decode('utf-8').replace("\n", "")
                             print("NON-PING LINE READ WAS", str(line))
                             message = intline
                             # message = int(message)
                             # 0000001XSY or 0000000X
 
                             # navigation command
-                            if (message & 0x020000 > 0):
+                            if (message & 0xC00000 == 2):
                                 x = (message & 0x01F600) >> 9
                                 sign = (message & 0x000100) >> 8
                                 y = (message & 0x0000FF)
@@ -243,12 +242,42 @@ class AUV_Receive(threading.Thread):
 
                                 self.motor_queue.put((x, y, 1))
 
-                            # misison command
-                            else:
-                                # TODO
-                                x = (message & 0x3)
-                                log("Start Command Run with (x): " + str(x))
-                                self.start_mission(x)
+                            # mission command
+                            elif (message & 0x800000 == 0):
+                                x = message & 0b111
+                                log("Start Command Run with (x): " + bin(x))
+                                if (x == 0) or (x == 1):
+                                    # decode time
+                                    t = message >> 3
+                                    time_1 = t & 0b111111111
+
+                                    # decode depth
+                                    d = t >> 9
+                                    depth = d & 0b111111
+
+                                    print("Run mission:", x)
+                                    print("with depth and time:", d, ",", time_1)
+
+                                    # self.start_mission(x)  # 0 for mission 1, and 1 for mission 2 TODO
+                                    # audioSampleMission() if x == 0 else mission2()
+                                if (x == 2):
+                                    # halt
+                                    print("HALT")
+                                    self.mc.update_motor_speeds([0, 0, 0, 0])  # stop motors
+                                if (x == 3):
+                                    print("CALIBRATE")
+
+                                    # calibrate
+                                    # TODO add global depth
+                                    depth = 0
+                                if (x == 4):
+                                    print("ABORT")
+                                    # abort()
+                                    pass
+                                if (x == 5):
+                                    print("DOWNLOAD DATA")
+                                    # downloadData()
+                                    pass
 
                         line = self.radio.read(7)
 

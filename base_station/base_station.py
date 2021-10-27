@@ -43,6 +43,12 @@ NAV_ENCODE = 0b000000100000000000000000           # | with XSY (forward, angle s
 XBOX_ENCODE = 0b111000000000000000000000          # | with XY (left/right, down/up xbox input)
 MISSION_ENCODE = 0b000000000000000000000000       # | with X   (mission)
 
+# Action Encodings
+HALT = 0b010
+CAL_DEPTH = 0b011
+ABORT = 0b100
+DL_DATA = 0b101
+
 # determines if connected to BS
 connected = False
 lock = threading.Lock()
@@ -350,7 +356,7 @@ class BaseStation_Send(threading.Thread):
             self.log("Sending task: abort_mission()")
             self.manual_mode = True
 
-    def start_mission(self, mission):
+    def start_mission(self, mission, depth, t):
         """  Attempts to start a mission and send to AUV. """
         lock.acquire()
         if connected is False:
@@ -359,10 +365,26 @@ class BaseStation_Send(threading.Thread):
                      " because there is no connection to the AUV.")
         else:
             lock.release()
+            depth = (depth << 12) & 0x3F000
+            t = (t << 3) & 0xFF8
             radio_lock.acquire()
-            self.radio.write(MISSION_ENCODE | mission)
+            self.radio.write(MISSION_ENCODE | depth | t | mission)
+            print(bin(MISSION_ENCODE | depth | t | mission))
+
             radio_lock.release()
             self.log('Sending task: start_mission(' + str(mission) + ')')
+
+    def send_halt(self):
+        self.start_mission(HALT, 0, 0)
+
+    def send_calibrate_depth(self):
+        self.start_mission(CAL_DEPTH, 0, 0)
+
+    def send_abort(self):
+        self.start_mission(ABORT, 0, 0)
+
+    def send_download_data(self):
+        self.start_mission(DL_DATA, 0, 0)
 
     def run(self):
         """ Main sending threaded loop for the base station. """
