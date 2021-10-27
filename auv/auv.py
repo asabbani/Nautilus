@@ -215,7 +215,7 @@ class AUV_Receive(threading.Thread):
                             # 0000001XSY or 0000000X
 
                             # navigation command
-                            if (message & 0x020000 > 0):
+                            if (message & 0xC00000 == 2):
                                 x = (message & 0x01F600) >> 9
                                 sign = (message & 0x000100) >> 8
                                 y = (message & 0x0000FF)
