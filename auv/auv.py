@@ -119,7 +119,7 @@ class AUV_Receive(threading.Thread):
     def main_loop(self):
         global connected
         """ Main connection loop for the AUV. """
-
+        count = 0
         log("Starting main connection loop.")
         while True:
             time.sleep(RECEIVE_SLEEP_DELAY)
@@ -133,14 +133,30 @@ class AUV_Receive(threading.Thread):
 
                     # reset motor speed to 0 immediately and flush buffer
                     self.mc.update_motor_speeds([0, 0, 0, 0])
-                    log("DEBUG TODO speeds reset")
+
+                    # resurface TODO
+                    # monitor depth at surface
+                    # turn upwards motors on until we've reached okay depth range OR
+                    # until radio is connected
+                    # have default be >0 to keep going up if pressure_sensor isn't there for some reason
+                    depth = 400  # number comes from depth of Isfjorden (not sure if this is actually where we'll be)
 
                     # enforce check in case radio is not found
                     if self.radio is not None:
                         self.radio.flush()
 
                     connected = False
-
+                
+                if self.pressure_sensor is not None:
+                    self.pressure_sensor.read()
+                    # defaults to mbars
+                    pressure = self.pressure_sensor.pressure()
+                    depth = (pressure-1013.25)/1000 * 10.2
+                # Turn upwards motors on until surface reached (if we haven't reconnected yet)
+                if depth > 0:  # TODO: Decide on acceptable depth range
+                    self.mc.update_motor_speeds([0, 0, 125, 125]) # TODO: Figure out which way is up
+                else:
+                    self.mc.update_motor_speeds([0, 0, 0, 0])
                 lock.release()
 
             if self.radio is None or self.radio.is_open() is False:
@@ -158,14 +174,22 @@ class AUV_Receive(threading.Thread):
                     while(line != b'' and len(line) == 7):
                         # print("Line read ", line)
                         intline = int.from_bytes(line, "big")
+                        #print("read line")
+                        #print("Line:", intline)
                         checksum = Crc32.confirm(intline)
                         if not checksum:
-                            continue
+                            log("invalid line***********************")
+                            #self.radio.flush()
+                            self.mc.update_motor_speeds([0, 0, 0, 0])
+                            break
                         intline = intline >> 32
                         if intline == 0xFFFFFF:  # We have a ping!
+                            log("PING")
                             self.time_since_last_ping = time.time()
                             # print("ping if statement")
                             # print(line)
+                            #print("lock acquired 173")
+
                             lock.acquire()
                             if connected is False:
                                 log("Connection to BS verified.")
@@ -174,7 +198,12 @@ class AUV_Receive(threading.Thread):
                                 # TODO test case: set motor speeds
                                 data = [1, 2, 3, 4]
                                 self.x(data)
+                                # Halt disconnected resurfacing
+                                self.mc.update_motor_speeds([0, 0, 0, 0])
                             lock.release()
+
+                            #print("lock released 173")
+
                         else:
                             # Line was read, but it was not equal to a BS_PING
 
@@ -182,7 +211,6 @@ class AUV_Receive(threading.Thread):
                             # message = line.decode('utf-8').replace("\n", "")
                             print("NON-PING LINE READ WAS", str(line))
                             message = intline
-                            log("Possible command found. Line read was: " + str(message))
                             # message = int(message)
                             # 0000001XSY or 0000000X
 
@@ -196,7 +224,23 @@ class AUV_Receive(threading.Thread):
                                     y = y * -1
 
                                 log("Running motor command with (x, y): " + str(x) + "," + str(y))
-                                self.motor_queue.put((x, y))
+                                self.motor_queue.put((x, y, 0))
+
+                            # Xbox Navigation Command
+                            # 0x[1110][0000] [XXXX][XXXX] [YYYY][YYYY]
+                            elif (message & 0xE00000 == 0xE00000):
+                                # xbox command
+                                x = (message & 0x7F00) >> 8
+                                xsign = (message & 0x8000) >> 15
+                                y = message & 0x7F
+                                ysign = (message & 0x80) >> 7
+                                if xsign == 1:
+                                    x = -x
+                                if ysign == 1:
+                                    y = -y
+                                #print("Xbox Command:", x, y)
+
+                                self.motor_queue.put((x, y, 1))
 
                             # mission command
                             else:
@@ -352,10 +396,10 @@ class AUV_Send_Data(threading.Thread):
                         if self.imu is not None:
                             try:
                                 heading, _, _ = self.imu.read_euler()
-                                print('HEADING=', heading)
+                                #print('HEADING=', heading)
 
                                 temperature = self.imu.read_temp()
-                                print('TEMPERATURE=', temperature)
+                                #print('TEMPERATURE=', temperature)
 
                             except:
                                 # TODO print statement, something went wrong!
@@ -390,6 +434,9 @@ class AUV_Send_Data(threading.Thread):
                             self.radio.write(depth_encode, 3)
                             radio_lock.release()
                         # Temperature radio
+                        whole_temperature = int(temperature)
+                        sign = 0
+                        if whole_temperature < 0:
                             sign = 1
                             whole_temperature *= -1
                         whole_temperature = whole_temperature << 5
