@@ -94,7 +94,7 @@ class Map:
         FONT_SIZE = int(FONT_SIZE * self.main.multiplier_x)
 
         self.draw_canvas()
-        self.blinking_dot()
+        self.add_waypoint(0,0)
 
     def clear(self):
         """ Clears the map data """
@@ -418,9 +418,6 @@ class Map:
         prompt_submit.grid(row=3, column=0, padx=5, pady=5)
 
     def add_waypoint(self, x=0, y=0, label="My Waypoint"):
-        self.main.log("Added waypoint \"" + label + "\" at map-position (" + str(int(x)) + ", " + str(int(y)) + ") " +
-                      "with utm-coordinates (" + str(int(float(x)+self.zero_offset_x)) + ", " + str(int(float(y)+self.zero_offset_y)) + ").")
-
         # The code below should never fail (that would be a big problem).
         self.waypoints.append([
             x, y,
