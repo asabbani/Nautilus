@@ -200,32 +200,40 @@ class AUV_Receive(threading.Thread):
 
                             # mission command
                             else:
-                                # TODO
                                 x = message & 0b111
                                 log("Start Command Run with (x): " + bin(x))
                                 if (x == 0) or (x == 1):
-                                    self.start_mission(x)  # 0 for mission 1, and 1 for mission 2
+                                    # decode time
+                                    t = message >> 3
+                                    time_1 = t & 0b111111111
+
+                                    # decode depth
+                                    d = t >> 9
+                                    depth = d & 0b111111
+
+                                    print("Run mission:", x)
+                                    print("with depth and time:", d, ",", t)
+
+                                    # self.start_mission(x)  # 0 for mission 1, and 1 for mission 2 TODO
                                     # audioSampleMission() if x == 0 else mission2()
                                 if (x == 2):
                                     # halt
+                                    print("HALT")
                                     self.mc.update_motor_speeds([0, 0, 0, 0])  # stop motors
                                 if (x == 3):
+                                    print("CALIBRATE")
+
                                     # calibrate
+                                    # TODO add global depth
                                     depth = 0
                                 if (x == 4):
+                                    print("ABORT")
                                     # abort()
                                     pass
                                 if (x == 5):
+                                    print("DOWNLOAD DATA")
                                     # downloadData()
                                     pass
-
-                            # decode time
-                            t = message >> 3
-                            time_1 = t & 0b111111111
-
-                            # decode depth
-                            d = t >> 9
-                            depth = d & 0b111111
 
                         line = self.radio.read(7)
 
