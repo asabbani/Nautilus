@@ -256,7 +256,7 @@ class AUV_Receive(threading.Thread):
                                     depth = d & 0b111111
 
                                     print("Run mission:", x)
-                                    print("with depth and time:", d, ",", t)
+                                    print("with depth and time:", d, ",", time_1)
 
                                     # self.start_mission(x)  # 0 for mission 1, and 1 for mission 2 TODO
                                     # audioSampleMission() if x == 0 else mission2()
