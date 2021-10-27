@@ -243,7 +243,7 @@ class AUV_Receive(threading.Thread):
                                 self.motor_queue.put((x, y, 1))
 
                             # mission command
-                            else:
+                            elif (message & 0x800000 == 0):
                                 x = message & 0b111
                                 log("Start Command Run with (x): " + bin(x))
                                 if (x == 0) or (x == 1):
