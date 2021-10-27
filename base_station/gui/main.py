@@ -139,7 +139,6 @@ class Main():
         self.bot_frame.pack(fill=BOTH, side=BOTTOM,
                             padx=MAIN_PAD_X, pady=MAIN_PAD_Y, expand=YES)
 
-        # self.init_function_frame()
         self.init_stack_frame()
         self.init_camera_frame()  # for left panel
         self.init_buttons_frame()  # for left panel
@@ -184,35 +183,6 @@ class Main():
         """ Gets the current time in year-months-day hour:minute:second. """
         return now.strftime("%Y-%m-%d %I:%M %p: ")
 
-    def init_function_frame(self):
-        """ Creates the frame for all UI functions. """
-        self.functions_frame = Frame(
-            self.top_frame, height=TOP_FRAME_HEIGHT, width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
-        self.functions_frame.pack(
-            padx=MAIN_PAD_X, pady=MAIN_PAD_Y, side=LEFT, fill=BOTH, expand=NO)
-        self.functions_frame.pack_propagate(0)
-
-        self.heading_button = Button(self.functions_frame, text="Calibrate Heading", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                     padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.calibrate_heading_on_map)
-        self.origin_button = Button(self.functions_frame, text="Calibrate Origin", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.calibrate_origin_on_map)
-        self.add_waypoint_button = Button(self.functions_frame, text="Add Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                          padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.new_waypoint_prompt)
-        self.nav_to_waypoint_button = Button(self.functions_frame, text="Nav. to Waypoint", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                             padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.nav_to_waypoint)
-        # this does not actually have a button --- placed outside, test this
-        self.download_data_button = Button(self.functions_frame, text="Download Data", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                           padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
-        self.clear_button = Button(self.functions_frame, text="Clear Map", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                   padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.map.clear)
-
-        self.heading_button.pack(expand=YES)
-        self.origin_button.pack(expand=YES)
-        self.add_waypoint_button.pack(expand=YES)
-        self.nav_to_waypoint_button.pack(expand=YES)
-        self.download_data_button.pack(expand=YES)
-        self.clear_button.pack(expand=YES)
-
     def init_stack_frame(self):
         self.stack_frame = Frame(
             self.top_frame, height=TOP_FRAME_HEIGHT, width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
@@ -240,10 +210,10 @@ class Main():
             row=2, column=1, pady=CALIBRATE_PAD_Y)
 
         self.download_data_button = Button(self.buttons_frame, anchor=tkinter.W, text="Download\nData", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                           padx=BUTTON_PAD_X+12, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
+                                           padx=BUTTON_PAD_X+12, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("send_download_data()"))
         # Add calibrate depth button command to the below button
         self.calibrate_depth_button = Button(self.buttons_frame, anchor=tkinter.W, text="Calibrate\nDepth", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                             padx=BUTTON_PAD_X+20, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("calibrate_depth()"))
+                                             padx=BUTTON_PAD_X+20, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("send_calibrate_depth()"))
 
         self.download_data_button.pack(expand=YES)
         self.download_data_button.place(relx=0, rely=0)
@@ -283,7 +253,8 @@ class Main():
         # Add commands to halt and send buttons
         self.halt_button = Button(self.motor_control_frame, text="Halt", takefocus=False,
                                   width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
-                                  pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE))
+                                  pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE),
+                                  command=lambda: self.out_q.put("send_halt()"))
         self.halt_button.pack(expand=YES)
         self.halt_button.place(relx=0.3, rely=0.1)
 
@@ -597,7 +568,7 @@ class Main():
             if ans == 'yes':  # Send index of mission (0, 1, 2, etc...)
 
                 self.out_q.put(
-                    "start_mission(" + str(self.mission_list.current()) + ")")
+                    "start_mission(" + str(self.mission_list.current()) + ", " + str(depth) + ", " + str(time) + ")")
 
     def abort_mission(self):
         ans = messagebox.askquestion(

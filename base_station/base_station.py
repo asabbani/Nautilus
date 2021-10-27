@@ -365,23 +365,25 @@ class BaseStation_Send(threading.Thread):
                      " because there is no connection to the AUV.")
         else:
             lock.release()
-            depth = depth << 12
-            t = t << 3
+            depth = (depth << 12) & 0x3F000
+            t = (t << 3) & 0xFF8
             radio_lock.acquire()
             self.radio.write(MISSION_ENCODE | depth | t | mission)
+            print(bin(MISSION_ENCODE | depth | t | mission))
+
             radio_lock.release()
             self.log('Sending task: start_mission(' + str(mission) + ')')
 
     def send_halt(self):
         self.start_mission(HALT, 0, 0)
 
-    def send_cal_depth(self):
+    def send_calibrate_depth(self):
         self.start_mission(CAL_DEPTH, 0, 0)
 
     def send_abort(self):
         self.start_mission(ABORT, 0, 0)
 
-    def send_dl_data(self):
+    def send_download_data(self):
         self.start_mission(DL_DATA, 0, 0)
 
     def run(self):
