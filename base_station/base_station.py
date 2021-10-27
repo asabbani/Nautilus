@@ -598,7 +598,11 @@ def main():
         sys.exit()
 
     # Create main GUI object
-    gui = Main(to_GUI, to_BS)
+    try:
+        gui = Main(to_GUI, to_BS)
+    except KeyboardInterrupt:
+        print("CLOSING")
+        quit()
 
 
 if __name__ == '__main__':
