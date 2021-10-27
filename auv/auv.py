@@ -146,7 +146,7 @@ class AUV_Receive(threading.Thread):
                         self.radio.flush()
 
                     connected = False
-                
+
                 if self.pressure_sensor is not None:
                     self.pressure_sensor.read()
                     # defaults to mbars
@@ -154,7 +154,7 @@ class AUV_Receive(threading.Thread):
                     depth = (pressure-1013.25)/1000 * 10.2
                 # Turn upwards motors on until surface reached (if we haven't reconnected yet)
                 if depth > 0:  # TODO: Decide on acceptable depth range
-                    self.mc.update_motor_speeds([0, 0, 125, 125]) # TODO: Figure out which way is up
+                    self.mc.update_motor_speeds([0, 0, 125, 125])  # TODO: Figure out which way is up
                 else:
                     self.mc.update_motor_speeds([0, 0, 0, 0])
                 lock.release()
@@ -180,7 +180,7 @@ class AUV_Receive(threading.Thread):
                         checksum = Crc32.confirm(intline)
                         if not checksum:
                             log("invalid line***********************")
-                            #self.radio.flush()
+                            # self.radio.flush()
                             self.mc.update_motor_speeds([0, 0, 0, 0])
                             break
                         intline = intline >> 32
