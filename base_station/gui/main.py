@@ -449,6 +449,13 @@ class Main():
         self.position_label_string.set(
             "Position \n \tX: " + xPos + "\t Y: " + yPos)
 
+    # dive command
+
+    def set_dive_cmd(self, depth):
+        self.depth_string.set(
+            "dive: "+str(depth)+"meter"
+        )
+
     def init_calibrate_frame(self):
         self.calibrate_frame = Frame(
             self.bot_frame, height=BOT_FRAME_HEIGHT, width=CALIBRATE_FRAME_WIDTH, bd=1, relief=SUNKEN)
@@ -557,7 +564,7 @@ class Main():
             # Prevent mission from starting if a mission was not properly selected
             self.log("Please select a mission before starting.")
         else:
-            if (depth < 1 or depth > 50) or (time < 15 or time > 300):
+            if ((depth < 1 or depth > 50) or (time < 15 or time > 300)):
                 messagebox.showerror("ERROR", "Select a depth between 1 and 50 meters inclusive and select a time between 15 and 300 seconds. ")
                 return
 
