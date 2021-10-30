@@ -139,7 +139,10 @@ class Main():
         self.bot_frame.pack(fill=BOTH, side=BOTTOM,
                             padx=MAIN_PAD_X, pady=MAIN_PAD_Y, expand=YES)
 
+<<<<<<< HEAD
         # self.init_function_frame()
+=======
+>>>>>>> 8b75eddd00f6f6abae49cb89dafb38bb4a89a399
         self.init_stack_frame()
         self.init_camera_frame()  # for left panel
         self.init_buttons_frame()  # for left panel
@@ -184,13 +187,85 @@ class Main():
         """ Gets the current time in year-months-day hour:minute:second. """
         return now.strftime("%Y-%m-%d %I:%M %p: ")
 
-    def init_function_frame(self):
-        """ Creates the frame for all UI functions. """
-        self.functions_frame = Frame(
+    def init_stack_frame(self):
+        self.stack_frame = Frame(
             self.top_frame, height=TOP_FRAME_HEIGHT, width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
-        self.functions_frame.pack(
+        self.stack_frame.pack(
             padx=MAIN_PAD_X, pady=MAIN_PAD_Y, side=LEFT, fill=BOTH, expand=NO)
-        self.functions_frame.pack_propagate(0)
+        self.stack_frame.pack_propagate(0)
+
+    def init_camera_frame(self):
+        """ Creates the frame for camera window. """
+        self.camera_frame = Frame(
+            self.stack_frame, height=TOP_FRAME_HEIGHT*(3/7), width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
+        # self.camera_frame.pack(
+        #    padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(2/5), side=LEFT, fill=BOTH, expand=NO)
+        self.camera_frame.grid(
+            row=1, column=1, pady=CALIBRATE_PAD_Y)
+
+    def init_buttons_frame(self):
+        """ Creates the frame for buttons. """
+        self.buttons_frame = Frame(
+            self.stack_frame, height=TOP_FRAME_HEIGHT*(1/7), width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
+
+        # self.buttons_frame.pack(
+        #    padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(3/5), side=LEFT, fill=BOTH, expand=NO)
+        self.buttons_frame.grid(
+            row=2, column=1, pady=CALIBRATE_PAD_Y)
+
+        self.download_data_button = Button(self.buttons_frame, anchor=tkinter.W, text="Download\nData", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                           padx=BUTTON_PAD_X+12, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("send_download_data()"))
+        # Add calibrate depth button command to the below button
+        self.calibrate_depth_button = Button(self.buttons_frame, anchor=tkinter.W, text="Calibrate\nDepth", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                                             padx=BUTTON_PAD_X+20, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("send_calibrate_depth()"))
+
+        self.download_data_button.pack(expand=YES)
+        self.download_data_button.place(relx=0, rely=0)
+
+        self.calibrate_depth_button.pack(expand=YES)
+        self.calibrate_depth_button.place(relx=0.5, rely=0)
+
+    def init_motor_control_frame(self):
+        """ Creates the frame for motor control. """
+        self.motor_control_frame = Frame(
+            self.stack_frame, height=TOP_FRAME_HEIGHT*(3/7), width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
+        # self.motor_control_frame.pack(
+        #    padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(4/5), side=LEFT, fill=BOTH, expand=NO)
+        self.motor_control_frame.grid(
+            row=3, column=1, pady=CALIBRATE_PAD_Y)
+
+        self.header_label = Label(self.motor_control_frame, text="Motor Control", font=(FONT, HEADING_SIZE))
+        self.header_label.pack()
+        self.header_label.place(relx=0.05, rely=0.3)
+
+        self.distance_label = Label(self.motor_control_frame, text="Distance\n(0-100m)", font=(FONT, FONT_SIZE))
+        self.distance_label.pack()
+        self.distance_label.place(relx=0.05, rely=0.5)
+
+        self.angle_label = Label(self.motor_control_frame, text="Angle\n(-180-180\N{DEGREE SIGN})", font=(FONT, FONT_SIZE))
+        self.angle_label.pack()
+        self.angle_label.place(relx=0.05, rely=0.7)
+
+        prompt_input_distance = Entry(self.motor_control_frame, bd=5, font=(FONT, FONT_SIZE-3))
+        prompt_input_distance.pack()
+        prompt_input_distance.place(relx=0.4, rely=0.525)
+
+        prompt_input_angle = Entry(self.motor_control_frame, bd=5, font=(FONT, FONT_SIZE-3))
+        prompt_input_angle.pack()
+        prompt_input_angle.place(relx=0.4, rely=0.725)
+
+        # Add commands to halt and send buttons
+        self.halt_button = Button(self.motor_control_frame, text="Halt", takefocus=False,
+                                  width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
+                                  pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE),
+                                  command=lambda: self.out_q.put("send_halt()"))
+        self.halt_button.pack(expand=YES)
+        self.halt_button.place(relx=0.3, rely=0.1)
+
+        self.send_button = Button(self.motor_control_frame, text="Send", takefocus=False, width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10,
+                                  padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE))
+        self.send_button.pack(expand=YES)
+        self.send_button.place(relx=0.6, rely=0.1)
 
         self.heading_button = Button(self.functions_frame, text="Calibrate Heading", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                                      padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=self.calibrate_heading_on_map)
@@ -361,6 +436,7 @@ class Main():
         self.flooded.pack()
         self.flooded_string.set("Flooded: ")
         self.flooded.place(relx=0.05, rely=0.73, anchor='sw')
+<<<<<<< HEAD
 
         self.depth_string = StringVar()
         self.depth = Label(
@@ -369,6 +445,16 @@ class Main():
         self.depth_string.set("Depth: 0meters")
         self.depth.place(relx=0.05, rely=0.80, anchor='sw')
 
+=======
+
+        self.depth_string = StringVar()
+        self.depth = Label(
+            self.status_frame, textvariable=self.depth_string, font=(FONT, STATUS_SIZE))
+        self.depth.pack()
+        self.depth_string.set("Depth: 0meters")
+        self.depth.place(relx=0.05, rely=0.80, anchor='sw')
+
+>>>>>>> 8b75eddd00f6f6abae49cb89dafb38bb4a89a399
         self.control_string = StringVar()
         self.control = Label(
             self.status_frame, textvariable=self.control_string, font=(FONT, STATUS_SIZE))
@@ -482,6 +568,13 @@ class Main():
         self.position_label_string.set(
             "Position \n \tX: " + xPos + "\t Y: " + yPos)
 
+    # dive command
+
+    def set_dive_cmd(self, depth):
+        self.depth_string.set(
+            "dive: "+str(depth)+"meter"
+        )
+
     def init_calibrate_frame(self):
         self.calibrate_frame = Frame(
             self.bot_frame, height=BOT_FRAME_HEIGHT, width=CALIBRATE_FRAME_WIDTH, bd=1, relief=SUNKEN)
@@ -577,7 +670,10 @@ class Main():
                                            pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE+5), command=lambda: self.confirm_mission(int(prompt_input_depth.get()), int(prompt_input_time.get())))
         self.start_mission_button.pack(expand=YES)
         self.start_mission_button.place(relx=0.1, rely=0.65)
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8b75eddd00f6f6abae49cb89dafb38bb4a89a399
         self.abort_button = Button(self.mission_frame, text="ABORT MISSION", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT - 10,
                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE), command=self.abort_mission)
         self.abort_button.pack(expand=YES)
@@ -591,7 +687,11 @@ class Main():
             # Prevent mission from starting if a mission was not properly selected
             self.log("Please select a mission before starting.")
         else:
+<<<<<<< HEAD
             if (depth < 1 or depth > 50) or (time < 15 or time > 300):
+=======
+            if ((depth < 1 or depth > 50) or (time < 15 or time > 300)):
+>>>>>>> 8b75eddd00f6f6abae49cb89dafb38bb4a89a399
                 messagebox.showerror("ERROR", "Select a depth between 1 and 50 meters inclusive and select a time between 15 and 300 seconds. ")
                 return
 
@@ -602,7 +702,7 @@ class Main():
             if ans == 'yes':  # Send index of mission (0, 1, 2, etc...)
 
                 self.out_q.put(
-                    "start_mission(" + str(self.mission_list.current()) + ")")
+                    "start_mission(" + str(self.mission_list.current()) + ", " + str(depth) + ", " + str(time) + ")")
 
     def abort_mission(self):
         ans = messagebox.askquestion(
