@@ -94,11 +94,7 @@ class Map:
         FONT_SIZE = int(FONT_SIZE * self.main.multiplier_x)
 
         self.draw_canvas()
-<<<<<<< HEAD
-        self.add_waypoint(0,0)
-=======
         self.add_waypoint(0, 0)
->>>>>>> 8b75eddd00f6f6abae49cb89dafb38bb4a89a399
 
     def clear(self):
         """ Clears the map data """
