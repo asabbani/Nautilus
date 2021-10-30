@@ -259,7 +259,7 @@ class Main():
         self.halt_button.place(relx=0.3, rely=0.1)
 
         self.send_button = Button(self.motor_control_frame, text="Send", takefocus=False, width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10,
-                                  padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE))
+                                  padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.confirm_send_motor(int(prompt_input_distance.get()), int(prompt_input_angle.get())))
         self.send_button.pack(expand=YES)
         self.send_button.place(relx=0.6, rely=0.1)
 
@@ -548,6 +548,12 @@ class Main():
                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE), command=self.abort_mission)
         self.abort_button.pack(expand=YES)
         self.abort_button.place(relx=0.18, rely=0.85)
+
+    def confirm_send_motor(self, distance, angle):
+        if (distance < 0 or distance > 100) or (angle < -180 or angle > 180):
+            messagebox.showerror("ERROR", "Select a distance between 0 and 100 meters inclusive and select an angle between -180 and 180 degrees. ")
+            return
+        self.out_q.put("send_motor(" + str(distance) + ", " + str(angle) + ")")
 
     def confirm_mission(self, depth, time):
         # TODO messages

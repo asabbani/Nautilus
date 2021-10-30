@@ -215,16 +215,16 @@ class AUV_Receive(threading.Thread):
                             # 0000001XSY or 0000000X
 
                             # navigation command
-                            if (message & 0xC00000 == 2):
-                                x = (message & 0x01F600) >> 9
+                            if (message & 0x800000 == 0x800000):
+                                distance = (message & 0x01F600) >> 9
                                 sign = (message & 0x000100) >> 8
-                                y = (message & 0x0000FF)
+                                angle = (message & 0x0000FF)
 
                                 if (sign == 1):
-                                    y = y * -1
+                                    angle = angle * -1
 
-                                log("Running motor command with (x, y): " + str(x) + "," + str(y))
-                                self.motor_queue.put((x, y, 0))
+                                log("Running motor command with (distance, angle): " + str(distance) + ", " + str(angle))
+                                self.motor_queue.put((distance, angle, 0))
 
                             # Xbox Navigation Command
                             # 0x[1110][0000] [XXXX][XXXX] [YYYY][YYYY]

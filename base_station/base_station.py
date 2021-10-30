@@ -42,6 +42,7 @@ MAX_TURN_SPEED = 50
 NAV_ENCODE = 0b000000100000000000000000           # | with XSY (forward, angle sign, angle)
 XBOX_ENCODE = 0b111000000000000000000000          # | with XY (left/right, down/up xbox input)
 MISSION_ENCODE = 0b000000000000000000000000       # | with X   (mission)
+NAVIGATION_ENCODE = 0b100000000000000000000000    # | with XSY (forward, angle sign, angle)
 
 # Action Encodings
 HALT = 0b010
@@ -385,6 +386,27 @@ class BaseStation_Send(threading.Thread):
 
     def send_download_data(self):
         self.start_mission(DL_DATA, 0, 0)
+
+    def send_motor(self, distance, angle):
+        """ Attempts to send a navigation command to the AUV. """
+        lock.acquire()
+        if not connected:
+            lock.release()
+            self.log("Cannot send motor control " +
+                     " because there is no connection to the AUV.")
+        else:
+            lock.release()
+            x = distance << 9
+            s = 0
+            if (angle < 0):
+                angle = abs(angle)
+                s = 1 << 8
+            radio_lock.acquire()
+            self.radio.write(NAVIGATION_ENCODE | x | s | angle)
+            print(bin(NAVIGATION_ENCODE | x | s | angle))
+
+            radio_lock.release()
+            self.log('Sending task: send_motor(' + str(distance) + ", " + str(angle) + ')')
 
     def run(self):
         """ Main sending threaded loop for the base station. """
