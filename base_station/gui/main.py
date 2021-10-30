@@ -46,7 +46,7 @@ LOG_FRAME_WIDTH = 650
 FONT = "Arial"
 FONT_SIZE = 11
 HEADING_SIZE = 20
-BUTTON_SIZE = 15
+BUTTON_SIZE = 12  # was 15 before
 STATUS_SIZE = 17
 # Main frame paddings
 MAIN_PAD_X = 5
@@ -60,7 +60,7 @@ COMBO_PAD_Y = 3
 BUTTON_PAD_X = 10
 BUTTON_PAD_Y = 3
 # Button width and heigth (in text units)
-BUTTON_WIDTH = 17
+BUTTON_WIDTH = 8  # was 17
 BUTTON_HEIGHT = 3
 # Mission
 MISSIONS = ["0: Sound Tracking", "1: Audio Collecting"]
@@ -239,23 +239,23 @@ class Main():
         self.buttons_frame.grid(
             row=2, column=1, pady=CALIBRATE_PAD_Y)
 
-        self.download_data_button = Button(self.buttons_frame, anchor=tkinter.W, text="Download\nData", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                           padx=BUTTON_PAD_X+12, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("download_data()"))
+        self.download_data_button = Button(self.buttons_frame, anchor=tkinter.W, text="Download\nData", takefocus=False, width=BUTTON_WIDTH-8, height=BUTTON_HEIGHT,
+                                           padx=BUTTON_PAD_X+8, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("send_download_data()"))
         # Add calibrate depth button command to the below button
-        self.calibrate_depth_button = Button(self.buttons_frame, anchor=tkinter.W, text="Calibrate\nDepth", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                             padx=BUTTON_PAD_X+20, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("calibrate_depth()"))
-        
-        self.dive_command_button = Button(self.buttons_frame, anchor=tkinter.W, text = "Dive\nCommand", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
-                                           padx=BUTTON_PAD_X+28, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("dive_command()"))
+        self.calibrate_depth_button = Button(self.buttons_frame, anchor=tkinter.W, text="Calibrate\nDepth", takefocus=False, width=BUTTON_WIDTH-8, height=BUTTON_HEIGHT,
+                                             padx=BUTTON_PAD_X+18, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("send_calibrate_depth()"))
+
+        self.dive_command_button = Button(self.buttons_frame, anchor=tkinter.W, text="Dive\nCommand", takefocus=False, width=BUTTON_WIDTH-8, height=BUTTON_HEIGHT,
+                                          padx=BUTTON_PAD_X+28, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("send_dive())"))
 
         self.download_data_button.pack(expand=YES)
         self.download_data_button.place(relx=0, rely=0)
 
         self.calibrate_depth_button.pack(expand=YES)
-        self.calibrate_depth_button.place(relx=0.5, rely=0)
+        self.calibrate_depth_button.place(relx=0.25, rely=0)
 
         self.dive_command_button.pack(expand=YES)
-        self.dive_command_button.place(relx=1, rely=0)
+        self.dive_command_button.place(relx=0.5, rely=0)
 
     def init_motor_control_frame(self):
         """ Creates the frame for motor control. """
@@ -601,7 +601,6 @@ class Main():
             if (depth < 1 or depth > 50) or (time < 15 or time > 300):
                 messagebox.showerror("ERROR", "Select a depth between 1 and 50 meters inclusive and select a time between 15 and 300 seconds. ")
                 return
-            
 
             # Prompt mission start
             prompt = "Start mission: " + mission + "?"
