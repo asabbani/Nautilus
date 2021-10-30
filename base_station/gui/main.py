@@ -474,6 +474,10 @@ class Main():
         self.depth_string.set(
             "depth: " + str(depth) + "meter")
 
+    def set_dive_depth(self,depth):
+        " " " Sets the dive command " " "
+        self.depth_string.set("dive command: " + str(depth) + "meter")
+
     def set_position(self, xPos, yPos):
         self.position_label_string.set(
             "Position \n \tX: " + xPos + "\t Y: " + yPos)
