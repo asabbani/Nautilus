@@ -242,6 +242,11 @@ class AUV_Receive(threading.Thread):
 
                                 self.motor_queue.put((x, y, 1))
 
+                            # dive command
+                            elif (((message >> 21) & 0b111) == 6):
+                                desired_depth = message & 0b111111
+                                # TODO: add motor cmds to reach desired depth
+
                             # mission command
                             elif (message & 0x800000 == 0):
                                 x = message & 0b111
@@ -433,14 +438,10 @@ class AUV_Send_Data(threading.Thread):
                             radio_lock.acquire()
                             self.radio.write(depth_encode, 3)
                             radio_lock.release()
-<<<<<<< HEAD
-                        #Temperature radio 
-=======
                         # Temperature radio
                         whole_temperature = int(temperature)
                         sign = 0
                         if whole_temperature < 0:
->>>>>>> 8b75eddd00f6f6abae49cb89dafb38bb4a89a399
                             sign = 1
                             whole_temperature *= -1
                         whole_temperature = whole_temperature << 5
