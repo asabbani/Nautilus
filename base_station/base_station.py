@@ -42,6 +42,7 @@ MAX_TURN_SPEED = 50
 NAV_ENCODE = 0b000000100000000000000000           # | with XSY (forward, angle sign, angle)
 XBOX_ENCODE = 0b111000000000000000000000          # | with XY (left/right, down/up xbox input)
 MISSION_ENCODE = 0b000000000000000000000000       # | with X   (mission)
+DIVE_ENCODE = 0b11000000000000000000000           # | with D   (depth)
 
 # Action Encodings
 HALT = 0b010
@@ -309,6 +310,7 @@ class BaseStation_Send(threading.Thread):
 
 # XXX ---------------------- XXX ---------------------------- XXX TESTING AREA
 
+
     def check_tasks(self):
         """ This checks all of the tasks (given from the GUI thread) in our in_q, and evaluates them. """
 
@@ -386,8 +388,18 @@ class BaseStation_Send(threading.Thread):
     def send_download_data(self):
         self.start_mission(DL_DATA, 0, 0)
 
-    # def send_dive(sef,depth):
-    #     self.start_mission()
+    def send_dive(self, depth):
+        lock.acquire()
+        if connected is False:
+            lock.release()
+            self.log("Cannot dive because there is no connection to the AUV.")
+        else:
+            lock.release()
+            radio_lock.acquire()
+            self.radio.write(DIVE_ENCODE | depth)
+            print(bin(DIVE_ENCODE | depth))
+            radio_lock.release()
+            self.log('Sending task: dive(' + str(depth) + ')')  # TODO: change to whatever the actual command is called
 
     def run(self):
         """ Main sending threaded loop for the base station. """
