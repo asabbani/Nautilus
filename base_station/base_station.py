@@ -386,6 +386,9 @@ class BaseStation_Send(threading.Thread):
     def send_download_data(self):
         self.start_mission(DL_DATA, 0, 0)
 
+    # def send_dive(sef,depth):
+    #     self.start_mission()
+
     def run(self):
         """ Main sending threaded loop for the base station. """
         global connected
