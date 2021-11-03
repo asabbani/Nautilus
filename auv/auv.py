@@ -356,7 +356,7 @@ class AUV_Send_Data(threading.Thread):
         except:
             log("Pressure sensor is not connected to the AUV.")
 
-        self.imu = IMU.BNO055(serial_port='/dev/serial0', rst=18)
+        self.imu = IMU.BNO055(serial_port=IMU_PATH, rst=18)
         log("IMU has been found.")
 
         try:
@@ -396,16 +396,16 @@ class AUV_Send_Data(threading.Thread):
                         if self.imu is not None:
                             try:
                                 heading, _, _ = self.imu.read_euler()
-                                #print('HEADING=', heading)
+                                print('HEADING=', heading)
 
                                 temperature = self.imu.read_temp()
-                                #print('TEMPERATURE=', temperature)
+                                print('TEMPERATURE=', temperature)
 
                             except:
                                 # TODO print statement, something went wrong!
                                 heading = 0
                                 temperature = 0
-                                #self.radio.write(str.encode("log(\"[AUV]\tAn error occurred while trying to read heading and temperature.\")\n"))
+                                self.radio.write(str.encode("log(\"[AUV]\tAn error occurred while trying to read heading and temperature.\")\n"))
                             split_heading = math.modf(heading)
                             decimal_heading = int(round(split_heading[0], 2) * 100)
                             whole_heading = int(split_heading[1])
