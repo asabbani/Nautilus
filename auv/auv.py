@@ -39,6 +39,8 @@ DEPTH_ENCODE = DEPTH_DATA << 21
 HEADING_ENCODE = HEADING_DATA << 17
 MISC_ENCODE = MISC_DATA << 21
 
+DEF_DIVE_SPD = 100
+
 MAX_TIME = 600
 MAX_ITERATION_COUNT = MAX_TIME / SEND_SLEEP_DELAY / 7
 
@@ -245,7 +247,7 @@ class AUV_Receive(threading.Thread):
                             # dive command
                             elif (((message >> 21) & 0b111) == 6):
                                 desired_depth = message & 0b111111
-                                # TODO: add motor cmds to reach desired depth
+                                self.dive(desired_depth)
 
                             # mission command
                             elif (message & 0x800000 == 0):
@@ -334,6 +336,40 @@ class AUV_Receive(threading.Thread):
         aborted_mission.abort_loop()
         log("Successfully aborted the current mission.")
         # self.radio.write(str.encode("mission_failed()\n"))
+
+    def dive(self, to_depth):
+        self.motor_queue.clear()
+        self.mc.update_motor_speeds([0, 0, 0, 0])
+        # wait until current motor commands finish running, will need global variable
+        # Dive
+        depth = self.get_depth()
+        start_time = time.time()
+        self.mc.update_motor_speeds([0, 0, -DEF_DIVE_SPD, -DEF_DIVE_SPD])
+        # Time out and stop diving if > 1 min
+        while depth < to_depth and time.time() < start_time + 60000:
+            depth = self.get_depth()
+        self.mc.update_motor_speeds([0, 0, 0, 0])
+        # Wait 10 sec
+        end_time = time.time() + 10000  # 10 sec
+        while time.time() < end_time: pass
+        # Resurface
+        self.mc.update_motor_speeds([0, 0, DEF_DIVE_SPD, DEF_DIVE_SPD])
+        while math.floor(depth) > 0: # TODO: check what is a good surface condition
+            depth = self.get_depth()
+        self.mc.update_motor_speeds([0, 0, 0, 0])
+    
+    def get_depth(self):
+        if self.pressure_sensor is not None:
+            self.pressure_sensor.read()
+            pressure = self.pressure_sensor.pressure()
+            # TODO: Check if this is accurate, mbars to m
+            depth = (pressure-1013.25)/1000 * 10.2
+            return depth
+        else:
+            log("No pressure sensor found.")
+            return None
+        
+
 
 
 # Responsibilites:
