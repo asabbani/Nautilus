@@ -239,23 +239,32 @@ class Main():
         self.buttons_frame.grid(
             row=2, column=1, pady=CALIBRATE_PAD_Y)
 
-        self.download_data_button = Button(self.buttons_frame, anchor=tkinter.W, text="Download\nData", takefocus=False, width=BUTTON_WIDTH-8, height=BUTTON_HEIGHT,
-                                           padx=BUTTON_PAD_X+8, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("send_download_data()"))
+        # self.download_data_button = Button(self.buttons_frame, anchor=tkinter.W, text="Download\nData", takefocus=False, width=1, height=BUTTON_HEIGHT,
+        #                                    padx=BUTTON_PAD_X+25, pady=BUTTON_PAD_Y, font=(4, BUTTON_SIZE), command=lambda: self.out_q.put("send_download_data()"))
         # Add calibrate depth button command to the below button
-        self.calibrate_depth_button = Button(self.buttons_frame, anchor=tkinter.W, text="Calibrate\nDepth", takefocus=False, width=BUTTON_WIDTH-8, height=BUTTON_HEIGHT,
-                                             padx=BUTTON_PAD_X+18, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("send_calibrate_depth()"))
+        # self.calibrate_depth_button = Button(self.buttons_frame, anchor=tkinter.W, text="Calibrate\nDepth", takefocus=False, width=1, height=BUTTON_HEIGHT,
+        #                                      padx=BUTTON_PAD_X+35, pady=BUTTON_PAD_Y, font=(4, BUTTON_SIZE), command=lambda: self.out_q.put("send_calibrate_depth()"))
 
-        self.dive_command_button = Button(self.buttons_frame, anchor=tkinter.W, text="Dive\nCommand", takefocus=False, width=BUTTON_WIDTH-8, height=BUTTON_HEIGHT,
-                                          padx=BUTTON_PAD_X+28, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("send_dive())"))
+        # self.dive_command_button = Button(self.buttons_frame, anchor=tkinter.W, text="Dive\nCommand", takefocus=False, width=1, height=BUTTON_HEIGHT,
+        #                                   padx=BUTTON_PAD_X+45, pady=BUTTON_PAD_Y, font=(4, BUTTON_SIZE), command=lambda: self.out_q.put("send_dive())"))
 
-        self.download_data_button.pack(expand=YES)
+        self.download_data_button = Button(self.buttons_frame, anchor=tkinter.W, text="Download\nData", takefocus=False,
+                                           padx=BUTTON_PAD_X+25, pady=BUTTON_PAD_Y, font=(4, BUTTON_SIZE), command=lambda: self.out_q.put("send_download_data()"))
+
+        self.calibrate_depth_button = Button(self.buttons_frame, anchor=tkinter.W, text="Calibrate\nDepth", takefocus=False,
+                                             padx=BUTTON_PAD_X+35, pady=BUTTON_PAD_Y, font=(4, BUTTON_SIZE), command=lambda: self.out_q.put("send_calibrate_depth()"))
+
+        self.dive_command_button = Button(self.buttons_frame, anchor=tkinter.W, text="Dive\nCommand", takefocus=False,
+                                          padx=BUTTON_PAD_X+45, pady=BUTTON_PAD_Y, font=(4, BUTTON_SIZE), command=lambda: self.out_q.put("send_dive())"))
+
+        self.download_data_button.pack(expand=YES, side=LEFT)
         self.download_data_button.place(relx=0, rely=0)
 
-        self.calibrate_depth_button.pack(expand=YES)
-        self.calibrate_depth_button.place(relx=0.25, rely=0)
+        self.calibrate_depth_button.pack(expand=YES, side=LEFT)
+        self.calibrate_depth_button.place(relx=0.33, rely=0)
 
-        self.dive_command_button.pack(expand=YES)
-        self.dive_command_button.place(relx=0.5, rely=0)
+        self.dive_command_button.pack(expand=YES, side=LEFT)
+        self.dive_command_button.place(relx=0.67, rely=0)
 
     def init_motor_control_frame(self):
         """ Creates the frame for motor control. """
