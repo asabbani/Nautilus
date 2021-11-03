@@ -215,8 +215,8 @@ class AUV_Receive(threading.Thread):
                             # 0000001XSY or 0000000X
 
                             # navigation command
-                            if (message & 0x800000 == 0x800000):
-                                distance = (message & 0x01F600) >> 9
+                            if (message & 0xE00000 == 0x800000):
+                                distance = (message & 0x01FE00) >> 9
                                 sign = (message & 0x000100) >> 8
                                 angle = (message & 0x0000FF)
 
