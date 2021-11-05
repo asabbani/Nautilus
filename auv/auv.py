@@ -101,18 +101,18 @@ class AUV_Receive(threading.Thread):
         self.mc.update_motor_speeds(data)
 
     def test_motor(self, motor):
-        """ Method to test all 4 motors on the AUV """
+        """ Method to test all 5 motors on the AUV """
 
         if motor == "FORWARD":  # Used to be LEFT motor
             self.mc.test_forward()
-        elif motor == "TURN":  # Used to be RIGHT MOTOR
-            self.mc.test_turn()
-        elif motor == "FRONT":
-            self.mc.test_front()
-        elif motor == "BACK":
+        elif motor == "BACK":  # Used to be RIGHT MOTOR
             self.mc.test_back()
-        elif motor == "ALL":
-            self.mc.test_all()
+        elif motor == "LEFT":
+            self.mc.test_left()
+        elif motor == "RIGHT":
+            self.mc.test_right()
+        elif motor == "DOWN":
+            self.mc.test_down()
         else:
             raise Exception('No implementation for motor name: ', motor)
 

@@ -10,24 +10,40 @@ import pigpio
 import RPi.GPIO as io
 from api import Motor
 
-# GPIO Pin numbers for Motors
-FORWARD_GPIO_PIN = 4  # 18
-TURN_GPIO_PIN = 11  # 24
-FRONT_GPIO_PIN = 18  # 4
-BACK_GPIO_PIN = 24  # 11
 
 
-# Define pin numbers for PI (Not the same as GPIO?)
-FORWARD_PI_PIN = 7          # Left pins
-TURN_PI_PIN = 23            # Right pins
-FRONT_PI_PIN = 12           # Back pins
-BACK_PI_PIN = 18            # Front pins
+# # GPIO Pin numbers for Motors
+# FORWARD_GPIO_PIN = 4  # 18
+# TURN_GPIO_PIN = 11  # 24
+# FRONT_GPIO_PIN = 18  # 4
+# BACK_GPIO_PIN = 24  # 11
+
+
+# # Define pin numbers for PI (Not the same as GPIO?)
+# FORWARD_PI_PIN = 7          # Left pins
+# TURN_PI_PIN = 23            # Right pins
+# FRONT_PI_PIN = 12           # Back pins
+# BACK_PI_PIN = 18            # Front pins
+
+FORWARD_GPIO_PIN = 0         # in the back
+DOWN_GPIO_PIN = 1            # in the front
+LEFT_GPIO_PIN = 2           # goes up/down
+RIGHT_GPIO_PIN = 3           # goes up/down
+BACK_GPIO_PIN = 4            # goes up/down
+
+
+FORWARD_PI_PIN = 0         # in the back
+DOWN_PI_PIN = 1            # in the front
+LEFT_PI_PIN = 2           # goes up/down
+RIGHT_PI_PIN = 3           # goes up/down
+BACK_PI_PIN = 4            # goes up/down
 
 # Indices for motor array
 FORWARD_MOTOR_INDEX = 0         # in the back
-TURN_MOTOR_INDEX = 1            # in the front
-FRONT_MOTOR_INDEX = 2           # goes up/down
-BACK_MOTOR_INDEX = 3            # goes up/down
+DOWN_MOTOR_INDEX = 1            # in the front
+LEFT_MOTOR_INDEX = 2           # goes up/down
+RIGHT_MOTOR_INDEX = 3           # goes up/down
+BACK_MOTOR_INDEX = 4            # goes up/down
 
 # Constants
 BALLAST = 4
@@ -54,18 +70,19 @@ class MotorController:
         self.pi = pigpio.pi()
 
         # Motor object definitions.
-        self.motor_pins = [FORWARD_GPIO_PIN, TURN_GPIO_PIN,
-                           FRONT_GPIO_PIN, BACK_GPIO_PIN]
+        self.motor_pins = [FORWARD_GPIO_PIN, BACK_GPIO_PIN,
+                           LEFT_GPIO_PIN, RIGHT_GPIO_PIN, DOWN_GPIO_PIN]
 
-        self.pi_pins = [FORWARD_PI_PIN, TURN_PI_PIN, FRONT_PI_PIN, BACK_PI_PIN]
+        self.pi_pins = [FORWARD_PI_PIN, BACK_PI_PIN, LEFT_PI_PIN, RIGHT_PI_PIN, DOWN_PI_PIN]
 
         self.motors = [Motor(gpio_pin=pin, pi=self.pi)
                        for pin in self.motor_pins]
 
         self.forward_speed = 0
-        self.turn_speed = 0
-        self.front_speed = 0
         self.back_speed = 0
+        self.left_speed = 0
+        self.right_speed = 0
+        self.down_speed = 0
 #        self.check_gpio_pins()
 
     def update_motor_speeds(self, data):
@@ -81,18 +98,22 @@ class MotorController:
             return
 
         # Parse motor speed from data object.
+
         self.forward_speed = data[FORWARD_MOTOR_INDEX]
-        self.turn_speed = data[TURN_MOTOR_INDEX]
-        self.front_speed = data[FRONT_MOTOR_INDEX]
         self.back_speed = data[BACK_MOTOR_INDEX]
+        self.left_speed = data[LEFT_MOTOR_INDEX]
+        self.right_speed = data[RIGHT_MOTOR_INDEX]
+        self.down_speed = data[DOWN_MOTOR_INDEX]
+
 
         log("motors is: " + str(data))
 
         # Set motor speed
         self.motors[FORWARD_MOTOR_INDEX].set_speed(self.forward_speed)
-        self.motors[TURN_MOTOR_INDEX].set_speed(self.turn_speed)
-        self.motors[FRONT_MOTOR_INDEX].set_speed(self.front_speed)
         self.motors[BACK_MOTOR_INDEX].set_speed(self.back_speed)
+        self.motors[LEFT_MOTOR_INDEX].set_speed(self.left_speed)
+        self.motors[RIGHT_MOTOR_INDEX].set_speed(self.right_speed)
+        self.motors[DOWN_MOTOR_INDEX].set_speed(self.down_speed)
 
     def pid_motor(self, pid_feedback):
         """
@@ -175,17 +196,21 @@ class MotorController:
         log('Testing forward motor...')
         self.motors[FORWARD_MOTOR_INDEX].test_motor()
 
-    def test_turn(self):  # used to be right motor
+    def test_back(self):  # used to be right motor
         log('Testing turn motor...')
-        self.motors[TURN_MOTOR_INDEX].test_motor()
-
-    def test_front(self):
-        log('Testing front motor...')
-        self.motors[FRONT_MOTOR_INDEX].test_motor()
-
-    def test_back(self):
-        log('Testing back motor...')
         self.motors[BACK_MOTOR_INDEX].test_motor()
+
+    def test_left(self):
+        log('Testing front motor...')
+        self.motors[LEFT_MOTOR_INDEX].test_motor()
+
+    def test_right(self):
+        log('Testing back motor...')
+        self.motors[RIGHT_MOTOR_INDEX].test_motor()
+
+    def test_down(self):
+        log('Testing back motor...')
+        self.motors[DOWN_MOTOR_INDEX].test_motor()
 
     def check_gpio_pins(self):
         """ This function might be deprecated... """
