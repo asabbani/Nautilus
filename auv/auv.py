@@ -105,8 +105,8 @@ class AUV_Receive(threading.Thread):
 
         if motor == "FORWARD":  # Used to be LEFT motor
             self.mc.test_forward()
-        elif motor == "BACK":  # Used to be RIGHT MOTOR
-            self.mc.test_back()
+        elif motor == "BACKWARD":  # Used to be RIGHT MOTOR
+            self.mc.test_backward()
         elif motor == "LEFT":
             self.mc.test_left()
         elif motor == "RIGHT":
@@ -213,7 +213,6 @@ class AUV_Receive(threading.Thread):
                             message = intline
                             # message = int(message)
                             # 0000001XSY or 0000000X
-
                             # navigation command
                             if (message & 0xC00000 == 2):
                                 x = (message & 0x01F600) >> 9
@@ -277,6 +276,28 @@ class AUV_Receive(threading.Thread):
                                 if (x == 5):
                                     print("DOWNLOAD DATA")
                                     # downloadData()
+                                    pass
+                            elif(message & 0x80000):
+                                d = message & 0b111
+                                if d == 0b000:
+                                    print("TEST FORWARD")
+                                    self.mc.test_forward()
+                                    pass
+                                elif d == 0b001:
+                                    print("TEST BACKWARD")
+                                    self.mc.test_forward()
+                                    pass
+                                elif d == 0b011:
+                                    print("TEST LEFT")
+                                    self.mc.test_left()
+                                    pass
+                                elif d == 0b100:
+                                    print("TEST RIGHT")
+                                    self.mc.test_left()
+                                    pass
+                                elif d == 0b010:
+                                    print("TEST DOWN")
+                                    self.mc.test_down()
                                     pass
 
                         line = self.radio.read(7)

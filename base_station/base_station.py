@@ -39,6 +39,7 @@ MAX_TURN_SPEED = 50
 
 
 # Navigation Encoding
+MOTOR_TEST_ENCODE = 0b0000101000000000000000000000
 NAV_ENCODE = 0b000000100000000000000000           # | with XSY (forward, angle sign, angle)
 XBOX_ENCODE = 0b111000000000000000000000          # | with XY (left/right, down/up xbox input)
 MISSION_ENCODE = 0b000000000000000000000000       # | with X   (mission)
@@ -331,12 +332,18 @@ class BaseStation_Send(threading.Thread):
         else:
             lock.release()
             radio_lock.acquire()
-            if (motor == 'Forward'):
-                self.radio.write((NAV_ENCODE | (10 << 9) | (0 << 8) | (0)) & 0xFFFFFF)
-            elif (motor == 'Left'):
-                self.radio.write((NAV_ENCODE | (0 << 9) | (1 << 8) | 90) & 0xFFFFFF)
-            elif (motor == 'Right'):
-                self.radio.write((NAV_ENCODE | (0 << 9) | (0 << 8) | 90) & 0xFFFFFF)
+
+            #We need to add the Z bits
+            if (motor == 'FORWARD'):
+                self.radio.write((MOTOR_TEST_ENCODE | (0 << 8) | (0)) & 0xFFFFFF)
+            elif (motor == 'BACKWARD'):
+                self.radio.write((MOTOR_TEST_ENCODE | (1 << 8) | 0b001) & 0xFFFFFF)
+            elif (motor == 'LEFT'):
+                self.radio.write((MOTOR_TEST_ENCODE | (1 << 8) | 0b011) & 0xFFFFFF)
+            elif (motor == 'RIGHT'):
+                self.radio.write((MOTOR_TEST_ENCODE | (0 << 8) | 0b100) & 0xFFFFFF)
+            elif (motor == 'DOWN'):
+                self.radio.write((MOTOR_TEST_ENCODE | (1 << 8) | 0b010) & 0xFFFFFF)
             radio_lock.release()
 
             self.log('Sending encoded task: test_motor("' + motor + '")')

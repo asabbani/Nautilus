@@ -26,24 +26,24 @@ from api import Motor
 # BACK_PI_PIN = 18            # Front pins
 
 FORWARD_GPIO_PIN = 0         # in the back
-DOWN_GPIO_PIN = 1            # in the front
+BACKWARD_GPIO_PIN = 1        # in the front
 LEFT_GPIO_PIN = 2           # goes up/down
 RIGHT_GPIO_PIN = 3           # goes up/down
-BACK_GPIO_PIN = 4            # goes up/down
+DOWN_GPIO_PIN = 4           # goes up/down
 
 
 FORWARD_PI_PIN = 0         # in the back
-DOWN_PI_PIN = 1            # in the front
+BACKWARD_PI_PIN = 1            # in the front
 LEFT_PI_PIN = 2           # goes up/down
 RIGHT_PI_PIN = 3           # goes up/down
-BACK_PI_PIN = 4            # goes up/down
+DOWN_PI_PIN = 4            # goes up/down
 
 # Indices for motor array
 FORWARD_MOTOR_INDEX = 0         # in the back
-DOWN_MOTOR_INDEX = 1            # in the front
+BACKWARD_MOTOR_INDEX = 1            # in the front
 LEFT_MOTOR_INDEX = 2           # goes up/down
 RIGHT_MOTOR_INDEX = 3           # goes up/down
-BACK_MOTOR_INDEX = 4            # goes up/down
+DOWN_MOTOR_INDEX = 4            # goes up/down
 
 # Constants
 BALLAST = 4
@@ -70,10 +70,10 @@ class MotorController:
         self.pi = pigpio.pi()
 
         # Motor object definitions.
-        self.motor_pins = [FORWARD_GPIO_PIN, BACK_GPIO_PIN,
+        self.motor_pins = [FORWARD_GPIO_PIN, BACKWARD_GPIO_PIN,
                            LEFT_GPIO_PIN, RIGHT_GPIO_PIN, DOWN_GPIO_PIN]
 
-        self.pi_pins = [FORWARD_PI_PIN, BACK_PI_PIN, LEFT_PI_PIN, RIGHT_PI_PIN, DOWN_PI_PIN]
+        self.pi_pins = [FORWARD_PI_PIN, BACKWARD_PI_PIN, LEFT_PI_PIN, RIGHT_PI_PIN, DOWN_PI_PIN]
 
         self.motors = [Motor(gpio_pin=pin, pi=self.pi)
                        for pin in self.motor_pins]
@@ -100,7 +100,7 @@ class MotorController:
         # Parse motor speed from data object.
 
         self.forward_speed = data[FORWARD_MOTOR_INDEX]
-        self.back_speed = data[BACK_MOTOR_INDEX]
+        self.backward_speed = data[BACKWARD_MOTOR_INDEX]
         self.left_speed = data[LEFT_MOTOR_INDEX]
         self.right_speed = data[RIGHT_MOTOR_INDEX]
         self.down_speed = data[DOWN_MOTOR_INDEX]
@@ -110,7 +110,7 @@ class MotorController:
 
         # Set motor speed
         self.motors[FORWARD_MOTOR_INDEX].set_speed(self.forward_speed)
-        self.motors[BACK_MOTOR_INDEX].set_speed(self.back_speed)
+        self.motors[BACKWARD_MOTOR_INDEX].set_speed(self.backward_speed)
         self.motors[LEFT_MOTOR_INDEX].set_speed(self.left_speed)
         self.motors[RIGHT_MOTOR_INDEX].set_speed(self.right_speed)
         self.motors[DOWN_MOTOR_INDEX].set_speed(self.down_speed)
@@ -139,7 +139,7 @@ class MotorController:
         """
         if(not pid_feedback):
             self.front_speed = 0
-            self.back_speed = 0
+            self.backward_speed = 0
         elif abs(current_value) > 30:
             # double the motor speed for the motor in the water
             double_motor_speed = pid_feedback * 2
@@ -147,7 +147,7 @@ class MotorController:
                 # Front motor is out of water, set speed to 0 to prevent breaking
                # When not flipped: vvvv
                 self.front_speed = 0
-                self.back_speed = self.calculate_pid_new_speed(
+                self.backward_speed = self.calculate_pid_new_speed(
                     -double_motor_speed)
                # WHen flipped: vvvv
                # self.front_speed = self.calculate_pid_new_speed(double_motor_speed)
@@ -157,7 +157,7 @@ class MotorController:
                 # WHen not flipped: vvvv
                 self.front_speed = self.calculate_pid_new_speed(
                     double_motor_speed)
-                self.back_speed = 0
+                self.backward_speed = 0
                 # WHen flipped: vvv
                 #self.front_speed = 0
                 #self.back_speed = self.calculate_pid_new_speed(-double_motor_speed)
@@ -166,12 +166,12 @@ class MotorController:
             # When not flipped, use +
             self.front_speed = self.calculate_pid_new_speed(+pid_feedback)
             # When not flipped, use -
-            self.back_speed = self.calculate_pid_new_speed(-pid_feedback)
+            self.backward_speed = self.calculate_pid_new_speed(-pid_feedback)
 
       #  log('[PID_MOTOR] %7.2f %7.2f' %
      #         (self.front_speed, self.back_speed), end='\n')
         self.motors[FRONT_MOTOR_INDEX].set_speed(self.front_speed)
-        self.motors[BACK_MOTOR_INDEX].set_speed(self.back_speed)
+        self.motors[BACK_MOTOR_INDEX].set_speed(self.backward_speed)
 
     def zero_out_motors(self):
         """
@@ -196,9 +196,9 @@ class MotorController:
         log('Testing forward motor...')
         self.motors[FORWARD_MOTOR_INDEX].test_motor()
 
-    def test_back(self):  # used to be right motor
+    def test_backward(self):  # used to be right motor
         log('Testing turn motor...')
-        self.motors[BACK_MOTOR_INDEX].test_motor()
+        self.motors[BACKWARD_MOTOR_INDEX].test_motor()
 
     def test_left(self):
         log('Testing front motor...')
