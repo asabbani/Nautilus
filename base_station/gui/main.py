@@ -604,7 +604,7 @@ class Main():
         self.start_mission_button.pack(expand=YES)
         self.start_mission_button.place(relx=0.1, rely=0.65)
 
-        self.abort_button = Button(self.mission_frame, text="ABORT MISSION", takefocus=False, width=BUTTON_WIDTH+2, height=BUTTON_HEIGHT - 10,
+        self.abort_button = Button(self.mission_frame, text="ABORT MISSION", takefocus=False, width=BUTTON_WIDTH+4, height=BUTTON_HEIGHT - 10,
                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE), command=self.abort_mission)
         self.abort_button.pack(expand=YES)
         self.abort_button.place(relx=0.18, rely=0.85)
