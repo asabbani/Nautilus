@@ -269,7 +269,7 @@ class Main():
     def init_motor_control_frame(self):
         """ Creates the frame for motor control. """
         self.motor_control_frame = Frame(
-            self.stack_frame, height=TOP_FRAME_HEIGHT*(3/7), width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
+            self.stack_frame, height=TOP_FRAME_HEIGHT*(3/7), width=FUNC_FRAME_WIDTH, bd=0.4, relief=SUNKEN)
         # self.motor_control_frame.pack(
         #    padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(4/5), side=LEFT, fill=BOTH, expand=NO)
         self.motor_control_frame.grid(
@@ -306,6 +306,10 @@ class Main():
                                   padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE))
         self.send_button.pack(expand=YES)
         self.send_button.place(relx=0.6, rely=0.1)
+
+        prompt_input_depth = Entry(self.motor_control_frame, bd=5, font=(FONT, FONT_SIZE-3))
+        prompt_input_depth.pack()
+        prompt_input_depth.place(relx=0.2, rely=0.125)
 
     def init_map_frame(self):
         """ Create the frame for the x, y map """
