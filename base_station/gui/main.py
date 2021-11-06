@@ -309,13 +309,25 @@ class Main():
 
         self.dive_button = Button(self.motor_control_frame, text="Dive", takefocus=False,
                                   width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
-                                  pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE))
+                                  pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("send_dive())"))
         self.dive_button.pack(expand=YES)
         self.dive_button.place(relx=0.05, rely=0.00)
 
         prompt_input_depth = Entry(self.motor_control_frame, bd=5, font=(FONT, FONT_SIZE-3))
         prompt_input_depth.pack()
         prompt_input_depth.place(relx=0.4, rely=0.000)
+
+    def confirm_dive(self, depth):
+        # TODO messages
+        if depth < 1 or depth > 50:
+            messagebox.showerror("ERROR", "Select a depth between 1 and 50 meters inclusive. ")
+            return
+
+        # Prompt mission start
+        prompt = "Dive: " + depth + " meters?"
+        ans = messagebox.askquestion("Dive", prompt)
+        if ans == 'yes':
+            self.out_q.put("send_dive(" + int(depth) + ")")
 
     def init_map_frame(self):
         """ Create the frame for the x, y map """
@@ -499,10 +511,10 @@ class Main():
         self.depth_string.set(
             "depth: " + str(depth) + "meter")
 
-    def set_dive_command(self, depth):
+    def set_dive(self, depth):
         """ Sets dive command """
         self.depth_string.set(
-            "dive command " + str(depth) + "meter")
+            "dive " + str(depth) + "meters")
 
     def set_position(self, xPos, yPos):
         self.position_label_string.set(
