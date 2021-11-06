@@ -300,16 +300,16 @@ class Main():
                                   width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
                                   pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE))
         self.halt_button.pack(expand=YES)
-        self.halt_button.place(relx=0.3, rely=0.1)
+        self.halt_button.place(relx=0.3, rely=0.2)
 
         self.send_button = Button(self.motor_control_frame, text="Send", takefocus=False, width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10,
                                   padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE))
         self.send_button.pack(expand=YES)
-        self.send_button.place(relx=0.6, rely=0.1)
+        self.send_button.place(relx=0.6, rely=0.2)
 
         prompt_input_depth = Entry(self.motor_control_frame, bd=5, font=(FONT, FONT_SIZE-3))
         prompt_input_depth.pack()
-        prompt_input_depth.place(relx=0.2, rely=0.000)
+        prompt_input_depth.place(relx=0.4, rely=0.000)
 
     def init_map_frame(self):
         """ Create the frame for the x, y map """
