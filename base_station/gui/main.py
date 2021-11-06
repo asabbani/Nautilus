@@ -309,7 +309,7 @@ class Main():
 
         prompt_input_depth = Entry(self.motor_control_frame, bd=5, font=(FONT, FONT_SIZE-3))
         prompt_input_depth.pack()
-        prompt_input_depth.place(relx=0.2, rely=0.125)
+        prompt_input_depth.place(relx=0.2, rely=0.000)
 
     def init_map_frame(self):
         """ Create the frame for the x, y map """
