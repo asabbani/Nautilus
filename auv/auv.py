@@ -247,6 +247,8 @@ class AUV_Receive(threading.Thread):
                             # dive command
                             elif (((message >> 21) & 0b111) == 6):
                                 desired_depth = message & 0b111111
+                                print("We're calling dive command:", str(desired_depth))
+                                
                                 self.dive(desired_depth)
 
                             # mission command
