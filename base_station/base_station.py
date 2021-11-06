@@ -337,13 +337,13 @@ class BaseStation_Send(threading.Thread):
             if (motor == 'FORWARD'):
                 self.radio.write((MOTOR_TEST_ENCODE | (0 << 8) | (0)) & 0xFFFFFF)
             elif (motor == 'BACKWARD'):
-                self.radio.write((MOTOR_TEST_ENCODE | (1 << 8) | 0b001) & 0xFFFFFF)
+                self.radio.write((MOTOR_TEST_ENCODE | (0 << 8) | 0b001) & 0xFFFFFF)
             elif (motor == 'LEFT'):
-                self.radio.write((MOTOR_TEST_ENCODE | (1 << 8) | 0b011) & 0xFFFFFF)
+                self.radio.write((MOTOR_TEST_ENCODE | (0 << 8) | 0b011) & 0xFFFFFF)
             elif (motor == 'RIGHT'):
                 self.radio.write((MOTOR_TEST_ENCODE | (0 << 8) | 0b100) & 0xFFFFFF)
             elif (motor == 'DOWN'):
-                self.radio.write((MOTOR_TEST_ENCODE | (1 << 8) | 0b010) & 0xFFFFFF)
+                self.radio.write((MOTOR_TEST_ENCODE | (0 << 8) | 0b010) & 0xFFFFFF)
             radio_lock.release()
 
             self.log('Sending encoded task: test_motor("' + motor + '")')

@@ -9,7 +9,12 @@ import time
 import pigpio
 import RPi.GPIO as io
 from api import Motor
+from api import IMU
+from api import PressureSensor
+import math
 
+
+IMU_PATH = '/dev/serial0'
 
 
 # # GPIO Pin numbers for Motors
@@ -66,6 +71,11 @@ class MotorController:
         Initializes MotorController object and individual motor objects
         to respective gpio pins.
         """
+
+        self.pressure_sensor = PressureSensor()
+        self.pressure_sensor.init()
+
+        self.imu = IMU.BNO055(serial_port='/dev/serial0', rst=18)
         # Connection to Raspberry Pi GPIO ports.
         self.pi = pigpio.pi()
 
@@ -201,16 +211,29 @@ class MotorController:
         self.motors[BACKWARD_MOTOR_INDEX].test_motor()
 
     def test_left(self):
+        heading = 359
         log('Testing front motor...')
-        self.motors[LEFT_MOTOR_INDEX].test_motor()
+        while heading >= 270:
+            self.motors[LEFT_MOTOR_INDEX].test_motor()
+            heading, _, _ = self.imu.read_euler()
 
     def test_right(self):
+        heading = 0
         log('Testing back motor...')
-        self.motors[RIGHT_MOTOR_INDEX].test_motor()
+        while heading <= 90:
+            self.motors[RIGHT_MOTOR_INDEX].test_motor()
+            heading, _, _ = self.imu.read_euler()
+    
 
-    def test_down(self):
+    def test_down(self):        
         log('Testing back motor...')
-        self.motors[DOWN_MOTOR_INDEX].test_motor()
+        if self.pressure_sensor is not None:
+            startDepth = (self.pressure_sensor-1013.25)/1000 * 10.2
+            currentDepth = startDepth
+            while math.abs(currentDepth - startDepth) <= 5:
+                self.pressure_sensor.read()
+                currentDepth = (self.pressure_sensor-1013.25)/1000 * 10.2
+                self.motors[DOWN_MOTOR_INDEX].test_motor()
 
     def check_gpio_pins(self):
         """ This function might be deprecated... """

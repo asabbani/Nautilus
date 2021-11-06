@@ -285,7 +285,7 @@ class AUV_Receive(threading.Thread):
                                     pass
                                 elif d == 0b001:
                                     print("TEST BACKWARD")
-                                    self.mc.test_forward()
+                                    self.mc.test_backward()
                                     pass
                                 elif d == 0b011:
                                     print("TEST LEFT")
@@ -293,7 +293,7 @@ class AUV_Receive(threading.Thread):
                                     pass
                                 elif d == 0b100:
                                     print("TEST RIGHT")
-                                    self.mc.test_left()
+                                    self.mc.test_right()
                                     pass
                                 elif d == 0b010:
                                     print("TEST DOWN")
