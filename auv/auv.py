@@ -247,6 +247,8 @@ class AUV_Receive(threading.Thread):
                             # dive command
                             elif (((message >> 21) & 0b111) == 6):
                                 desired_depth = message & 0b111111
+                                print("We're calling dive command:", str(desired_depth))
+                                
                                 self.dive(desired_depth)
 
                             # mission command
@@ -338,7 +340,7 @@ class AUV_Receive(threading.Thread):
         # self.radio.write(str.encode("mission_failed()\n"))
 
     def dive(self, to_depth):
-        self.motor_queue.clear()
+        self.motor_queue.queue.clear()
         self.mc.update_motor_speeds([0, 0, 0, 0])
         # wait until current motor commands finish running, will need global variable
         # Dive
