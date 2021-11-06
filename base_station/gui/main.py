@@ -249,27 +249,27 @@ class Main():
         #                                   padx=BUTTON_PAD_X+45, pady=BUTTON_PAD_Y, font=(4, BUTTON_SIZE), command=lambda: self.out_q.put("send_dive())"))
 
         self.download_data_button = Button(self.buttons_frame, anchor=tkinter.W, text="Download\nData", takefocus=False,
-                                           padx=BUTTON_PAD_X+25, pady=BUTTON_PAD_Y, font=(4, BUTTON_SIZE), command=lambda: self.out_q.put("send_download_data()"))
+                                           padx=BUTTON_PAD_X+25, pady=BUTTON_PAD_Y, font=(FONT_SIZE, BUTTON_SIZE), command=lambda: self.out_q.put("send_download_data()"))
 
         self.calibrate_depth_button = Button(self.buttons_frame, anchor=tkinter.W, text="Calibrate\nDepth", takefocus=False,
-                                             padx=BUTTON_PAD_X+35, pady=BUTTON_PAD_Y, font=(4, BUTTON_SIZE), command=lambda: self.out_q.put("send_calibrate_depth()"))
+                                             padx=BUTTON_PAD_X+35, pady=BUTTON_PAD_Y, font=(FONT_SIZE, BUTTON_SIZE), command=lambda: self.out_q.put("send_calibrate_depth()"))
 
-        self.dive_command_button = Button(self.buttons_frame, anchor=tkinter.W, text="Dive\nCommand", takefocus=False,
-                                          padx=BUTTON_PAD_X+45, pady=BUTTON_PAD_Y, font=(4, BUTTON_SIZE), command=lambda: self.out_q.put("send_dive())"))
+        # self.dive_command_button = Button(self.buttons_frame, anchor=tkinter.W, text="Dive\nCommand", takefocus=False,
+        #                                   padx=BUTTON_PAD_X+45, pady=BUTTON_PAD_Y, font=(4, BUTTON_SIZE), command=lambda: self.out_q.put("send_dive())"))
 
         self.download_data_button.pack(expand=YES, side=LEFT)
         self.download_data_button.place(relx=0, rely=0)
 
         self.calibrate_depth_button.pack(expand=YES, side=LEFT)
-        self.calibrate_depth_button.place(relx=0.33, rely=0)
+        self.calibrate_depth_button.place(relx=0.5, rely=0)
 
-        self.dive_command_button.pack(expand=YES, side=LEFT)
-        self.dive_command_button.place(relx=0.67, rely=0)
+        # self.dive_command_button.pack(expand=YES, side=LEFT)
+        # self.dive_command_button.place(relx=0.67, rely=0)
 
     def init_motor_control_frame(self):
         """ Creates the frame for motor control. """
         self.motor_control_frame = Frame(
-            self.stack_frame, height=TOP_FRAME_HEIGHT*(3/7), width=FUNC_FRAME_WIDTH, bd=1, relief=SUNKEN)
+            self.stack_frame, height=TOP_FRAME_HEIGHT*(3/7), width=FUNC_FRAME_WIDTH, bd=0.4, relief=SUNKEN)
         # self.motor_control_frame.pack(
         #    padx=MAIN_PAD_X, pady=MAIN_PAD_Y*(4/5), side=LEFT, fill=BOTH, expand=NO)
         self.motor_control_frame.grid(
@@ -281,31 +281,53 @@ class Main():
 
         self.distance_label = Label(self.motor_control_frame, text="Distance\n(0-100m)", font=(FONT, FONT_SIZE))
         self.distance_label.pack()
-        self.distance_label.place(relx=0.05, rely=0.5)
+        self.distance_label.place(relx=0.05, rely=0.45)
 
         self.angle_label = Label(self.motor_control_frame, text="Angle\n(-180-180\N{DEGREE SIGN})", font=(FONT, FONT_SIZE))
         self.angle_label.pack()
-        self.angle_label.place(relx=0.05, rely=0.7)
+        self.angle_label.place(relx=0.05, rely=0.65)
 
         prompt_input_distance = Entry(self.motor_control_frame, bd=5, font=(FONT, FONT_SIZE-3))
         prompt_input_distance.pack()
-        prompt_input_distance.place(relx=0.4, rely=0.525)
+        prompt_input_distance.place(relx=0.4, rely=0.475)
 
         prompt_input_angle = Entry(self.motor_control_frame, bd=5, font=(FONT, FONT_SIZE-3))
         prompt_input_angle.pack()
-        prompt_input_angle.place(relx=0.4, rely=0.725)
+        prompt_input_angle.place(relx=0.4, rely=0.675)
 
         # Add commands to halt and send buttons
         self.halt_button = Button(self.motor_control_frame, text="Halt", takefocus=False,
                                   width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
                                   pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE))
         self.halt_button.pack(expand=YES)
-        self.halt_button.place(relx=0.3, rely=0.1)
+        self.halt_button.place(relx=0.3, rely=0.85)
 
         self.send_button = Button(self.motor_control_frame, text="Send", takefocus=False, width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10,
                                   padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE))
         self.send_button.pack(expand=YES)
-        self.send_button.place(relx=0.6, rely=0.1)
+        self.send_button.place(relx=0.6, rely=0.85)
+
+        self.dive_button = Button(self.motor_control_frame, text="Dive", takefocus=False,
+                                  width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
+                                  pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("send_dive())"))
+        self.dive_button.pack(expand=YES)
+        self.dive_button.place(relx=0.05, rely=0.00)
+
+        prompt_input_depth = Entry(self.motor_control_frame, bd=5, font=(FONT, FONT_SIZE-3))
+        prompt_input_depth.pack()
+        prompt_input_depth.place(relx=0.4, rely=0.000)
+
+    def confirm_dive(self, depth):
+        # TODO messages
+        if depth < 1 or depth > 50:
+            messagebox.showerror("ERROR", "Select a depth between 1 and 50 meters inclusive. ")
+            return
+
+        # Prompt mission start
+        prompt = "Dive: " + depth + " meters?"
+        ans = messagebox.askquestion("Dive", prompt)
+        if ans == 'yes':
+            self.out_q.put("send_dive(" + int(depth) + ")")
 
     def init_map_frame(self):
         """ Create the frame for the x, y map """
@@ -489,10 +511,10 @@ class Main():
         self.depth_string.set(
             "depth: " + str(depth) + "meter")
 
-    def set_dive_command(self, depth):
+    def set_dive(self, depth):
         """ Sets dive command """
         self.depth_string.set(
-            "dive command " + str(depth) + "meter")
+            "dive " + str(depth) + "meters")
 
     def set_position(self, xPos, yPos):
         self.position_label_string.set(
@@ -589,12 +611,12 @@ class Main():
         self.mission_list.place(relx=0.15, rely=0.25)
 
         self.start_mission_button = Button(self.mission_frame, text="Start Mission", takefocus=False,
-                                           width=BUTTON_WIDTH, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
+                                           width=BUTTON_WIDTH+2, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
                                            pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE+5), command=lambda: self.confirm_mission(int(prompt_input_depth.get()), int(prompt_input_time.get())))
         self.start_mission_button.pack(expand=YES)
         self.start_mission_button.place(relx=0.1, rely=0.65)
 
-        self.abort_button = Button(self.mission_frame, text="ABORT MISSION", takefocus=False, width=BUTTON_WIDTH, height=BUTTON_HEIGHT - 10,
+        self.abort_button = Button(self.mission_frame, text="ABORT MISSION", takefocus=False, width=BUTTON_WIDTH+4, height=BUTTON_HEIGHT - 10,
                                    padx=BUTTON_PAD_X, pady=BUTTON_PAD_Y, bg='dark red', activebackground="red", overrelief="sunken", font=(FONT, BUTTON_SIZE), command=self.abort_mission)
         self.abort_button.pack(expand=YES)
         self.abort_button.place(relx=0.18, rely=0.85)
