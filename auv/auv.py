@@ -9,6 +9,9 @@ import threading
 import time
 import math
 
+# TODO - #35 GPS
+import gps
+
 # Custom imports
 from queue import Queue
 from api import Radio
@@ -432,6 +435,34 @@ class AUV_Send_Ping(threading.Thread):
                     raise Exception("Error occured : " + str(e))
 
 
+
+# TODO - #35 GPS
+class GPS_Runner(threading.Thread):
+    def __init__(self, _some_queue):
+        self.session = gps.gps("localhost", "2947")
+        self.session.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
+        threading.Thread.__init__(self)
+
+    # starter/example code provided
+    def run(self):
+        while True:                                                                     
+            try:                                                                        
+                report = self.session.next()                                                 
+                #print(report)                                                                                                                           
+                if report['class'] == 'TPV':                                            
+                    if hasattr(report, 'lat') and hasattr(report, 'lon'):               
+                        print("lon=", report.lon)                                       
+                        print("lat=", report.lat)                                       
+            except KeyError:                                                            
+                pass                                                                    
+            except KeyboardInterrupt:                                                   
+                quit()                                                                  
+            except StopIteration:                                                       
+                self.session = None                                                          
+                print("GPSD has terminated") 
+
+
+
 def main():
     """ Main function that is run upon execution of auv.py """
     queue = Queue()
@@ -444,6 +475,10 @@ def main():
     auv_r_thread.start()
     auv_s_thread.start()
     auv_ping_thread.start()
+
+    # TODO - #35 GPS
+    gps_thread = GPS_Runner(None)
+    gps_thread.start()
 
 
 if __name__ == '__main__':  # If we are executing this file as main
