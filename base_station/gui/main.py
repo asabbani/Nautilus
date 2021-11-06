@@ -309,13 +309,14 @@ class Main():
 
         self.dive_button = Button(self.motor_control_frame, text="Dive", takefocus=False,
                                   width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
-                                  pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.out_q.put("send_dive())"))
+                                  pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE), command=lambda: self.confirm_dive(int(prompt_input_dive.get())))
+
         self.dive_button.pack(expand=YES)
         self.dive_button.place(relx=0.05, rely=0.00)
 
-        prompt_input_depth = Entry(self.motor_control_frame, bd=5, font=(FONT, FONT_SIZE-3))
-        prompt_input_depth.pack()
-        prompt_input_depth.place(relx=0.4, rely=0.000)
+        prompt_input_dive = Entry(self.motor_control_frame, bd=5, font=(FONT, FONT_SIZE-3))
+        prompt_input_dive.pack()
+        prompt_input_dive.place(relx=0.4, rely=0.000)
 
     def confirm_dive(self, depth):
         # TODO messages
@@ -324,10 +325,10 @@ class Main():
             return
 
         # Prompt mission start
-        prompt = "Dive: " + depth + " meters?"
+        prompt = "Dive: " + str(depth) + " meters?"
         ans = messagebox.askquestion("Dive", prompt)
         if ans == 'yes':
-            self.out_q.put("send_dive(" + int(depth) + ")")
+            self.out_q.put("send_dive(" + str(depth) + ")")
 
     def init_map_frame(self):
         """ Create the frame for the x, y map """

@@ -42,7 +42,7 @@ MAX_TURN_SPEED = 50
 NAV_ENCODE = 0b000000100000000000000000           # | with XSY (forward, angle sign, angle)
 XBOX_ENCODE = 0b111000000000000000000000          # | with XY (left/right, down/up xbox input)
 MISSION_ENCODE = 0b000000000000000000000000       # | with X   (mission)
-DIVE_ENCODE = 0b11000000000000000000000           # | with D   (depth)
+DIVE_ENCODE = 0b110000000000000000000000           # | with D   (depth)
 
 # Action Encodings
 HALT = 0b010
