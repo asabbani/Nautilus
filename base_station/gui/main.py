@@ -311,7 +311,7 @@ class Main():
                                   width=BUTTON_WIDTH-15, height=BUTTON_HEIGHT - 10, padx=BUTTON_PAD_X,
                                   pady=BUTTON_PAD_Y, font=(FONT, BUTTON_SIZE))
         self.dive_button.pack(expand=YES)
-        self.dive_button.place(relx=0.4, rely=0.00)
+        self.dive_button.place(relx=0.0, rely=0.00)
 
         prompt_input_depth = Entry(self.motor_control_frame, bd=5, font=(FONT, FONT_SIZE-3))
         prompt_input_depth.pack()
