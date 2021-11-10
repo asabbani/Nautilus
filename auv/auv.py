@@ -8,6 +8,8 @@ import sys
 import threading
 import time
 import math
+import numpy as np
+import bz2
 
 # Custom imports
 from queue import Queue
@@ -42,6 +44,8 @@ POSITION_ENCODE = POSITION_DATA << 21
 
 MAX_TIME = 600
 MAX_ITERATION_COUNT = MAX_TIME / SEND_SLEEP_DELAY / 7
+FILE_LOG = "log" # to be changed
+FILE_AUDIO = "audio"
 
 # determines if connected to BS
 connected = False
@@ -336,6 +340,18 @@ class AUV_Receive(threading.Thread):
 #   - send data
 class AUV_Send_Data(threading.Thread):
     """ Class for the AUV object. Acts as the main file for the AUV. """
+
+    def compress_log():
+        log = bz2.open(FILE_LOG,"rb")
+        log_compressed = bz2.compress(log)
+        log_compressed.flush()
+        return log_compressed
+
+    def compress_audio():
+        aud = bz2.open(FILE_AUDIO,"rb")
+        aud_compressed = bz2.compress(aud)
+        aud_compressed.flush()
+        return aud_compressed
 
     def run(self):
         """ Constructor for the AUV """
