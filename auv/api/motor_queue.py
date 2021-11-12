@@ -23,6 +23,16 @@ class MotorQueue(threading.Thread):
                     self.run_motors(x, y)
                 if z == 1:
                     self.xbox_commands(x, y)
+                elif z==2:
+                    self.test_foward()
+                elif z==3:
+                    self.test_backward()
+                elif z==4:
+                    self.test_left()
+                elif z==5:
+                    self.test_right()
+                elif z==6:
+                    self.test_down()
 
             time.sleep(LOOP_SLEEP_DELAY)
 
@@ -64,3 +74,13 @@ class MotorQueue(threading.Thread):
         x = round(x/100 * 150, 1)
         y = round(y/100 * 150, 1)
         self.mc.update_motor_speeds([y, x, 0, 0])
+    
+    #TODO implement actual tests
+    # def test_forward(self):
+    # def test_backward(self):
+    # def test_left(self):
+    #     turn_speed = -90
+    # def test_right(self):
+    #     turn_speed = 90
+    # def test_down(self):
+

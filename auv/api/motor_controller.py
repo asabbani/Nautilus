@@ -66,7 +66,7 @@ class MotorController:
     Object that contains all interactions with the motor array for the AUV
     """
 
-    def __init__(self):
+    def __init__(self, queue):
         """
         Initializes MotorController object and individual motor objects
         to respective gpio pins.
@@ -93,6 +93,7 @@ class MotorController:
         self.left_speed = 0
         self.right_speed = 0
         self.down_speed = 0
+        self.motor_queue = queue
 #        self.check_gpio_pins()
 
     def update_motor_speeds(self, data):
@@ -204,36 +205,41 @@ class MotorController:
 
     def test_forward(self):  # Used to be left motor
         log('Testing forward motor...')
-        self.motors[FORWARD_MOTOR_INDEX].test_motor()
+        #self.motors[FORWARD_MOTOR_INDEX].test_motor()
+        self.motor_queue.put((0,0,2))
 
     def test_backward(self):  # used to be right motor
         log('Testing turn motor...')
-        self.motors[BACKWARD_MOTOR_INDEX].test_motor()
+        #self.motors[BACKWARD_MOTOR_INDEX].test_motor()
+        self.motor_queue.put((0,0,3))
 
     def test_left(self):
-        heading = 359
+        # heading = 359
         log('Testing front motor...')
-        while heading >= 270:
-            self.motors[LEFT_MOTOR_INDEX].test_motor()
-            heading, _, _ = self.imu.read_euler()
+        self.motor_queue.put((0,0,4))
+        # while heading >= 270:
+        #     self.motors[LEFT_MOTOR_INDEX].test_motor()
+        #     heading, _, _ = self.imu.read_euler()
 
     def test_right(self):
-        heading = 0
+        # heading = 0
         log('Testing back motor...')
-        while heading <= 90:
-            self.motors[RIGHT_MOTOR_INDEX].test_motor()
-            heading, _, _ = self.imu.read_euler()
+        self.motor_queue.put((0,0,5))
+        # while heading <= 90:
+        #     self.motors[RIGHT_MOTOR_INDEX].test_motor()
+        #     heading, _, _ = self.imu.read_euler()
     
 
     def test_down(self):        
         log('Testing back motor...')
-        if self.pressure_sensor is not None:
-            startDepth = (self.pressure_sensor-1013.25)/1000 * 10.2
-            currentDepth = startDepth
-            while math.abs(currentDepth - startDepth) <= 5:
-                self.pressure_sensor.read()
-                currentDepth = (self.pressure_sensor-1013.25)/1000 * 10.2
-                self.motors[DOWN_MOTOR_INDEX].test_motor()
+        self.motor_queue.put((0,0,6))
+        # if self.pressure_sensor is not None:
+        #     startDepth = (self.pressure_sensor-1013.25)/1000 * 10.2
+        #     currentDepth = startDepth
+        #     while math.abs(currentDepth - startDepth) <= 5:
+        #         self.pressure_sensor.read()
+        #         currentDepth = (self.pressure_sensor-1013.25)/1000 * 10.2
+        #         self.motors[DOWN_MOTOR_INDEX].test_motor()
 
     def check_gpio_pins(self):
         """ This function might be deprecated... """
