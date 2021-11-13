@@ -11,6 +11,7 @@ import time
 import math
 import argparse
 import threading
+import bz2
 from queue import Queue
 
 # Custom imports
@@ -28,7 +29,8 @@ from gui import Main
 THREAD_SLEEP_DELAY = 0.1  # Since we are the slave to AUV, we must run faster.
 PING_SLEEP_DELAY = 3
 RADIO_PATH = '/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0'
-
+FILE_LOG_COMP = ""  # TODO: figure out the file paths 
+FILE_LOG_DECOMP = ""
 PING = 0xFFFFFF
 
 CONNECTION_TIMEOUT = 6
@@ -253,6 +255,14 @@ class BaseStation_Receive(threading.Thread):
     def log(self, message):
         """ Logs the message to the GUI console by putting the function into the output-queue. """
         self.out_q.put("log('" + message + "')")
+
+    def decompress(self,file_path,file_decomp_path): # TODO: Test 
+        f = open(file_path,"rb")
+        f_decomp = open(file_decomp_path,"wb")
+        input = f.read()
+        decomp_output = bz2.decompress(input)
+        f_decomp.write(decomp_output)
+        return decomp_output
 
 
 class BaseStation_Send(threading.Thread):

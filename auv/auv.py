@@ -341,17 +341,11 @@ class AUV_Receive(threading.Thread):
 class AUV_Send_Data(threading.Thread):
     """ Class for the AUV object. Acts as the main file for the AUV. """
 
-    def compress_log():
-        log = bz2.open(FILE_LOG,"rb")
-        log_compressed = bz2.compress(log)
-        log_compressed.flush()
-        return log_compressed
-
-    def compress_audio():
-        aud = bz2.open(FILE_AUDIO,"rb")
-        aud_compressed = bz2.compress(aud)
-        aud_compressed.flush()
-        return aud_compressed
+    def compress(self,file):
+        f = open(file,"rb")
+        input = f.read()
+        compressed = bz2.compress(input)
+        return compressed
 
     def run(self):
         """ Constructor for the AUV """
