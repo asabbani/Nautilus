@@ -360,6 +360,7 @@ class AUV_Receive(threading.Thread):
         self.mc.update_motor_speeds([0, 0, 0, 0])
         # Wait 10 sec
         end_time = time.time() + 10  # 10 sec
+        self.radio.clear()
         while time.time() < end_time:
             pass
         # Resurface
