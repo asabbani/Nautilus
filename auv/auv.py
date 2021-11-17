@@ -40,6 +40,8 @@ HEADING_ENCODE = HEADING_DATA << 17
 MISC_ENCODE = MISC_DATA << 21
 POSITION_ENCODE = POSITION_DATA << 21
 
+DEF_DIVE_SPD = 100
+
 MAX_TIME = 600
 MAX_ITERATION_COUNT = MAX_TIME / SEND_SLEEP_DELAY / 7
 
@@ -243,6 +245,15 @@ class AUV_Receive(threading.Thread):
 
                                 self.motor_queue.put((x, y, 1))
 
+                            # dive command
+                            elif (((message >> 21) & 0b111) == 6):
+                                desired_depth = message & 0b111111
+                                print("We're calling dive command:", str(desired_depth))
+                                
+                                lock.acquire()
+                                self.dive(desired_depth)
+                                lock.release()
+
                             # mission command
                             elif (message & 0x800000 == 0):
                                 x = message & 0b111
@@ -331,6 +342,60 @@ class AUV_Receive(threading.Thread):
         log("Successfully aborted the current mission.")
         # self.radio.write(str.encode("mission_failed()\n"))
 
+    def dive(self, to_depth):
+        self.motor_queue.queue.clear()
+        self.mc.update_motor_speeds([0, 0, 0, 0])
+        # wait until current motor commands finish running, will need global variable
+        # Dive
+        depth = self.get_depth()
+        start_time = time.time()
+        self.mc.update_motor_speeds([0, 0, -DEF_DIVE_SPD, -DEF_DIVE_SPD])
+        # Time out and stop diving if > 1 min
+        while depth < to_depth and time.time() < start_time + 60:
+            try:
+                depth = self.get_depth()
+                print("Succeeded on way down. Depth is", depth)
+            except:
+                print("Failed to read pressure going down")
+
+        self.mc.update_motor_speeds([0, 0, 0, 0])
+        # Wait 10 sec
+        end_time = time.time() + 10  # 10 sec
+        while time.time() < end_time:
+            pass
+        
+        self.radio.flush()
+        for i in range(0,3):
+            self.radio.read(7)
+
+        # Resurface
+        self.mc.update_motor_speeds([0, 0, DEF_DIVE_SPD, DEF_DIVE_SPD])
+        intline = 0
+        while math.floor(depth) > 0 and intline == 0: # TODO: check what is a good surface condition
+            line = self.radio.read(7)
+            intline = int.from_bytes(line, "big") >> 32
+
+            print(intline)
+            try:
+                depth = self.get_depth()
+                print("Succeeded on way up. Depth is", depth)
+            except:
+                print("Failed to read pressure going up")
+        self.mc.update_motor_speeds([0, 0, 0, 0])
+    
+    def get_depth(self):
+        if self.pressure_sensor is not None:
+            self.pressure_sensor.read()
+            pressure = self.pressure_sensor.pressure()
+            # TODO: Check if this is accurate, mbars to m
+            depth = (pressure-1013.25)/1000 * 10.2
+            return depth
+        else:
+            log("No pressure sensor found.")
+            return None
+        
+
+
 
 # Responsibilites:
 #   - send data
@@ -418,9 +483,14 @@ class AUV_Send_Data(threading.Thread):
                             radio_lock.release()
                         # Pressure
                         if self.pressure_sensor is not None:
-                            self.pressure_sensor.read()
+                            try :
+                                self.pressure_sensor.read()
+                            except Exception as e:
+                                print("Failed to read in pressure. Error:", e)
+            
                             # defaults to mbars
                             pressure = self.pressure_sensor.pressure()
+                            print("Current pressure:", pressure)
                             mbar_to_depth = (pressure-1013.25)/1000 * 10.2
                             if mbar_to_depth < 0:
                                 mbar_to_depth = 0
