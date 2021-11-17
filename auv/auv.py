@@ -460,9 +460,14 @@ class AUV_Send_Data(threading.Thread):
                             radio_lock.release()
                         # Pressure
                         if self.pressure_sensor is not None:
-                            self.pressure_sensor.read()
+                            try {
+                                self.pressure_sensor.read()
+                            } except e {
+                                print("Failed to read in pressure. Error:", e)
+                            }
                             # defaults to mbars
                             pressure = self.pressure_sensor.pressure()
+                            print("Current pressure:", pressure)
                             mbar_to_depth = (pressure-1013.25)/1000 * 10.2
                             if mbar_to_depth < 0:
                                 mbar_to_depth = 0
