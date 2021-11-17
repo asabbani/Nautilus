@@ -364,6 +364,10 @@ class AUV_Receive(threading.Thread):
             pass
         
         self.radio.flush()
+        self.radio.readline(7)
+        self.radio.readline(7)
+        self.radio.readline(7)
+
 
         # Resurface
         self.mc.update_motor_speeds([0, 0, DEF_DIVE_SPD, DEF_DIVE_SPD])
