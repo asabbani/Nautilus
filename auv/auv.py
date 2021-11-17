@@ -352,6 +352,7 @@ class AUV_Receive(threading.Thread):
         while depth < to_depth and time.time() < start_time + 60000:
             try:
                 depth = self.get_depth()
+                print("Succeeded on way down. Depth is", depth)
             except:
                 print("Failed to read pressure going down")
 
@@ -364,6 +365,7 @@ class AUV_Receive(threading.Thread):
         while math.floor(depth) > 0: # TODO: check what is a good surface condition
             try:
                 depth = self.get_depth()
+                print("Succeeded on way up. Depth is", depth)
             except:
                 print("Failed to read pressure going up")
         self.mc.update_motor_speeds([0, 0, 0, 0])
