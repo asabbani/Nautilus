@@ -248,7 +248,8 @@ class AUV_Receive(threading.Thread):
                             elif (((message >> 21) & 0b111) == 6):
                                 desired_depth = message & 0b111111
                                 print("We're calling dive command:", str(desired_depth))
-                                
+                                #lock.acquire()
+
                                 self.dive(desired_depth)
 
                             # mission command
@@ -349,7 +350,11 @@ class AUV_Receive(threading.Thread):
         self.mc.update_motor_speeds([0, 0, -DEF_DIVE_SPD, -DEF_DIVE_SPD])
         # Time out and stop diving if > 1 min
         while depth < to_depth and time.time() < start_time + 60000:
-            depth = self.get_depth()
+            try:
+                depth = self.get_depth()
+            except:
+                print("Failed to read pressure going down")
+
         self.mc.update_motor_speeds([0, 0, 0, 0])
         # Wait 10 sec
         end_time = time.time() + 10000  # 10 sec
@@ -357,7 +362,10 @@ class AUV_Receive(threading.Thread):
         # Resurface
         self.mc.update_motor_speeds([0, 0, DEF_DIVE_SPD, DEF_DIVE_SPD])
         while math.floor(depth) > 0: # TODO: check what is a good surface condition
-            depth = self.get_depth()
+            try:
+                depth = self.get_depth()
+            except:
+                print("Failed to read pressure going up")
         self.mc.update_motor_speeds([0, 0, 0, 0])
     
     def get_depth(self):
