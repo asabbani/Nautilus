@@ -360,9 +360,11 @@ class AUV_Receive(threading.Thread):
         self.mc.update_motor_speeds([0, 0, 0, 0])
         # Wait 10 sec
         end_time = time.time() + 10  # 10 sec
-        self.radio.flush()
         while time.time() < end_time:
             pass
+        
+        self.radio.flush()
+
         # Resurface
         self.mc.update_motor_speeds([0, 0, DEF_DIVE_SPD, DEF_DIVE_SPD])
         intline = 0
