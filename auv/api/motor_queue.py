@@ -27,6 +27,14 @@ class MotorQueue(threading.Thread):
 
             time.sleep(LOOP_SLEEP_DELAY)
 
+    # Check current halt status
+    def check_halt(self):
+        return self.halt[0]
+
+    # Set current halt status
+    def set_halt(self, status):
+        self.halt[0] = status
+
     # for tests only
     def run_motors(self, x, y):
         # stops auv
@@ -46,8 +54,8 @@ class MotorQueue(threading.Thread):
         self.mc.update_motor_speeds([0, turn_speed, 0, 0])
 
         # TODO implement so motors run until we've turned y degrees
-        if self.halt[0]:
-            self.halt[0] = False
+        if self.check_halt():
+            self.set_halt(False)
             return
         time.sleep(5)
 
@@ -59,8 +67,8 @@ class MotorQueue(threading.Thread):
             self.mc.update_motor_speeds([forward_speed, 0, 0, 0])
 
             # TODO implement so motors run until we've moved x meters
-            if self.halt[0]:
-                self.halt[0] = False
+            if self.check_halt():
+                self.set_halt(False)
                 return
             time.sleep(5)
 
