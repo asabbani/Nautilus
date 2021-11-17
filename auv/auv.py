@@ -350,7 +350,7 @@ class AUV_Receive(threading.Thread):
         start_time = time.time()
         self.mc.update_motor_speeds([0, 0, -DEF_DIVE_SPD, -DEF_DIVE_SPD])
         # Time out and stop diving if > 1 min
-        while depth < to_depth and time.time() < start_time + 15:
+        while depth < to_depth and time.time() < start_time + 60:
             try:
                 depth = self.get_depth()
                 print("Succeeded on way down. Depth is", depth)
