@@ -59,7 +59,7 @@ def log(val):
 class AUV_Receive(threading.Thread):
     """ Class for the AUV object. Acts as the main file for the AUV. """
 
-    def __init__(self, queue):
+    def __init__(self, queue, halt):
         self.radio = None
         self.pressure_sensor = None
         self.imu = None
@@ -68,6 +68,7 @@ class AUV_Receive(threading.Thread):
         self.current_mission = None
         self.timer = 0
         self.motor_queue = queue
+        self.halt = halt               # List for MotorQueue to check updated halt status
         threading.Thread.__init__(self)
 
     def run(self):
@@ -265,6 +266,12 @@ class AUV_Receive(threading.Thread):
                                     # halt
                                     print("HALT")
                                     self.mc.update_motor_speeds([0, 0, 0, 0])  # stop motors
+                                    # Empty out motor queue
+                                    while not self.motor_queue.empty():
+                                        self.motor_queue.get()
+                                    # send exit command to MotorQueue object
+                                    self.halt[0] = True
+
                                 if (x == 3):
                                     print("CALIBRATE")
 
@@ -449,7 +456,7 @@ class AUV_Send_Data(threading.Thread):
                         radio_lock.release()
 
                         # Positioning
-                        x,y = 0,0
+                        x, y = 0, 0
                         x_bits = abs(x) & 0x1FF
                         y_bits = abs(y) & 0x1FF
 
@@ -516,8 +523,9 @@ class AUV_Send_Ping(threading.Thread):
 def main():
     """ Main function that is run upon execution of auv.py """
     queue = Queue()
-    auv_motor_thread = MotorQueue(queue)
-    auv_r_thread = AUV_Receive(queue)
+    halt = [False]
+    auv_motor_thread = MotorQueue(queue, halt)
+    auv_r_thread = AUV_Receive(queue, halt)
     auv_s_thread = AUV_Send_Data()
     auv_ping_thread = AUV_Send_Ping()
 
