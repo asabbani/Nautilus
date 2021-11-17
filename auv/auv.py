@@ -364,9 +364,9 @@ class AUV_Receive(threading.Thread):
             pass
         
         self.radio.flush()
-        self.radio.readline(7)
-        self.radio.readline(7)
-        self.radio.readline(7)
+        self.radio.read(7)
+        self.radio.read(7)
+        self.radio.read(7)
 
 
         # Resurface
