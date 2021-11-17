@@ -365,6 +365,8 @@ class AUV_Receive(threading.Thread):
         # Resurface
         self.mc.update_motor_speeds([0, 0, DEF_DIVE_SPD, DEF_DIVE_SPD])
         while math.floor(depth) > 0: # TODO: check what is a good surface condition
+            line = self.radio.read(7)
+            print(line)
             try:
                 depth = self.get_depth()
                 print("Succeeded on way up. Depth is", depth)
