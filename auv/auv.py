@@ -462,7 +462,7 @@ class AUV_Send_Data(threading.Thread):
                         if self.pressure_sensor is not None:
                             try :
                                 self.pressure_sensor.read()
-                            except e:
+                            except Exception as e:
                                 print("Failed to read in pressure. Error:", e)
             
                             # defaults to mbars
