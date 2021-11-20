@@ -44,13 +44,14 @@ POSITION_ENCODE = POSITION_DATA << 21
 
 MAX_TIME = 600
 MAX_ITERATION_COUNT = MAX_TIME / SEND_SLEEP_DELAY / 7
-FILE_LOG = "log" # to be changed
+FILE_LOG = "log"  # to be changed
 FILE_AUDIO = "audio"
 
 # determines if connected to BS
 connected = False
 lock = threading.Lock()
 radio_lock = threading.Lock()
+mission1_num = 0
 
 
 def log(val):
@@ -311,7 +312,7 @@ class AUV_Receive(threading.Thread):
         if(mission == 0):  # Echo-location.
             try:  # Try to start mission
                 self.current_mission = Mission1(
-                    self, self.mc, self.pressure_sensor, self.imu)
+                    self, self.mc, self.pressure_sensor, self.imu, FILE_LOG + str(mission1_num))
                 self.timer = 0
                 log("Successfully started mission " + str(mission) + ".")
                 # self.radio.write(str.encode("mission_started("+str(mission)+")\n"))
@@ -341,11 +342,15 @@ class AUV_Receive(threading.Thread):
 class AUV_Send_Data(threading.Thread):
     """ Class for the AUV object. Acts as the main file for the AUV. """
 
-    def compress(self,file):
-        f = open(file,"rb")
+    def compress(self, file):
+        f = open(file, "rb")
         input = f.read()
         compressed = bz2.compress(input)
         return compressed
+
+    def send_logs(self, filep):
+        compress = self.compress(filep)
+        # TODO: send compressed file over radio
 
     def run(self):
         """ Constructor for the AUV """
@@ -459,7 +464,7 @@ class AUV_Send_Data(threading.Thread):
                         radio_lock.release()
 
                         # Positioning
-                        x,y = 0,0
+                        x, y = 0, 0
                         x_bits = abs(x) & 0x1FF
                         y_bits = abs(y) & 0x1FF
 
