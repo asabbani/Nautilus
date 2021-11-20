@@ -6,7 +6,7 @@ from . import MotorController
 from . import IMU
 from . import PID
 
-LOOP_SLEEP_DELAY = 0.005
+LOOP_SLEEP_DELAY = 0.01
 
 # PID Constants
 TURN_CONTROL_TOLERANCE = 1       # Within 1 degree of target turn
@@ -18,10 +18,10 @@ DEBUG = False
 
 
 class MotorQueue(threading.Thread):
-    def __init__(self, queue):
+    def __init__(self, queue, imu):
         self.queue = queue
         self.mc = MotorController()
-        self.imu = IMU.BNO055(serial_port='/dev/serial0', rst=18)
+        self.imu = imu
         self.gps = None
         threading.Thread.__init__(self)
 
@@ -55,9 +55,9 @@ class MotorQueue(threading.Thread):
         # noMovement: Total times needed to reset velocity to 0 to reduce noise
         noMovement = 5
         # timeNowDeadReckoning: Current time this function is called (in nanoseconds)
-        timeNowDeadReckoning = time.time_ns()
+        timeNowDeadReckoning = time.time()
         # interval: time difference between function calls (in seconds)
-        interval = (timeNowDeadReckoning - self.timeDeadReckoning) * 1e-9
+        interval = timeNowDeadReckoning - self.timeDeadReckoning
 
         # Calculate acceleration vector as an average over 10 samples
         for i in range(sampleCount):
@@ -170,6 +170,7 @@ class MotorQueue(threading.Thread):
         forward_speed = forward_pid.pid(forward_pos)
         self.reset_position()
 
+        self.timeDeadReckoning = time.time()
         while forward_speed != 0:
             # Reorient turning if imu says it is off from target
             heading, _, _ = self.imu.read_euler()

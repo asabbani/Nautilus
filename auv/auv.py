@@ -59,10 +59,10 @@ def log(val):
 class AUV_Receive(threading.Thread):
     """ Class for the AUV object. Acts as the main file for the AUV. """
 
-    def __init__(self, queue):
+    def __init__(self, queue, imu):
         self.radio = None
         self.pressure_sensor = None
-        self.imu = None
+        self.imu = imu
         self.mc = MotorController()
         self.time_since_last_ping = 0.0
         self.current_mission = None
@@ -83,11 +83,13 @@ class AUV_Receive(threading.Thread):
         except:
             log("Pressure sensor is not connected to the AUV.")
 
+        '''
         try:
             self.imu = IMU(IMU_PATH)
             log("IMU has been found.")
         except:
             log("IMU is not connected to the AUV on IMU_PATH.")
+        '''
 
         try:
             self.radio = Radio(RADIO_PATH)
@@ -515,8 +517,9 @@ class AUV_Send_Ping(threading.Thread):
 def main():
     """ Main function that is run upon execution of auv.py """
     queue = Queue()
-    auv_motor_thread = MotorQueue(queue)
-    auv_r_thread = AUV_Receive(queue)
+    imu = IMU(IMU_PATH)
+    auv_r_thread = AUV_Receive(queue, imu)
+    auv_motor_thread = MotorQueue(queue, imu)
     auv_s_thread = AUV_Send_Data()
     auv_ping_thread = AUV_Send_Ping()
 
