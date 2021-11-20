@@ -7,7 +7,7 @@ NEAR_SURFACE_METERS = 0.5
 class Mission1():
     """ Dive and collect hydrophone data """
 
-    def __init__(self, auv, motor_controller, pressure_sensor, IMU):
+    def __init__(self, auv, motor_controller, pressure_sensor, IMU, logp):
         """ Creates new audio collection mission object. Save parameters as local variables, and assign our state to starting state """
 
         self.motor_controller = motor_controller
@@ -17,7 +17,7 @@ class Mission1():
         # Assign our state to starting state.
         self.state = "START"
 
-        self.logpath = ""  # TODO: assign logpath
+        self.logpath = logp
 
     def loop(self):
         """ Continuously running loop function, run by AUV main thread. """
