@@ -10,6 +10,7 @@ class Mission1():
     def __init__(self, auv, motor_controller, pressure_sensor, IMU, logp):
         """ Creates new audio collection mission object. Save parameters as local variables, and assign our state to starting state """
 
+        self.auv = auv
         self.motor_controller = motor_controller
         self.pressure_sensor = pressure_sensor
         self.IMU = IMU
@@ -30,6 +31,12 @@ class Mission1():
                 self.motor_controller.update_motor_speeds([0, 0, 50, 50])
                 self.state = "DIVING"
 
+            else:
+                # necessary equipment not found, ending
+                self.auv.log("Could not start mission 1 - Missing equipment.")
+                self.auv.current_mission = None
+                return
+
         if self.state == "DIVING":
             # If we reached max depth
             if depth >= MAX_DEPTH_METERS:
@@ -40,12 +47,23 @@ class Mission1():
                 self.state = "RISING"
 
                 # Start recording
-                self.hydrophone.start_recording()
+                # self.hydrophone.start_recording() TODO hydrophone
 
         if self.state == "RISING":
             if depth <= NEAR_SURFACE_METERS:
-                self.hydrophone.end_recording()
+                # self.hydrophone.end_recording() TODO hydrophone
                 self.state = "DONE"
         log = open(self.logpath, "a")
         log.write(datetime.utcnow(), "Depth:", depth, "Downward speed:", motor_speed_down, "Action:", self.state)
         log.close()
+
+    def abort_loop(self):
+        self.state = "RISING"
+        depth = self.pressure_sensor.depth()
+        # self.hydrophone.end_recording() TODO hydrophone
+
+        # TODO probably include sleep delay?
+        while depth > NEAR_SURFACE_METERS:
+            depth = self.pressure_sensor.depth
+
+        self.state = "DONE"
