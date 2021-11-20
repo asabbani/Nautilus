@@ -401,7 +401,8 @@ class AUV_Receive(threading.Thread):
 #   - send data
 class AUV_Send_Data(threading.Thread):
     """ Class for the AUV object. Acts as the main file for the AUV. """
-
+    def __init__(self, status):
+        self.motor_status = status
     def run(self):
         """ Constructor for the AUV """
         self.radio = None
@@ -411,6 +412,7 @@ class AUV_Send_Data(threading.Thread):
         self.time_since_last_ping = 0.0
         self.current_mission = None
         self.timer = 0
+        
 
         # Get all non-default callable methods in this class
         self.methods = [m for m in dir(AUV_Send_Data) if not m.startswith('__')]
@@ -510,12 +512,13 @@ class AUV_Send_Data(threading.Thread):
                         if whole_temperature < 0:
                             sign = 1
                             whole_temperature *= -1
-                        whole_temperature = whole_temperature << 5
-                        sign = sign << 11
-                        temperature_encode = (MISC_ENCODE | sign | whole_temperature)
+                        whole_temperature = whole_temperature << 4
+                        sign = sign << 10
+                        motor_status = self.motor_status[0] << 3
+                        internal_data_encode = (MISC_ENCODE | sign | whole_temperature | motor_status)
 
                         radio_lock.acquire()
-                        self.radio.write(temperature_encode, 3)
+                        self.radio.write(internal_data_encode, 3)
                         radio_lock.release()
 
                         # Positioning
@@ -586,9 +589,10 @@ class AUV_Send_Ping(threading.Thread):
 def main():
     """ Main function that is run upon execution of auv.py """
     queue = Queue()
-    auv_motor_thread = MotorQueue(queue)
+    status = [0]
+    auv_motor_thread = MotorQueue(queue, status)
     auv_r_thread = AUV_Receive(queue)
-    auv_s_thread = AUV_Send_Data()
+    auv_s_thread = AUV_Send_Data(status)
     auv_ping_thread = AUV_Send_Ping()
 
     auv_motor_thread.start()
