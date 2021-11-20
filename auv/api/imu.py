@@ -24,6 +24,9 @@ class IMU(super_imu):
         self.timeDeadReckoning = 0
     # TODO Implement more useful functions other than the default
 
+    def reset_position(self):
+        self.pX, self.pY, self.pZ = 0, 0, 0
+
     def dead_reckoning(self):
         # Initialize acceleration vector to be calculated later
         aX, aY, aZ = 0, 0, 0
@@ -82,6 +85,8 @@ class IMU(super_imu):
         pX = self.pX + (self.vX + (vX - self.vX) / 2.0) * interval
         pY = self.pY + (self.vY + (vY - self.vY) / 2.0) * interval
         pZ = self.pZ + (self.vZ + (vZ - self.vZ) / 2.0) * interval
+
+        print("Current position in meters (relative): {}, {}, {}".format(pX, pY, pZ))
 
         # Update instance variables for next function call
         self.aX, self.aY, self.aZ = aX, aY, aZ

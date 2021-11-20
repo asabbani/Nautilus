@@ -5,7 +5,6 @@ from queue import Queue
 from . import MotorController
 from . import IMU
 from . import PID
-#from . import GPS
 
 LOOP_SLEEP_DELAY = 0.005
 
@@ -56,14 +55,6 @@ class MotorQueue(threading.Thread):
                 print("IMU not found in run_motors in MotorQueue")
                 return
 
-        if self.gps is not None:
-            try:
-                # get some data here
-                pass
-            except:
-                print("GPS not found")
-                return
-
         # modulo: a mod function that retains negatives (ex. -1 % 360 = -1)
         def modulo(x, y): return x % y if x > 0 else -1 * (abs(x) % y)
 
@@ -95,6 +86,7 @@ class MotorQueue(threading.Thread):
         forward_pid = PID(self.mc, x, FORWARD_CONTROL_TOLERANCE, FORWARD_TARGET_TOLERANCE, DEBUG)
         turn_speed = turn_pid.pid(turn_error(target, heading))
         forward_speed = forward_pid.pid(forward_pos)
+        self.imu.reset_position()
 
         while forward_speed != 0:
             # Reorient turning if imu says it is off from target
@@ -102,7 +94,8 @@ class MotorQueue(threading.Thread):
             turn_speed = turn_pid.pid(turn_error(target, heading))
 
             # Figure out speed to use to move forward
-            # gps.update()
+            self.imu.dead_reckoning()
+            forward_pos = self.imu.pX
             forward_speed = forward_pid.pid(forward_pos)
             #forward_pos += gps.speed * KNOTS_TO_METERSPERSEC * LOOP_SLEEP_DELAY
             forward_pos += forward_speed * LOOP_SLEEP_DELAY  # TODO Update forward_speed to use GPS speed once GPS is done
