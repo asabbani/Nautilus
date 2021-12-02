@@ -158,7 +158,7 @@ class AUV_Receive(threading.Thread):
                 # Turn upwards motors on until surface reached (if we haven't reconnected yet)
                 if depth > 0:  # TODO: Decide on acceptable depth range
                     # TODO speeds
-                    self.mc.update_motor_speeds([0, 0, 125, 125])  # TODO: Figure out which way is up
+                    self.mc.update_motor_speeds([0, 0, 25, 25])  # TODO: Figure out which way is up
                 else:
                     self.mc.update_motor_speeds([0, 0, 0, 0])
                 lock.release()
