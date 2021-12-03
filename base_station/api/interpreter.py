@@ -6,6 +6,7 @@ DEPTH_DATA = 0b011
 
 
 def decode_command(self_obj, header_str, line):
+    print("HEADER_STR", header_str)
     if header_str == POSITION_DATA:
         # reads in remaining byte
         remain = self_obj.radio.read(2)
