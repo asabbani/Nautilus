@@ -446,12 +446,15 @@ class BaseStation_Send(threading.Thread):
                                 print("[XBOX] X:", self.joy.leftX())
                                 print("[XBOX] Y:", self.joy.leftY())
                                 print("[XBOX] A\t")
+                                print("[XBOX] Right Trigger:", self.joy.rightTrigger())
 
                                 x = round(self.joy.leftX()*100)
                                 y = round(self.joy.leftY()*100)
+                                right_trigger = round(self.joy.rightTrigger()*10)
 
                                 xsign = 0
                                 ysign = 0
+                                vertical = 0
 
                                 if x < 0:
                                     xsign = 1
@@ -459,11 +462,14 @@ class BaseStation_Send(threading.Thread):
                                 if y < 0:
                                     ysign = 1
                                     y *= -1
+                                if right_trigger:
+                                    vertical = 1
 
                                 xshift = x << 8
                                 xsign = xsign << 15
                                 ysign = ysign << 7
-                                navmsg = XBOX_ENCODE | xsign | xshift | ysign | y
+                                vertical = vertical << 16
+                                navmsg = XBOX_ENCODE | vertical | xsign | xshift | ysign | y
 
                                 radio_lock.acquire()
                                 self.radio.write(navmsg)

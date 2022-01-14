@@ -232,6 +232,7 @@ class AUV_Receive(threading.Thread):
                             # 0x[1110][0000] [XXXX][XXXX] [YYYY][YYYY]
                             elif (message & 0xE00000 == 0xE00000):
                                 # xbox command
+                                vertical = (message & 0x10000)
                                 x = (message & 0x7F00) >> 8
                                 xsign = (message & 0x8000) >> 15
                                 y = message & 0x7F
@@ -241,8 +242,10 @@ class AUV_Receive(threading.Thread):
                                 if ysign == 1:
                                     y = -y
                                 #print("Xbox Command:", x, y)
-
-                                self.motor_queue.put((x, y, 1))
+                                if vertical:
+                                    self.motor_queue.put((x, y, 2))
+                                else:
+                                    self.motor_queue.put((x, y, 1))
 
                             # mission command
                             elif (message & 0x800000 == 0):
