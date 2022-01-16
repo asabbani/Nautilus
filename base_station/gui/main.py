@@ -477,7 +477,7 @@ class Main():
                 "Movement Status: Autonomous Control")
 
     def set_battery_voltage(self, voltage):
-        self.battery_status_string.set("Battery Voltage: " + voltage)
+        self.battery_status_string.set("Battery Voltage: " + str(voltage))
 
     def set_heading(self, direction):
         """ Sets heading text """

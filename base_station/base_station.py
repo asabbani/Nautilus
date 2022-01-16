@@ -236,6 +236,7 @@ class BaseStation_Receive(threading.Thread):
                             lock.release()
                         # Data cases
                         else:
+                            print("HEADER_STR", header)
                             decode_command(self, header, intline)
 
                         line = self.radio.read(7)
