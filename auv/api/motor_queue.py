@@ -27,6 +27,9 @@ class MotorQueue(threading.Thread):
                     self.run_motors(x, y)
                 if z == 1:
                     self.xbox_commands(x, y)
+                if z == 2:
+                    self.xbox_commands(x, y, True)
+            time.sleep(LOOP_SLEEP_DELAY)
 
             # time.sleep(LOOP_SLEEP_DELAY)
 
@@ -35,6 +38,14 @@ class MotorQueue(threading.Thread):
 
     # Check current halt status
 
+    def check_halt(self):
+        return self.halt[0]
+
+    # Set current halt status
+    def set_halt(self, status):
+        self.halt[0] = status
+
+    # Check current halt status
     def check_halt(self):
         return self.halt[0]
 
@@ -81,7 +92,11 @@ class MotorQueue(threading.Thread):
 
         self.mc.zero_out_motors()
 
-    def xbox_commands(self, x, y):
-        x = round(x/100 * 150, 1)
-        y = round(y/100 * 150, 1)
-        self.mc.update_motor_speeds([y, -x, 0, 0])
+    def xbox_commands(self, x, y, vertical=False):
+        if vertical:
+            y = round(y/100 * 150, 1)
+            self.mc.update_motor_speeds([0, 0, -y, -y])
+        else:
+            x = round(x/100 * 150, 1)
+            y = round(y/100 * 150, 1)
+            self.mc.update_motor_speeds([y, -x, 0, 0])
