@@ -1,3 +1,5 @@
+# not using this file either, refer to xbox.py
+
 import signal
 import time
 from .xbox import Joystick
