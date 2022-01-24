@@ -23,15 +23,6 @@ from constants import *
 from auv_send_data import AUV_Send_Data
 from auv_send_ping import AUV_Send_Ping
 
-# determines if connected to BS
-connected = False
-lock = threading.Lock()
-radio_lock = threading.Lock()
-
-
-def log(val):
-    print("[AUV]\t" + val)
-
 
 # Responsibilites:
 #   - receive data/commands
