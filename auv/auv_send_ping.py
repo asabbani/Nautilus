@@ -2,6 +2,8 @@ import threading
 
 from api import Radio
 
+import constants
+
 # Responsibilites:
 #   - send ping
 class AUV_Send_Ping(threading.Thread):
@@ -16,35 +18,33 @@ class AUV_Send_Ping(threading.Thread):
         """ Radio initializer for the AUV """
 
         try:
-            self.radio = Radio(RADIO_PATH)
-            log("Radio device has been found.")
+            self.radio = Radio(constants.RADIO_PATH)
+            constants.log("Radio device has been found.")
         except:
-            log("Radio device is not connected to AUV on RADIO_PATH.")
+            constants.log("Radio device is not connected to AUV on RADIO_PATH.")
 
     def run(self):
         """ Main connection loop for the AUV. """
 
         self._init_hardware()
 
-        global connected
-
-        log("Starting main ping sending connection loop.")
-        while not self._ev.wait(timeout=PING_SLEEP_DELAY):
+        constants.log("Starting main ping sending connection loop.")
+        while not self._ev.wait(timeout=constants.PING_SLEEP_DELAY):
             # time.sleep(PING_SLEEP_DELAY)
 
             if self.radio is None or self.radio.is_open() is False:
                 print("TEST radio not connected")
                 try:  # Try to connect to our devices.
-                    self.radio = Radio(RADIO_PATH)
-                    log("Radio device has been found!")
+                    self.radio = Radio(constants.RADIO_PATH)
+                    constants.log("Radio device has been found!")
                 except Exception as e:
-                    log("Failed to connect to radio: " + str(e))
+                    constants.log("Failed to connect to radio: " + str(e))
 
             else:
                 try:
                     # Always send a connection verification packet
                     radio_lock.acquire()
-                    self.radio.write(PING, 3)
+                    self.radio.write(constants.PING, 3)
                     radio_lock.release()
 
                 except Exception as e:

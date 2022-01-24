@@ -23,3 +23,11 @@ DEF_DIVE_SPD = 100
 
 MAX_TIME = 600
 MAX_ITERATION_COUNT = MAX_TIME / SEND_SLEEP_DELAY / 7
+
+# determines if connected to BS
+connected = False
+lock = threading.Lock()
+radio_lock = threading.Lock()
+
+def log(val):
+    print("[AUV]\t" + val)
