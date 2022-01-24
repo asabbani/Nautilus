@@ -521,6 +521,15 @@ class BaseStation_Send(threading.Thread):
         """ Function that is executed upon the closure of the GUI (passed from input-queue). """
         os._exit(1)  # => Force-exit the process immediately.
 
+    def mission_started(self, index):
+        """ When AUV sends mission started, switch to mission mode """
+        if index == 0:  # Echo location mission.
+            self.manual_mode = False
+            self.out_q.put("set_vehicle(False)")
+            self.log("Switched to autonomous mode.")
+
+        self.log("Successfully started mission " + str(index))
+
 # Responsibilites:
 #   - send ping
 
@@ -563,42 +572,6 @@ class BaseStation_Send_Ping(threading.Thread):
 
                 except Exception as e:
                     raise Exception("Error occured : " + str(e))
-
-
-class BaseStation(threading.Thread):
-    """ Base station class that acts as the brain for the entire base station. """
-
-    def d(self, bytes):
-        # TODO
-        # Append new bytes to local data string/byte array
-        # local_data += bytes
-        pass
-
-    def d_done(self):
-        # TODO write data to file
-        # write(local_data)
-        # local_data.clear
-        pass
-
-    def download_data(self):
-        """ Function calls download data function """
-        lock.acquire()
-        if connected is True:
-            lock.release()
-            # self.radio.write("d_data()")
-            self.log("Sending download data command to AUV.")
-        else:
-            lock.release()
-            self.log("Cannot download data because there is no connection to the AUV.")
-
-    def mission_started(self, index):
-        """ When AUV sends mission started, switch to mission mode """
-        if index == 0:  # Echo location mission.
-            self.manual_mode = False
-            self.out_q.put("set_vehicle(False)")
-            self.log("Switched to autonomous mode.")
-
-        self.log("Successfully started mission " + str(index))
 
 
 if __name__ == '__main__':
