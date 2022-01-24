@@ -120,7 +120,7 @@ class AUV_Receive(threading.Thread):
                     # reset motor speed to 0 immediately and flush buffer
                     self.mc.update_motor_speeds([0, 0, 0, 0])
 
-                    # resurface TODO
+                    # resurface TODO (done?)
                     # monitor depth at surface
                     # turn upwards motors on until we've reached okay depth range OR
                     # until radio is connected
@@ -130,14 +130,8 @@ class AUV_Receive(threading.Thread):
                     # enforce check in case radio is not found
                     if self.radio is not None:
                         self.radio.flush()
-
                     connected = False
-
-                if self.pressure_sensor is not None:
-                    self.pressure_sensor.read()
-                    # defaults to mbars
-                    pressure = self.pressure_sensor.pressure()
-                    depth = (pressure-1013.25)/1000 * 10.2
+                depth = self.get_depth()
                 # Turn upwards motors on until surface reached (if we haven't reconnected yet)
                 if depth > 0:  # TODO: Decide on acceptable depth range
                     self.mc.update_motor_speeds([0, 0, -25, -25])  # TODO: Figure out which way is up
@@ -242,46 +236,7 @@ class AUV_Receive(threading.Thread):
 
                             # mission command
                             elif (message & 0x800000 == 0):
-                                x = message & 0b111
-                                log("Mission encoding with (x): " + bin(x))
-                                if (x == 0) or (x == 1):
-                                    # decode time
-                                    t = message >> 3
-                                    time_1 = t & 0b111111111
-
-                                    # decode depth
-                                    d = t >> 9
-                                    depth = d & 0b111111
-
-                                    print("Run mission:", x)
-                                    print("with depth and time:", d, ",", time_1)
-
-                                    # self.start_mission(x)  # 0 for mission 1, and 1 for mission 2 TODO
-                                    # audioSampleMission() if x == 0 else mission2()
-                                if (x == 2):
-                                    # halt
-                                    print("HALT")
-                                    self.mc.update_motor_speeds([0, 0, 0, 0])  # stop motors
-                                    # Empty out motor queue
-                                    while not self.motor_queue.empty():
-                                        self.motor_queue.get()
-                                    # send exit command to MotorQueue object
-                                    self.halt[0] = True
-
-                                if (x == 3):
-                                    print("CALIBRATE")
-
-                                    # calibrate
-                                    # TODO add global depth
-                                    depth = 0
-                                if (x == 4):
-                                    print("ABORT")
-                                    # abort()
-                                    pass
-                                if (x == 5):
-                                    print("DOWNLOAD DATA")
-                                    # downloadData()
-                                    pass
+                                self.read_mission_command(message)
 
                         line = self.radio.read(7)
 
@@ -304,6 +259,48 @@ class AUV_Receive(threading.Thread):
                 if self.timer > constants.MAX_ITERATION_COUNT:
                     # kill mission, we exceeded time
                     self.abort_mission()
+
+    def read_mission_command(self, message):
+        x = message & 0b111
+        log("Mission encoding with (x): " + bin(x))
+        if (x == 0) or (x == 1):
+            # decode time
+            t = message >> 3
+            time_1 = t & 0b111111111
+
+            # decode depth
+            d = t >> 9
+            depth = d & 0b111111
+
+            print("Run mission:", x)
+            print("with depth and time:", d, ",", time_1)
+
+            # self.start_mission(x)  # 0 for mission 1, and 1 for mission 2 TODO
+            # audioSampleMission() if x == 0 else mission2()
+        if (x == 2):
+            # halt
+            print("HALT")
+            self.mc.update_motor_speeds([0, 0, 0, 0])  # stop motors
+            # Empty out motor queue
+            while not self.motor_queue.empty():
+                self.motor_queue.get()
+            # send exit command to MotorQueue object
+            self.halt[0] = True
+
+        if (x == 3):
+            print("CALIBRATE")
+
+            # calibrate
+            # TODO add global depth
+            depth = 0
+        if (x == 4):
+            print("ABORT")
+            # abort()
+            pass
+        if (x == 5):
+            print("DOWNLOAD DATA")
+            # downloadData()
+            pass
 
     def start_mission(self, mission):
         """ Method that uses the mission selected and begin that mission """
