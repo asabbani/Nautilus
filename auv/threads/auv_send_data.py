@@ -1,3 +1,6 @@
+import sys
+sys.path.append('..')
+
 import threading
 
 from api import Radio
@@ -5,7 +8,8 @@ from api import IMU
 from api import PressureSensor
 from api import MotorController
 from missions import *
-import constants
+from static import constants
+from static import global_vars
 
 
 def get_heading_encode(data):
@@ -34,28 +38,28 @@ class AUV_Send_Data(threading.Thread):
         try:
             self.pressure_sensor = PressureSensor()
             self.pressure_sensor.init()
-            constants.log("Pressure sensor has been found")
+            global_vars.log("Pressure sensor has been found")
         except:
-            constants.log("Pressure sensor is not connected to the AUV.")
+            global_vars.log("Pressure sensor is not connected to the AUV.")
 
         self.imu = IMU.BNO055(serial_port=constants.IMU_PATH, rst=18)
-        constants.log("IMU has been found.")
+        global_vars.log("IMU has been found.")
         # TODO copied over from example code
         # if not self.imu.begin():
         #    raise RuntimeError('Failed to initialize BNO055! Is the sensor connected?')
 
         try:
             self.radio = Radio(constants.RADIO_PATH)
-            constants.log("Radio device has been found.")
+            global_vars.log("Radio device has been found.")
         except:
-            constants.log("Radio device is not connected to AUV on RADIO_PATH.")
+            global_vars.log("Radio device is not connected to AUV on RADIO_PATH.")
 
     def run(self):
         """ Main connection loop for the AUV. """
 
         self._init_hardware()
 
-        constants.log("Starting main sending connection loop.")
+        global_vars.log("Starting main sending connection loop.")
         while not self._ev.wait(timeout=constants.SEND_SLEEP_DELAY):
             # time.sleep(SEND_SLEEP_DELAY)
 
@@ -63,15 +67,15 @@ class AUV_Send_Data(threading.Thread):
                 print("TEST radio not connected")
                 try:  # Try to connect to our devices.
                     self.radio = Radio(constants.RADIO_PATH)
-                    constants.log("Radio device has been found!")
+                    global_vars.log("Radio device has been found!")
                 except:
                     pass
 
             else:
                 try:
-                    lock.acquire()
+                    global_vars.lock.acquire()
                     if constants.connected is True:  # Send our AUV packet as well.
-                        lock.release()
+                        global_vars.lock.release()
                         # TODO default values in case we could not read anything
                         heading = 0
                         temperature = 0
@@ -95,9 +99,9 @@ class AUV_Send_Data(threading.Thread):
                             whole_heading = int(split_heading[1])
                             whole_heading = whole_heading << 7
                             heading_encode = (constants.HEADING_ENCODE | whole_heading | decimal_heading)
-                            radio_lock.acquire()
+                            global_vars.radio_lock.acquire()
                             self.radio.write(heading_encode, 3)
-                            radio_lock.release()
+                            global_vars.radio_lock.release()
                         # Pressure
                         if self.pressure_sensor is not None:
                             try:
@@ -118,9 +122,9 @@ class AUV_Send_Data(threading.Thread):
                             whole = whole << 4
                             depth_encode = (constants.DEPTH_ENCODE | whole | decimal)
 
-                            radio_lock.acquire()
+                            global_vars.radio_lock.acquire()
                             self.radio.write(depth_encode, 3)
-                            radio_lock.release()
+                            global_vars.radio_lock.release()
                         # Temperature radio
                         whole_temperature = int(temperature)
                         sign = 0
@@ -131,9 +135,9 @@ class AUV_Send_Data(threading.Thread):
                         sign = sign << 11
                         temperature_encode = (constants.MISC_ENCODE | sign | whole_temperature)
 
-                        radio_lock.acquire()
+                        global_vars.radio_lock.acquire()
                         self.radio.write(temperature_encode, 3)
-                        radio_lock.release()
+                        global_vars.radio_lock.release()
 
                         # Positioning
                         x, y = 0, 0
@@ -146,10 +150,10 @@ class AUV_Send_Data(threading.Thread):
                         x_bits = x_bits | (x_sign << 9)
                         y_bits = y_bits | (y_sign << 9)
                         position_encode = (constants.POSITION_ENCODE | x_bits << 10 | y_bits)
-                        radio_lock.acquire()
+                        global_vars.radio_lock.acquire()
                         print(bin(position_encode))
                         self.radio.write(position_encode, 3)
-                        radio_lock.release()
+                        global_vars.radio_lock.release()
 
                     else:
                         lock.release()
