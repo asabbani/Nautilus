@@ -112,31 +112,7 @@ class AUV_Receive(threading.Thread):
 
             # Always try to update connection status.
             if time.time() - self.time_since_last_ping > constants.CONNECTION_TIMEOUT:
-                constants.lock.acquire()
-                # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
-                if connected is True:
-                    log("Lost connection to BS.")
-
-                    # reset motor speed to 0 immediately and flush buffer
-                    self.mc.update_motor_speeds([0, 0, 0, 0])
-
-                    # resurface TODO (done?)
-                    # monitor depth at surface
-                    # turn upwards motors on until we've reached okay depth range OR until radio is connected
-                    # have default be >0 to keep going up if pressure_sensor isn't there for some reason
-                    depth = 400  # number comes from depth of Isfjorden (not sure if this is actually where we'll be)
-
-                    # enforce check in case radio is not found
-                    if self.radio is not None:
-                        self.radio.flush()
-                    connected = False
-                depth = self.get_depth()
-                # Turn upwards motors on until surface reached (if we haven't reconnected yet)
-                if depth > 0:  # TODO: Decide on acceptable depth range
-                    self.mc.update_motor_speeds([0, 0, -25, -25])
-                else:
-                    self.mc.update_motor_speeds([0, 0, 0, 0])
-                constants.lock.release()
+                self.timeout()
 
             if self.radio is None or self.radio.is_open() is False:
                 try:  # Try to connect to our devices.
@@ -151,10 +127,7 @@ class AUV_Receive(threading.Thread):
                     # self.radio.flush()
 
                     while(line != b'' and len(line) == 7):
-                        # print("Line read ", line)
                         intline = int.from_bytes(line, "big")
-                        #print("read line")
-                        #print("Line:", intline)
                         checksum = Crc32.confirm(intline)
                         if not checksum:
                             log("invalid line***********************")
@@ -163,25 +136,7 @@ class AUV_Receive(threading.Thread):
                             break
                         intline = intline >> 32
                         if intline == 0xFFFFFF:  # We have a ping!
-                            log("PING")
-                            self.time_since_last_ping = time.time()
-                            # print("ping if statement")
-                            # print(line)
-                            #print("lock acquired 173")
-
-                            constants.lock.acquire()
-                            if connected is False:
-                                log("Connection to BS verified.")
-                                connected = True
-
-                                # TODO test case: set motor speeds
-                                data = [1, 2, 3, 4]
-                                self.x(data)
-                                # Halt disconnected resurfacing
-                                self.mc.update_motor_speeds([0, 0, 0, 0])
-                            constants.lock.release()
-
-                            #print("lock released 173")
+                            self.ping_connected()
 
                         else:
                             # Line was read, but it was not equal to a BS_PING
@@ -190,39 +145,16 @@ class AUV_Receive(threading.Thread):
                             # message = line.decode('utf-8').replace("\n", "")
                             print("NON-PING LINE READ WAS", str(line))
                             message = intline
-                            # message = int(message)
                             # 0000001XSY or 0000000X
 
                             # navigation command
                             if (message & 0xC00000 == 2):
-                                x = (message & 0x01F600) >> 9
-                                sign = (message & 0x000100) >> 8
-                                y = (message & 0x0000FF)
-
-                                if (sign == 1):
-                                    y = y * -1
-
-                                log("Running motor command with (x, y): " + str(x) + "," + str(y))
-                                self.motor_queue.put((x, y, 0))
+                                self.read_nav_command(message)
 
                             # Xbox Navigation Command
                             # 0x[1110][0000] [XXXX][XXXX] [YYYY][YYYY]
                             elif (message & 0xE00000 == 0xE00000):
-                                # xbox command
-                                vertical = (message & 0x10000)
-                                x = (message & 0x7F00) >> 8
-                                xsign = (message & 0x8000) >> 15
-                                y = message & 0x7F
-                                ysign = (message & 0x80) >> 7
-                                if xsign == 1:
-                                    x = -x
-                                if ysign == 1:
-                                    y = -y
-                                #print("Xbox Command:", x, y)
-                                if vertical:
-                                    self.motor_queue.put((x, y, 2))
-                                else:
-                                    self.motor_queue.put((x, y, 1))
+                                self.read_xbox_command(message)
 
                             # dive command
                             elif (((message >> 21) & 0b111) == 6):
@@ -258,6 +190,80 @@ class AUV_Receive(threading.Thread):
                 if self.timer > constants.MAX_ITERATION_COUNT:
                     # kill mission, we exceeded time
                     self.abort_mission()
+
+    def timeout(self):
+        global connected
+
+        constants.lock.acquire()
+        # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
+        if connected is True:
+            log("Lost connection to BS.")
+
+            # reset motor speed to 0 immediately and flush buffer
+            self.mc.update_motor_speeds([0, 0, 0, 0])
+
+            # monitor depth at surface
+            # turn upwards motors on until we've reached okay depth range OR until radio is connected
+            # have default be >0 to keep going up if pressure_sensor isn't there for some reason
+            depth = 400  # number comes from depth of Isfjorden (not sure if this is actually where we'll be)
+
+            # enforce check in case radio is not found
+            if self.radio is not None:
+                self.radio.flush()
+            connected = False
+        depth = self.get_depth()
+        # Turn upwards motors on until surface reached (if we haven't reconnected yet)
+        if depth > 0:  # TODO: Decide on acceptable depth range
+            self.mc.update_motor_speeds([0, 0, -25, -25])
+        else:
+            self.mc.update_motor_speeds([0, 0, 0, 0])
+        constants.lock.release()
+
+    def ping_connected(self):
+        global connected
+
+        log("PING")
+        self.time_since_last_ping = time.time()
+
+        constants.lock.acquire()
+        if connected is False:
+            log("Connection to BS verified.")
+            connected = True
+
+            # TODO test case: set motor speeds
+            data = [1, 2, 3, 4]
+            self.x(data)
+            # Halt disconnected resurfacing
+            self.mc.update_motor_speeds([0, 0, 0, 0])
+        constants.lock.release()
+
+    def read_nav_command(self, message):
+        x = (message & 0x01F600) >> 9
+        sign = (message & 0x000100) >> 8
+        y = (message & 0x0000FF)
+
+        if (sign == 1):
+            y = y * -1
+
+        log("Running motor command with (x, y): " + str(x) + "," + str(y))
+        self.motor_queue.put((x, y, 0))
+
+    def read_xbox_command(self, message):
+        # xbox command
+        vertical = (message & 0x10000)
+        x = (message & 0x7F00) >> 8
+        xsign = (message & 0x8000) >> 15
+        y = message & 0x7F
+        ysign = (message & 0x80) >> 7
+        if xsign == 1:
+            x = -x
+        if ysign == 1:
+            y = -y
+        #print("Xbox Command:", x, y)
+        if vertical:
+            self.motor_queue.put((x, y, 2))
+        else:
+            self.motor_queue.put((x, y, 1))
 
     def read_mission_command(self, message):
         x = message & 0b111
