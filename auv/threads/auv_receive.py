@@ -1,8 +1,12 @@
+import sys
+sys.path.append('..')
+
 # System imports
 import threading
 import time
 import math
-import constants
+from static import constants
+from static import global_vars
 
 # Custom imports
 from queue import Queue
@@ -17,10 +21,6 @@ from missions import *
 # Responsibilites:
 #   - receive data/commands
 #   - update connected global variable
-
-
-def log(val):
-    print("[AUV]\t" + val)
 
 
 class AUV_Receive(threading.Thread):
@@ -60,21 +60,21 @@ class AUV_Receive(threading.Thread):
         try:
             self.pressure_sensor = PressureSensor()
             self.pressure_sensor.init()
-            log("Pressure sensor has been found")
+            global_vars.log("Pressure sensor has been found")
         except:
-            log("Pressure sensor is not connected to the AUV.")
+            global_vars.log("Pressure sensor is not connected to the AUV.")
 
         try:
             self.imu = IMU(constants.IMU_PATH)
-            log("IMU has been found.")
+            global_vars.log("IMU has been found.")
         except:
-            log("IMU is not connected to the AUV on IMU_PATH.")
+            global_vars.log("IMU is not connected to the AUV on IMU_PATH.")
 
         try:
             self.radio = Radio(constants.RADIO_PATH)
-            log("Radio device has been found.")
+            global_vars.log("Radio device has been found.")
         except:
-            log("Radio device is not connected to AUV on RADIO_PATH.")
+            global_vars.log("Radio device is not connected to AUV on RADIO_PATH.")
 
     # TODO delete
 
@@ -106,7 +106,7 @@ class AUV_Receive(threading.Thread):
         """ Main connection loop for the AUV. """
 
         count = 0
-        log("Starting main connection loop.")
+        global_vars.log("Starting main connection loop.")
         while not self._ev.wait(timeout=constants.RECEIVE_SLEEP_DELAY):
             # time.sleep(RECEIVE_SLEEP_DELAY)
 
@@ -117,7 +117,7 @@ class AUV_Receive(threading.Thread):
             if self.radio is None or self.radio.is_open() is False:
                 try:  # Try to connect to our devices.
                     self.radio = Radio(constants.RADIO_PATH)
-                    log("Radio device has been found!")
+                    global_vars.log("Radio device has been found!")
                 except:
                     pass
             else:
@@ -130,7 +130,7 @@ class AUV_Receive(threading.Thread):
                         intline = int.from_bytes(line, "big")
                         checksum = Crc32.confirm(intline)
                         if not checksum:
-                            log("invalid line***********************")
+                            global_vars.log("invalid line***********************")
                             # self.radio.flush()
                             self.mc.update_motor_speeds([0, 0, 0, 0])
                             break
@@ -141,6 +141,7 @@ class AUV_Receive(threading.Thread):
                         
                         print("NON-PING LINE READ WAS", str(line))
 
+                        # case block
                         header = intline & 0xE00000
                         match header:
                             case NAV_ENCODE: # navigation
@@ -166,10 +167,10 @@ class AUV_Receive(threading.Thread):
                     self.radio.flush()
 
                 except Exception as e:
-                    log("Error: " + str(e))
+                    global_vars.log("Error: " + str(e))
                     self.radio.close()
                     self.radio = None
-                    log("Radio is disconnected from pi!")
+                    global_vars.log("Radio is disconnected from pi!")
                     continue
 
             if(self.current_mission is not None):
@@ -188,7 +189,7 @@ class AUV_Receive(threading.Thread):
         constants.lock.acquire()
         # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
         if connected is True:
-            log("Lost connection to BS.")
+            global_vars.log("Lost connection to BS.")
 
             # reset motor speed to 0 immediately and flush buffer
             self.mc.update_motor_speeds([0, 0, 0, 0])
@@ -213,12 +214,12 @@ class AUV_Receive(threading.Thread):
     def ping_connected(self):
         global connected
 
-        log("PING")
+        global_vars.log("PING")
         self.time_since_last_ping = time.time()
 
         constants.lock.acquire()
         if connected is False:
-            log("Connection to BS verified.")
+            global_vars.log("Connection to BS verified.")
             connected = True
 
             # TODO test case: set motor speeds
@@ -236,7 +237,7 @@ class AUV_Receive(threading.Thread):
         if (sign == 1):
             y = y * -1
 
-        log("Running motor command with (x, y): " + str(x) + "," + str(y))
+        global_vars.log("Running motor command with (x, y): " + str(x) + "," + str(y))
         self.motor_queue.put((x, y, 0))
 
     def read_xbox_command(self, message):
@@ -258,7 +259,7 @@ class AUV_Receive(threading.Thread):
 
     def read_mission_command(self, message):
         x = message & 0b111
-        log("Mission encoding with (x): " + bin(x))
+        global_vars.log("Mission encoding with (x): " + bin(x))
         if (x == 0) or (x == 1):
             # decode time
             t = message >> 3
@@ -305,7 +306,7 @@ class AUV_Receive(threading.Thread):
                 self.current_mission = Mission1(
                     self, self.mc, self.pressure_sensor, self.imu)
                 self.timer = 0
-                log("Successfully started mission " + str(mission) + ".")
+                global_vars.log("Successfully started mission " + str(mission) + ".")
                 # self.radio.write(str.encode("mission_started("+str(mission)+")\n"))
             except Exception as e:
                 raise Exception("Mission " + str(mission) +
@@ -324,7 +325,7 @@ class AUV_Receive(threading.Thread):
         aborted_mission = self.current_mission
         self.current_mission = None
         aborted_mission.abort_loop()
-        log("Successfully aborted the current mission.")
+        global_vars.log("Successfully aborted the current mission.")
         # self.radio.write(str.encode("mission_failed()\n"))
 
     def dive(self, to_depth):
@@ -376,5 +377,5 @@ class AUV_Receive(threading.Thread):
             depth = (pressure-1013.25)/1000 * 10.2
             return depth
         else:
-            log("No pressure sensor found.")
+            global_vars.log("No pressure sensor found.")
             return None
