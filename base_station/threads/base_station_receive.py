@@ -15,7 +15,7 @@ from api import GPS
 from api import decode_command
 
 from constants import RADIO_PATH, CONNECTION_TIMEOUT, THREAD_SLEEP_DELAY, PING, lock
-from globals import connected
+from globalvars import connected
 
 
 class BaseStation_Receive(threading.Thread):
