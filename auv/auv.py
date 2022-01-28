@@ -18,7 +18,6 @@ from api import PressureSensor
 from api import MotorController
 from api import MotorQueue
 from missions import *
-from constants import *
 
 from auv_send_data import AUV_Send_Data
 from auv_send_ping import AUV_Send_Ping
