@@ -98,10 +98,8 @@ class AUV_Receive(threading.Thread):
             raise Exception('No implementation for motor name: ', motor)
 
     def run(self):
-
         self._init_hardware()
 
-        global connected
 
         """ Main connection loop for the AUV. """
 
@@ -183,11 +181,9 @@ class AUV_Receive(threading.Thread):
                     self.abort_mission()
 
     def timeout(self):
-        global connected
-
         global_vars.lock.acquire()
         # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
-        if connected is True:
+        if global_vars.connected is True:
             global_vars.log("Lost connection to BS.")
 
             # reset motor speed to 0 immediately and flush buffer
@@ -201,7 +197,7 @@ class AUV_Receive(threading.Thread):
             # enforce check in case radio is not found
             if self.radio is not None:
                 self.radio.flush()
-            connected = False
+            global_vars.connected = False
         depth = self.get_depth()
         # Turn upwards motors on until surface reached (if we haven't reconnected yet)
         if depth > 0:  # TODO: Decide on acceptable depth range
@@ -211,15 +207,13 @@ class AUV_Receive(threading.Thread):
         global_vars.lock.release()
 
     def ping_connected(self):
-        global connected
-
         global_vars.log("PING")
         self.time_since_last_ping = time.time()
 
         global_vars.lock.acquire()
-        if connected is False:
+        if global_vars.connected is False:
             global_vars.log("Connection to BS verified.")
-            connected = True
+            global_vars.connected = True
 
             # TODO test case: set motor speeds
             data = [1, 2, 3, 4]

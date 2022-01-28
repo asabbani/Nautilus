@@ -74,7 +74,7 @@ class AUV_Send_Data(threading.Thread):
             else:
                 try:
                     global_vars.lock.acquire()
-                    if constants.connected is True:  # Send our AUV packet as well.
+                    if global_vars.connected is True:  # Send our AUV packet as well.
                         global_vars.lock.release()
                         # TODO default values in case we could not read anything
                         heading = 0
