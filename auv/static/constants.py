@@ -32,10 +32,9 @@ XBOX_ENCODE = 0b111000000000000000000000          # | with XY (left/right, down/
 MISSION_ENCODE = 0b000000000000000000000000       # | with X   (mission)
 DIVE_ENCODE = 0b110000000000000000000000           # | with D   (depth)
 
-# determines if connected to BS
-connected = False
-lock = threading.Lock()
-radio_lock = threading.Lock()
+
+lock = threading.Lock() # checks if connected to BS over radio
+radio_lock = threading.Lock()   # ensures one write to radio at a time
 
 
 def log(val):
