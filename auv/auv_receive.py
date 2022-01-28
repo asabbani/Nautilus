@@ -134,30 +134,22 @@ class AUV_Receive(threading.Thread):
                             # self.radio.flush()
                             self.mc.update_motor_speeds([0, 0, 0, 0])
                             break
-                        intline = intline >> 32
-                        if intline == 0xFFFFFF:  # We have a ping!
+                        message = intline >> 32
+                        if message == PING:  # We have a ping!
                             self.ping_connected()
+                            continue
+                        
+                        print("NON-PING LINE READ WAS", str(line))
 
-                        else:
-                            # Line was read, but it was not equal to a BS_PING
-
-                            # Decode into a normal utd-8 encoded string and delete newline character
-                            # message = line.decode('utf-8').replace("\n", "")
-                            print("NON-PING LINE READ WAS", str(line))
-                            message = intline
-                            # 0000001XSY or 0000000X
-
-                            # navigation command
-                            if (message & 0xC00000 == 2):
+                        header = intline & 0xE00000
+                        match header:
+                            case NAV_ENCODE: # navigation
                                 self.read_nav_command(message)
-
-                            # Xbox Navigation Command
-                            # 0x[1110][0000] [XXXX][XXXX] [YYYY][YYYY]
-                            elif (message & 0xE00000 == 0xE00000):
+                            
+                            case XBOX_ENCODE: # xbox navigation
                                 self.read_xbox_command(message)
 
-                            # dive command
-                            elif (((message >> 21) & 0b111) == 6):
+                            case DIVE_ENCODE: # dive
                                 desired_depth = message & 0b111111
                                 print("We're calling dive command:", str(desired_depth))
 
@@ -165,8 +157,7 @@ class AUV_Receive(threading.Thread):
                                 self.dive(desired_depth)
                                 constants.lock.release()
 
-                            # mission command
-                            elif (message & 0x800000 == 0):
+                            case MISSION_ENCODE: # mission/halt/calibrate/download data
                                 self.read_mission_command(message)
 
                         line = self.radio.read(7)

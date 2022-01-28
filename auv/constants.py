@@ -26,6 +26,12 @@ DEF_DIVE_SPD = 100
 MAX_TIME = 600
 MAX_ITERATION_COUNT = MAX_TIME / SEND_SLEEP_DELAY / 7
 
+# Header encodings from BS
+NAV_ENCODE = 0b000000100000000000000000           # | with XSY (forward, angle sign, angle)
+XBOX_ENCODE = 0b111000000000000000000000          # | with XY (left/right, down/up xbox input)
+MISSION_ENCODE = 0b000000000000000000000000       # | with X   (mission)
+DIVE_ENCODE = 0b110000000000000000000000           # | with D   (depth)
+
 # determines if connected to BS
 connected = False
 lock = threading.Lock()
