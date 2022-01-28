@@ -14,7 +14,7 @@ from api import NavController
 from api import GPS
 from api import decode_command
 
-from constants import RADIO_PATH, CONNECTION_TIMEOUT, THREAD_SLEEP_DELAY, PING
+from constants import RADIO_PATH, CONNECTION_TIMEOUT, THREAD_SLEEP_DELAY, PING, connected, lock
 
 
 class BaseStation_Receive(threading.Thread):

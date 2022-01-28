@@ -5,7 +5,7 @@ import threading
 
 # Custom imports
 from api import Radio
-from constants import RADIO_PATH, PING_SLEEP_DELAY, PING
+from constants import RADIO_PATH, PING_SLEEP_DELAY, PING, connected, radio_lock
 
 
 class BaseStation_Send_Ping(threading.Thread):
