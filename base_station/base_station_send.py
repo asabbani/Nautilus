@@ -11,7 +11,7 @@ from api import Radio
 from api import xbox
 from api import NavController
 
-from constants import RADIO_PATH, THREAD_SLEEP_DELAY
+from constants import RADIO_PATH, THREAD_SLEEP_DELAY, connected, lock, radio_lock
 
 # Navigation Encoding
 NAV_ENCODE = 0b000000100000000000000000           # | with XSY (forward, angle sign, angle)

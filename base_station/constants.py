@@ -1,3 +1,5 @@
+import threading
+
 # Constants for the base station
 THREAD_SLEEP_DELAY = 0.1  # Since we are the slave to AUV, we must run faster.
 PING_SLEEP_DELAY = 3
@@ -10,3 +12,8 @@ CONNECTION_TIMEOUT = 6
 # AUV Constants (these are also in auv.py)
 MAX_AUV_SPEED = 100
 MAX_TURN_SPEED = 50
+
+# determines if connected to BS
+connected = False
+lock = threading.Lock()
+radio_lock = threading.Lock()
