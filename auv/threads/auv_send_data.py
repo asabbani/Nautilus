@@ -156,7 +156,7 @@ class AUV_Send_Data(threading.Thread):
                         global_vars.radio_lock.release()
 
                     else:
-                        lock.release()
+                        global_vars.lock.release()
 
                 except Exception as e:
                     raise Exception("Error occured : " + str(e))
