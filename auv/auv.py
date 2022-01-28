@@ -19,9 +19,7 @@ from api import MotorController
 from api import MotorQueue
 from missions import *
 
-from auv_send_data import AUV_Send_Data
-from auv_send_ping import AUV_Send_Ping
-from auv_receive import AUV_Receive
+from threads. import AUV_Send_Data, AUV_Receive, AUV_Send_Ping
 
 
 def threads_active(ts):
