@@ -112,7 +112,7 @@ class AUV_Receive(threading.Thread):
 
             # Always try to update connection status.
             if time.time() - self.time_since_last_ping > constants.CONNECTION_TIMEOUT:
-                lock.acquire()
+                constants.lock.acquire()
                 # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
                 if connected is True:
                     log("Lost connection to BS.")
@@ -137,7 +137,7 @@ class AUV_Receive(threading.Thread):
                     self.mc.update_motor_speeds([0, 0, -25, -25])  # TODO: Figure out which way is up
                 else:
                     self.mc.update_motor_speeds([0, 0, 0, 0])
-                lock.release()
+                constants.lock.release()
 
             if self.radio is None or self.radio.is_open() is False:
                 try:  # Try to connect to our devices.
@@ -170,7 +170,7 @@ class AUV_Receive(threading.Thread):
                             # print(line)
                             #print("lock acquired 173")
 
-                            lock.acquire()
+                            constants.lock.acquire()
                             if connected is False:
                                 log("Connection to BS verified.")
                                 connected = True
@@ -180,7 +180,7 @@ class AUV_Receive(threading.Thread):
                                 self.x(data)
                                 # Halt disconnected resurfacing
                                 self.mc.update_motor_speeds([0, 0, 0, 0])
-                            lock.release()
+                            constants.lock.release()
 
                             #print("lock released 173")
 
@@ -230,9 +230,9 @@ class AUV_Receive(threading.Thread):
                                 desired_depth = message & 0b111111
                                 print("We're calling dive command:", str(desired_depth))
 
-                                lock.acquire()
+                                constants.lock.acquire()
                                 self.dive(desired_depth)
-                                lock.release()
+                                constants.lock.release()
 
                             # mission command
                             elif (message & 0x800000 == 0):
