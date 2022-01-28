@@ -143,23 +143,23 @@ class AUV_Receive(threading.Thread):
 
                         # case block
                         header = intline & 0xE00000
-                        match header:
-                            case NAV_ENCODE: # navigation
-                                self.read_nav_command(message)
-                            
-                            case XBOX_ENCODE: # xbox navigation
-                                self.read_xbox_command(message)
+                        
+                        if header == NAV_ENCODE: # navigation
+                            self.read_nav_command(message)
+                        
+                        elif header == XBOX_ENCODE: # xbox navigation
+                            self.read_xbox_command(message)
 
-                            case DIVE_ENCODE: # dive
-                                desired_depth = message & 0b111111
-                                print("We're calling dive command:", str(desired_depth))
+                        elif header == DIVE_ENCODE: # dive
+                            desired_depth = message & 0b111111
+                            print("We're calling dive command:", str(desired_depth))
 
-                                constants.lock.acquire()
-                                self.dive(desired_depth)
-                                constants.lock.release()
+                            constants.lock.acquire()
+                            self.dive(desired_depth)
+                            constants.lock.release()
 
-                            case MISSION_ENCODE: # mission/halt/calibrate/download data
-                                self.read_mission_command(message)
+                        elif header == MISSION_ENCODE: # mission/halt/calibrate/download data
+                            self.read_mission_command(message)
 
                         line = self.radio.read(7)
 
