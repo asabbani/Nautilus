@@ -181,7 +181,7 @@ class AUV_Receive(threading.Thread):
                     self.abort_mission()
 
     def timeout(self):
-        global_vars.lock.acquire()
+        constants.LOCK.acquire()
         # Line read was EMPTY, but 'before' connection status was successful? Connection verification failed.
         if global_vars.connected is True:
             global_vars.log("Lost connection to BS.")
@@ -204,13 +204,13 @@ class AUV_Receive(threading.Thread):
             self.mc.update_motor_speeds([0, 0, -25, -25])
         else:
             self.mc.update_motor_speeds([0, 0, 0, 0])
-        global_vars.lock.release()
+        constants.LOCK.release()
 
     def ping_connected(self):
         global_vars.log("PING")
         self.time_since_last_ping = time.time()
 
-        global_vars.lock.acquire()
+        constants.LOCK.acquire()
         if global_vars.connected is False:
             global_vars.log("Connection to BS verified.")
             global_vars.connected = True
@@ -220,7 +220,7 @@ class AUV_Receive(threading.Thread):
             self.x(data)
             # Halt disconnected resurfacing
             self.mc.update_motor_speeds([0, 0, 0, 0])
-        global_vars.lock.release()
+        constants.LOCK.release()
 
     def read_nav_command(self, message):
         x = (message & 0x01F600) >> 9

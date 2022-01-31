@@ -47,9 +47,9 @@ class AUV_Send_Ping(threading.Thread):
             else:
                 try:
                     # Always send a connection verification packet
-                    global_vars.radio_lock.acquire()
+                    constants.RADIO_LOCK.acquire()
                     self.radio.write(constants.PING, 3)
-                    global_vars.radio_lock.release()
+                    constants.RADIO_LOCK.release()
 
                 except Exception as e:
                     raise Exception("Error occured : " + str(e))
