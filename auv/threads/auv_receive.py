@@ -1,22 +1,22 @@
+from missions import *
+from api import MotorQueue
+from api import MotorController
+from api import PressureSensor
+from api import Crc32
+from api import IMU
+from api import Radio
+from queue import Queue
+from static import global_vars
+from static import constants
+import math
+import time
+import threading
 import sys
 sys.path.append('..')
 
 # System imports
-import threading
-import time
-import math
-from static import constants
-from static import global_vars
 
 # Custom imports
-from queue import Queue
-from api import Radio
-from api import IMU
-from api import Crc32
-from api import PressureSensor
-from api import MotorController
-from api import MotorQueue
-from missions import *
 
 # Responsibilites:
 #   - receive data/commands
@@ -70,7 +70,6 @@ class AUV_Receive(threading.Thread):
         except:
             global_vars.log("IMU is not connected to the AUV on IMU_PATH.")
 
-
         try:
             self.radio = Radio(constants.RADIO_PATH)
             global_vars.log("Radio device has been found.")
@@ -100,7 +99,6 @@ class AUV_Receive(threading.Thread):
 
     def run(self):
         self._init_hardware()
-
 
         """ Main connection loop for the AUV. """
 
@@ -134,22 +132,22 @@ class AUV_Receive(threading.Thread):
                             self.mc.update_motor_speeds([0, 0, 0, 0])
                             break
                         message = intline >> 32
-                        if message == PING:  # We have a ping!
+                        if message == constants.PING:  # We have a ping!
                             self.ping_connected()
                             continue
-                        
+
                         print("NON-PING LINE READ WAS", str(line))
 
                         # case block
                         header = intline & 0xE00000
-                        
-                        if header == NAV_ENCODE: # navigation
+
+                        if header == NAV_ENCODE:  # navigation
                             self.read_nav_command(message)
-                        
-                        elif header == XBOX_ENCODE: # xbox navigation
+
+                        elif header == XBOX_ENCODE:  # xbox navigation
                             self.read_xbox_command(message)
 
-                        elif header == DIVE_ENCODE: # dive
+                        elif header == DIVE_ENCODE:  # dive
                             desired_depth = message & 0b111111
                             print("We're calling dive command:", str(desired_depth))
 
@@ -157,7 +155,7 @@ class AUV_Receive(threading.Thread):
                             self.dive(desired_depth)
                             constants.LOCK.release()
 
-                        elif header == MISSION_ENCODE: # mission/halt/calibrate/download data
+                        elif header == MISSION_ENCODE:  # mission/halt/calibrate/download data
                             self.read_mission_command(message)
                         line = self.radio.read(7)
 
