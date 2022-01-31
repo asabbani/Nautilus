@@ -137,10 +137,10 @@ class AUV_Receive(threading.Thread):
                             line = self.radio.read(7)
                             continue
 
-                        print("NON-PING LINE READ WAS", str(line))
+                        print("NON-PING LINE READ WAS", bin(line))
 
                         # case block
-                        header = intline & 0xE00000
+                        header = intline & 0xE00000                        
 
                         if header == constants.NAV_ENCODE:  # navigation
                             self.read_nav_command(message)
