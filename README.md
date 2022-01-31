@@ -115,3 +115,8 @@ Christopher Hughes,
 Software Development
 * Computer Engineering
 * UCSD Graduation: 2024
+
+Aleksa Stamenkovic,
+Software Development
+* Computer Science
+* UCSD Graduation: 2023
