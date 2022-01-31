@@ -166,6 +166,25 @@ class BaseStation_Send(threading.Thread):
             radio_lock.release()
             self.log('Sending task: dive(' + str(depth) + ')')  # TODO: change to whatever the actual command is called
 
+    def encode_xbox(self, x, y, right_trigger):
+        """ Encodes a navigation command given xbox input. """
+        xsign, ysign, vertical = 0, 0, 0
+
+        if x < 0:
+            xsign = 1
+            x *= -1
+        if y < 0:
+            ysign = 1
+            y *= -1
+        if right_trigger:
+            vertical = 1
+
+        xshift = x << 8
+        xsign = xsign << 15
+        ysign = ysign << 7
+        vertical = vertical << 16
+        return XBOX_ENCODE | vertical | xsign | xshift | ysign | y
+
     def run(self):
         """ Main sending threaded loop for the base station. """
         global connected
@@ -232,24 +251,7 @@ class BaseStation_Send(threading.Thread):
                                 y = round(self.joy.leftY()*100)
                                 right_trigger = round(self.joy.rightTrigger()*10)
 
-                                xsign = 0
-                                ysign = 0
-                                vertical = 0
-
-                                if x < 0:
-                                    xsign = 1
-                                    x *= -1
-                                if y < 0:
-                                    ysign = 1
-                                    y *= -1
-                                if right_trigger:
-                                    vertical = 1
-
-                                xshift = x << 8
-                                xsign = xsign << 15
-                                ysign = ysign << 7
-                                vertical = vertical << 16
-                                navmsg = XBOX_ENCODE | vertical | xsign | xshift | ysign | y
+                                navmsg = self.encode_xbox(x, y, right_trigger)
 
                                 radio_lock.acquire()
                                 self.radio.write(navmsg)

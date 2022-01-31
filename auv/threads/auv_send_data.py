@@ -74,9 +74,9 @@ class AUV_Send_Data(threading.Thread):
 
             else:
                 try:
-                    global_vars.lock.acquire()
+                    constants.LOCK.acquire()
                     if global_vars.connected is True:  # Send our AUV packet as well.
-                        global_vars.lock.release()
+                        constants.LOCK.release()
                         # IMU
                         if self.imu is not None:
                             self.send_heading()
@@ -89,7 +89,7 @@ class AUV_Send_Data(threading.Thread):
                         self.send_positioning()
 
                     else:
-                        global_vars.lock.release()
+                        constants.LOCK.release()
 
                 except Exception as e:
                     raise Exception("Error occured : " + str(e))
@@ -109,9 +109,9 @@ class AUV_Send_Data(threading.Thread):
         whole_heading = whole_heading << 7
         heading_encode = (constants.HEADING_ENCODE | whole_heading | decimal_heading)
 
-        global_vars.radio_lock.acquire()
+        constants.RADIO_LOCK.acquire()
         self.radio.write(heading_encode, 3)
-        global_vars.radio_lock.release()
+        constants.RADIO_LOCK.release()
 
     def send_temperature(self):
         try:
@@ -131,9 +131,9 @@ class AUV_Send_Data(threading.Thread):
         sign = sign << 11
         temperature_encode = (constants.MISC_ENCODE | sign | whole_temperature)
 
-        global_vars.radio_lock.acquire()
+        constants.RADIO_LOCK.acquire()
         self.radio.write(temperature_encode, 3)
-        global_vars.radio_lock.release()
+        constants.RADIO_LOCK.release()
 
     def send_depth(self):
         # TODO: default if read fails
@@ -156,9 +156,9 @@ class AUV_Send_Data(threading.Thread):
         whole = whole << 4
         depth_encode = (constants.DEPTH_ENCODE | whole | decimal)
 
-        global_vars.radio_lock.acquire()
+        constants.RADIO_LOCK.acquire()
         self.radio.write(depth_encode, 3)
-        global_vars.radio_lock.release()
+        constants.RADIO_LOCK.release()
 
     def send_positioning(self):
         # TODO: Actually get positioning, currently placeholder
@@ -172,10 +172,10 @@ class AUV_Send_Data(threading.Thread):
         x_bits = x_bits | (x_sign << 9)
         y_bits = y_bits | (y_sign << 9)
         position_encode = (constants.POSITION_ENCODE | x_bits << 10 | y_bits)
-        global_vars.radio_lock.acquire()
+        constants.RADIO_LOCK.acquire()
         print(bin(position_encode))
         self.radio.write(position_encode, 3)
-        global_vars.radio_lock.release()
+        constants.RADIO_LOCK.release()
 
     def stop(self):
         self._ev.set()
