@@ -134,6 +134,7 @@ class AUV_Receive(threading.Thread):
                         message = intline >> 32
                         if message == constants.PING:  # We have a ping!
                             self.ping_connected()
+                            line = self.radio.read(7)
                             continue
 
                         print("NON-PING LINE READ WAS", str(line))
@@ -157,6 +158,7 @@ class AUV_Receive(threading.Thread):
 
                         elif header == constants.MISSION_ENCODE:  # mission/halt/calibrate/download data
                             self.read_mission_command(message)
+                        
                         line = self.radio.read(7)
 
                     # end while
