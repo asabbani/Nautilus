@@ -11,8 +11,8 @@ from api import Radio
 from api import xbox
 from api import NavController
 
-from constants import RADIO_PATH, THREAD_SLEEP_DELAY, lock, radio_lock
-from globalvars import connected
+from static import constants
+from static import globalvars
 
 # Navigation Encoding
 NAV_ENCODE = 0b000000100000000000000000           # | with XSY (forward, angle sign, angle)
@@ -45,7 +45,7 @@ class BaseStation_Send(threading.Thread):
 
         # Try to assign our radio object
         try:
-            self.radio = Radio(RADIO_PATH)
+            self.radio = Radio(constants.RADIO_PATH)
             self.log("Successfully found radio device on RADIO_PATH.")
         except:
             self.log(
@@ -90,21 +90,21 @@ class BaseStation_Send(threading.Thread):
 
     def test_motor(self, motor):
         """ Attempts to send the AUV a signal to test a given motor. """
-        lock.acquire()
-        if not connected:
-            lock.release()
+        constants.lock.acquire()
+        if not globalvars.connected:
+            constants.lock.release()
             self.log("Cannot test " + motor +
                      " motor(s) because there is no connection to the AUV.")
         else:
-            lock.release()
-            radio_lock.acquire()
+            constants.lock.release()
+            constants.radio_lock.acquire()
             if (motor == 'Forward'):
                 self.radio.write((NAV_ENCODE | (10 << 9) | (0 << 8) | (0)) & 0xFFFFFF)
             elif (motor == 'Left'):
                 self.radio.write((NAV_ENCODE | (0 << 9) | (1 << 8) | 90) & 0xFFFFFF)
             elif (motor == 'Right'):
                 self.radio.write((NAV_ENCODE | (0 << 9) | (0 << 8) | 90) & 0xFFFFFF)
-            radio_lock.release()
+            constants.radio_lock.release()
 
             self.log('Sending encoded task: test_motor("' + motor + '")')
 
@@ -112,33 +112,33 @@ class BaseStation_Send(threading.Thread):
 
     def abort_mission(self):
         """ Attempts to abort the mission for the AUV."""
-        lock.acquire()
-        if not connected:
-            lock.release()
+        constants.lock.acquire()
+        if not globalvars.connected:
+            constants.lock.release()
             self.log(
                 "Cannot abort mission because there is no connection to the AUV.")
         else:
-            lock.release()
+            constants.lock.release()
             # self.radio.write("abort_mission()")
             self.log("Sending task: abort_mission()")
             self.manual_mode = True
 
     def start_mission(self, mission, depth, t):
         """  Attempts to start a mission and send to AUV. """
-        lock.acquire()
-        if connected is False:
-            lock.release()
+        constants.lock.acquire()
+        if globalvars.connected is False:
+            constants.lock.release()
             self.log("Cannot start mission " + str(mission) +
                      " because there is no connection to the AUV.")
         else:
-            lock.release()
+            constants.lock.release()
             depth = (depth << 12) & 0x3F000
             t = (t << 3) & 0xFF8
-            radio_lock.acquire()
+            constants.radio_lock.acquire()
             self.radio.write(MISSION_ENCODE | depth | t | mission)
             print(bin(MISSION_ENCODE | depth | t | mission))
 
-            radio_lock.release()
+            constants.radio_lock.release()
             self.log('Sending task: start_mission(' + str(mission) + ')')
 
     def send_halt(self):
@@ -154,16 +154,16 @@ class BaseStation_Send(threading.Thread):
         self.start_mission(DL_DATA, 0, 0)
 
     def send_dive(self, depth):
-        lock.acquire()
-        if connected is False:
-            lock.release()
+        constants.lock.acquire()
+        if globalvars.connected is False:
+            constants.lock.release()
             self.log("Cannot dive because there is no connection to the AUV.")
         else:
-            lock.release()
-            radio_lock.acquire()
+            constants.lock.release()
+            constants.radio_lock.acquire()
             self.radio.write(DIVE_ENCODE | depth)
             print(bin(DIVE_ENCODE | depth))
-            radio_lock.release()
+            constants.radio_lock.release()
             self.log('Sending task: dive(' + str(depth) + ')')  # TODO: change to whatever the actual command is called
 
     def encode_xbox(self, x, y, right_trigger):
@@ -187,14 +187,11 @@ class BaseStation_Send(threading.Thread):
 
     def run(self):
         """ Main sending threaded loop for the base station. """
-        global connected
-        global lock
-
         xbox_input = False
 
         # Begin our main loop for this thread.
         while True:
-            time.sleep(THREAD_SLEEP_DELAY)
+            time.sleep(constants.THREAD_SLEEP_DELAY)
             self.check_tasks()
 
             # Check if we have an Xbox controller
@@ -214,15 +211,15 @@ class BaseStation_Send(threading.Thread):
             #    self.nav_controller = None
 
             # This executes if we never had a radio object, or it got disconnected.
-            if self.radio is None or not os.path.exists(RADIO_PATH):
+            if self.radio is None or not os.path.exists(constants.RADIO_PATH):
                 # This executes if we HAD a radio object, but it got disconnected.
-                if self.radio is not None and not os.path.exists(RADIO_PATH):
+                if self.radio is not None and not os.path.exists(constants.RADIO_PATH):
                     self.log("Radio device has been disconnected.")
                     self.radio.close()
 
                 # Try to assign us a new Radio object
                 try:
-                    self.radio = Radio(RADIO_PATH)
+                    self.radio = Radio(constants.RADIO_PATH)
                     self.log(
                         "Radio device has been found on RADIO_PATH.")
                 except Exception as e:
@@ -233,9 +230,9 @@ class BaseStation_Send(threading.Thread):
                 # Try to write line to radio.
                 try:
                     # This is where secured/synchronous code should go.
-                    lock.acquire()
-                    if connected and self.manual_mode:
-                        lock.release()
+                    constants.lock.acquire()
+                    if globalvars.connected and self.manual_mode:
+                        constants.lock.release()
                         if self.joy is not None and self.joy.A():  # and self.joy.connected() and self.nav_controller is not None:
                             xbox_input = True
 
@@ -253,29 +250,29 @@ class BaseStation_Send(threading.Thread):
 
                                 navmsg = self.encode_xbox(x, y, right_trigger)
 
-                                radio_lock.acquire()
+                                constants.radio_lock.acquire()
                                 self.radio.write(navmsg)
-                                radio_lock.release()
+                                constants.radio_lock.release()
 
                             except Exception as e:
                                 self.log("Error with Xbox data: " + str(e))
 
                         # once A is no longer held, send one last zeroed out xbox command
                         if xbox_input and not self.joy.A():
-                            radio_lock.acquire()
+                            constants.radio_lock.acquire()
                             self.radio.write(XBOX_ENCODE)
-                            radio_lock.release()
+                            constants.radio_lock.release()
                             print("[XBOX] NO LONGER A\t")
                             xbox_input = False
                     else:
-                        lock.release()
+                        constants.lock.release()
                 except Exception as e:
                     print(str(e))
                     self.radio.close()
                     self.radio = None
                     self.log("Radio device has been disconnected.")
                     continue
-            time.sleep(THREAD_SLEEP_DELAY)
+            time.sleep(constants.THREAD_SLEEP_DELAY)
 
     def log(self, message):
         """ Logs the message to the GUI console by putting the function into the output-queue. """

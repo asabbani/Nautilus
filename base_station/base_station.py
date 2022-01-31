@@ -24,9 +24,9 @@ from api import decode_command
 #from api import checksum
 from gui import Main
 
-from base_station_receive import BaseStation_Receive
-from base_station_send import BaseStation_Send
-from base_station_send_ping import BaseStation_Send_Ping
+from threads.base_station_receive import BaseStation_Receive
+from threads.base_station_send import BaseStation_Send
+from threads.base_station_send_ping import BaseStation_Send_Ping
 
 if __name__ == '__main__':
     """ Main method responsible for developing the main objects used during runtime
