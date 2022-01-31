@@ -151,7 +151,7 @@ class AUV_Receive(threading.Thread):
                             self.read_xbox_command(message)
 
                         elif header == constants.DIVE_ENCODE:  # dive
-                            print("DIVE LINE READ WAS", bin(message))
+                            print("DIVE LINE READ WAS", bin(message), header)
 
                             desired_depth = message & 0b111111
                             print("We're calling dive command:", str(desired_depth))
