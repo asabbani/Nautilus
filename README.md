@@ -106,7 +106,7 @@ Former Software Team Lead
 * Computer Science
 * UCSD Graduation: 2021
 
-Christopher Hughes
+Christopher Hughes,
 Software Development
 * Computer Engineering
 * UCSD Graduation: 2024
