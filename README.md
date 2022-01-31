@@ -106,7 +106,7 @@ Former Software Team Lead
 * Computer Science
 * UCSD Graduation: 2021
 
-Christopher Hughes,
+Sean Chen,
 Software Development
-* Computer Engineering
+* Mathematics - Computer Science
 * UCSD Graduation: 2024
