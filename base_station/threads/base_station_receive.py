@@ -14,8 +14,8 @@ from api import NavController
 from api import GPS
 from api import decode_command
 
-from constants import RADIO_PATH, CONNECTION_TIMEOUT, THREAD_SLEEP_DELAY, PING, lock
-from globalvars import connected
+from static import constants
+from static import globalvars
 
 
 class BaseStation_Receive(threading.Thread):
@@ -37,13 +37,9 @@ class BaseStation_Receive(threading.Thread):
         # Call super-class constructor
         threading.Thread.__init__(self)
 
-        # Get all non-default callable methods in this class
-        self.methods = [m for m in dir(BaseStation) if not m.startswith(
-            '__') and not m.startswith('_')]
-
         # Try to assign our radio object
         try:
-            self.radio = Radio(RADIO_PATH)
+            self.radio = Radio(constants.RADIO_PATH)
             self.log("Successfully found radio device on RADIO_PATH.")
         except:
             self.log(
@@ -146,25 +142,25 @@ class BaseStation_Receive(threading.Thread):
             time.sleep(0.5)
 
             # Always try to update connection status
-            if time.time() - self.time_since_last_ping > CONNECTION_TIMEOUT:
+            if time.time() - self.time_since_last_ping > constants.CONNECTION_TIMEOUT:
                 # We are NOT connected to AUV, but we previously ('before') were. Status has changed to failed.
-                lock.acquire()
+                constants.lock.acquire()
                 if connected is True:
                     self.out_q.put("set_connection(False)")
                     self.log("Lost connection to AUV.")
                     connected = False
-                lock.release()
+                constants.lock.release()
 
             # This executes if we never had a radio object, or it got disconnected.
-            if self.radio is None or not os.path.exists(RADIO_PATH):
+            if self.radio is None or not os.path.exists(constants.RADIO_PATH):
                 # This executes if we HAD a radio object, but it got disconnected.
-                if self.radio is not None and not os.path.exists(RADIO_PATH):
+                if self.radio is not None and not os.path.exists(constants.RADIO_PATH):
                     self.log("Radio device has been disconnected.")
                     self.radio.close()
 
                 # Try to assign us a new Radio object
                 try:
-                    self.radio = Radio(RADIO_PATH)
+                    self.radio = Radio(constants.RADIO_PATH)
                     self.log(
                         "Radio device has been found on RADIO_PATH.")
                 except Exception as e:
@@ -191,14 +187,14 @@ class BaseStation_Receive(threading.Thread):
                         intline = intline >> 32
                         header = intline >> 21     # get first 3 bits
                         # PING case
-                        if intline == PING:
+                        if intline == constants.PING:
                             self.time_since_last_ping = time.time()
-                            lock.acquire()
+                            constants.lock.acquire()
                             if connected is False:
                                 self.log("Connection to AUV verified.")
                                 self.out_q.put("set_connection(True)")
                                 connected = True
-                            lock.release()
+                            constants.lock.release()
                         # Data cases
                         else:
                             print("HEADER_STR", header)
@@ -215,7 +211,7 @@ class BaseStation_Receive(threading.Thread):
                     self.log("Radio device has been disconnected.")
                     continue
 
-            time.sleep(THREAD_SLEEP_DELAY)
+            time.sleep(constants.THREAD_SLEEP_DELAY)
 
     def log(self, message):
         """ Logs the message to the GUI console by putting the function into the output-queue. """
