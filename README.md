@@ -110,3 +110,8 @@ Sean Chen,
 Software Development
 * Mathematics - Computer Science
 * UCSD Graduation: 2024
+
+Christopher Hughes,
+Software Development
+* Computer Engineering
+* UCSD Graduation: 2024
