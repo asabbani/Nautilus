@@ -70,7 +70,6 @@ class AUV_Receive(threading.Thread):
         except:
             global_vars.log("IMU is not connected to the AUV on IMU_PATH.")
 
-
         try:
             self.radio = Radio(constants.RADIO_PATH)
             global_vars.log("Radio device has been found.")
