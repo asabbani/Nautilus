@@ -70,6 +70,7 @@ class AUV_Receive(threading.Thread):
         except:
             global_vars.log("IMU is not connected to the AUV on IMU_PATH.")
 
+
         try:
             self.radio = Radio(constants.RADIO_PATH)
             global_vars.log("Radio device has been found.")
@@ -152,9 +153,9 @@ class AUV_Receive(threading.Thread):
                             desired_depth = message & 0b111111
                             print("We're calling dive command:", str(desired_depth))
 
-                            constants.lock.acquire()
+                            constants.LOCK.acquire()
                             self.dive(desired_depth)
-                            constants.lock.release()
+                            constants.LOCK.release()
 
                         elif header == MISSION_ENCODE: # mission/halt/calibrate/download data
                             self.read_mission_command(message)
