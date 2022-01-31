@@ -131,6 +131,8 @@ class AUV_Receive(threading.Thread):
                             # self.radio.flush()
                             self.mc.update_motor_speeds([0, 0, 0, 0])
                             break
+
+                        # message contains packet data without checksum
                         message = intline >> 32
                         if message == constants.PING:  # We have a ping!
                             self.ping_connected()
@@ -140,7 +142,7 @@ class AUV_Receive(threading.Thread):
                         print("NON-PING LINE READ WAS", bin(message))
 
                         # case block
-                        header = intline & 0xE00000                        
+                        header = message & 0xE00000                        
 
                         if header == constants.NAV_ENCODE:  # navigation
                             self.read_nav_command(message)
