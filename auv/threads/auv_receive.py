@@ -137,7 +137,7 @@ class AUV_Receive(threading.Thread):
                             line = self.radio.read(7)
                             continue
 
-                        print("NON-PING LINE READ WAS", bin(line))
+                        print("NON-PING LINE READ WAS", bin(message))
 
                         # case block
                         header = intline & 0xE00000                        
