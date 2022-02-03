@@ -280,6 +280,9 @@ class BaseStation_Send(threading.Thread):
 
     def close(self):
         """ Function that is executed upon the closure of the GUI (passed from input-queue). """
+        # close the xbox controller
+        if(self.joy is not None):
+            self.joy.close()
         os._exit(1)  # => Force-exit the process immediately.
 
     def mission_started(self, index):
