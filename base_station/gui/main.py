@@ -359,7 +359,7 @@ class Main():
             FONT, STATUS_SIZE), justify=LEFT)
         self.position_label.pack()
         self.position_label_string.set("Position \n \tX: N/A \t Y: N/A")
-        self.position_label.place(relx=0.05, rely=0.30, anchor='sw')
+        self.position_label.place(relx=0.05, rely=0.25, anchor='sw')
 
         self.heading_label_string = StringVar()
         self.heading_label = Label(self.status_frame, textvariable=self.heading_label_string, font=(
@@ -372,7 +372,7 @@ class Main():
         self.battery_voltage = Label(
             self.status_frame, textvariable=self.battery_status_string, font=(FONT, STATUS_SIZE))
         self.battery_voltage.pack()
-        self.battery_status_string.set("Battery Voltage: N/A")
+        self.battery_status_string.set("Battery Voltage: Not Implemented")
         self.battery_voltage.place(relx=0.05, rely=0.45, anchor='sw')
 
         self.temperature_string = StringVar()
@@ -386,21 +386,21 @@ class Main():
         self.movement_status = Label(
             self.status_frame, textvariable=self.movement_status_string, font=(FONT, STATUS_SIZE))
         self.movement_status.pack()
-        self.movement_status_string.set("Movement Status: ")
+        self.movement_status_string.set("Movement Status: TODO")
         self.movement_status.place(relx=0.05, rely=0.59, anchor='sw')
 
         self.mission_status_string = StringVar()
         self.mission_status = Label(
             self.status_frame, textvariable=self.mission_status_string, font=(FONT, STATUS_SIZE))
         self.mission_status.pack()
-        self.mission_status_string.set("Mission Status: ")
+        self.mission_status_string.set("Mission Status: Waiting")
         self.mission_status.place(relx=0.05, rely=0.66, anchor='sw')
 
         self.flooded_string = StringVar()
         self.flooded = Label(
             self.status_frame, textvariable=self.flooded_string, font=(FONT, STATUS_SIZE))
         self.flooded.pack()
-        self.flooded_string.set("Flooded: ")
+        self.flooded_string.set("Flooded: Not Implemented")
         self.flooded.place(relx=0.05, rely=0.73, anchor='sw')
 
         self.depth_string = StringVar()
