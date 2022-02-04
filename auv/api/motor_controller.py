@@ -161,7 +161,6 @@ class MotorController:
 
         log("motors set to [0, 0, 0, 0]")
 
-
     def test_all(self):
         """
         Calibrates each individual motor.
@@ -202,6 +201,10 @@ class MotorController:
         # Case 2: Going forward
         else:
             return min(feedback, MAX_CORRECTION_MOTOR_SPEED)
+
+    def is_moving(self):
+        """ Returns if any of the motors are not set to zero. """
+        return all([motor.speed == 0 for motor in self.motors])
 
 
 def main():

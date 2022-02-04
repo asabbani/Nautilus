@@ -80,7 +80,7 @@ class AUV_Send_Data(threading.Thread):
                         # IMU
                         if self.imu is not None:
                             self.send_heading()
-                            self.send_temperature()
+                            self.send_misc_data()
                         # Pressure
                         if self.pressure_sensor is not None:
                             self.send_depth()
@@ -113,7 +113,9 @@ class AUV_Send_Data(threading.Thread):
         self.radio.write(heading_encode, 3)
         constants.RADIO_LOCK.release()
 
-    def send_temperature(self):
+    def send_misc_data(self):
+        """ Encodes and sends miscellaneous data to the base station. Currently sends
+            temperature and movement status data to the base station. """
         try:
             temperature = self.imu.read_temp()
             print('TEMPERATURE=', temperature)
@@ -129,10 +131,14 @@ class AUV_Send_Data(threading.Thread):
             whole_temperature *= -1
         whole_temperature = whole_temperature << 5
         sign = sign << 11
-        temperature_encode = (constants.MISC_ENCODE | sign | whole_temperature)
 
+        # Movement status data
+        movement = 1 if self.mc.is_moving() else 0
+        movement = movement << 3
+
+        message_encode = (constants.MISC_ENCODE | sign | whole_temperature | movement)
         constants.RADIO_LOCK.acquire()
-        self.radio.write(temperature_encode, 3)
+        self.radio.write(message_encode, 3)
         constants.RADIO_LOCK.release()
 
     def send_depth(self):
