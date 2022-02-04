@@ -12,7 +12,7 @@ from api import xbox
 from api import NavController
 
 from static import constants
-from static import globalvars
+from static import global_vars
 
 # Navigation Encoding
 NAV_ENCODE = 0b000000100000000000000000           # | with XSY (forward, angle sign, angle)
@@ -76,6 +76,7 @@ class BaseStation_Send(threading.Thread):
 
 # XXX ---------------------- XXX ---------------------------- XXX TESTING AREA
 
+
     def check_tasks(self):
         """ This checks all of the tasks (given from the GUI thread) in our in_q, and evaluates them. """
 
@@ -91,7 +92,7 @@ class BaseStation_Send(threading.Thread):
     def test_motor(self, motor):
         """ Attempts to send the AUV a signal to test a given motor. """
         constants.lock.acquire()
-        if not globalvars.connected:
+        if not global_vars.connected:
             constants.lock.release()
             self.log("Cannot test " + motor +
                      " motor(s) because there is no connection to the AUV.")
@@ -113,7 +114,7 @@ class BaseStation_Send(threading.Thread):
     def abort_mission(self):
         """ Attempts to abort the mission for the AUV."""
         constants.lock.acquire()
-        if not globalvars.connected:
+        if not global_vars.connected:
             constants.lock.release()
             self.log(
                 "Cannot abort mission because there is no connection to the AUV.")
@@ -126,7 +127,7 @@ class BaseStation_Send(threading.Thread):
     def start_mission(self, mission, depth, t):
         """  Attempts to start a mission and send to AUV. """
         constants.lock.acquire()
-        if globalvars.connected is False:
+        if global_vars.connected is False:
             constants.lock.release()
             self.log("Cannot start mission " + str(mission) +
                      " because there is no connection to the AUV.")
@@ -155,7 +156,7 @@ class BaseStation_Send(threading.Thread):
 
     def send_dive(self, depth):
         constants.lock.acquire()
-        if globalvars.connected is False:
+        if global_vars.connected is False:
             constants.lock.release()
             self.log("Cannot dive because there is no connection to the AUV.")
         else:
@@ -231,7 +232,7 @@ class BaseStation_Send(threading.Thread):
                 try:
                     # This is where secured/synchronous code should go.
                     constants.lock.acquire()
-                    if globalvars.connected and self.manual_mode:
+                    if global_vars.connected and self.manual_mode:
                         constants.lock.release()
                         if self.joy is not None and self.joy.A():  # and self.joy.connected() and self.nav_controller is not None:
                             xbox_input = True
@@ -248,6 +249,8 @@ class BaseStation_Send(threading.Thread):
                                 y = round(self.joy.leftY()*100)
                                 right_trigger = round(self.joy.rightTrigger()*10)
 
+                                self.out_q.put("set_xbox_status(1," + str(right_trigger/10) + ")")
+                                print(right_trigger)
                                 navmsg = self.encode_xbox(x, y, right_trigger)
 
                                 constants.radio_lock.acquire()
@@ -263,6 +266,7 @@ class BaseStation_Send(threading.Thread):
                             self.radio.write(XBOX_ENCODE)
                             constants.radio_lock.release()
                             print("[XBOX] NO LONGER A\t")
+                            self.out_q.put("set_xbox_status(0,0)")
                             xbox_input = False
                     else:
                         constants.lock.release()
@@ -280,6 +284,9 @@ class BaseStation_Send(threading.Thread):
 
     def close(self):
         """ Function that is executed upon the closure of the GUI (passed from input-queue). """
+        # close the xbox controller
+        if(self.joy is not None):
+            self.joy.close()
         os._exit(1)  # => Force-exit the process immediately.
 
     def mission_started(self, index):
