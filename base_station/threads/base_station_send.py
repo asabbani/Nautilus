@@ -76,6 +76,7 @@ class BaseStation_Send(threading.Thread):
 
 # XXX ---------------------- XXX ---------------------------- XXX TESTING AREA
 
+
     def check_tasks(self):
         """ This checks all of the tasks (given from the GUI thread) in our in_q, and evaluates them. """
 
@@ -248,6 +249,8 @@ class BaseStation_Send(threading.Thread):
                                 y = round(self.joy.leftY()*100)
                                 right_trigger = round(self.joy.rightTrigger()*10)
 
+                                self.out_q.put("set_xbox_status(1," + str(right_trigger/10) + ")")
+                                print(right_trigger)
                                 navmsg = self.encode_xbox(x, y, right_trigger)
 
                                 constants.radio_lock.acquire()
@@ -263,6 +266,7 @@ class BaseStation_Send(threading.Thread):
                             self.radio.write(XBOX_ENCODE)
                             constants.radio_lock.release()
                             print("[XBOX] NO LONGER A\t")
+                            self.out_q.put("set_xbox_status(0,0)")
                             xbox_input = False
                     else:
                         constants.lock.release()

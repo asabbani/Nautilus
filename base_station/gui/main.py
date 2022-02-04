@@ -422,7 +422,14 @@ class Main():
             self.status_frame, textvariable=self.comms_status_string, font=(FONT, STATUS_SIZE))
         self.comms_status.pack()
         self.comms_status_string.set("Comms: not connected")
-        self.comms_status.place(relx=0.05, rely=0.94, anchor='sw')
+        self.comms_status.place(relx=0.05, rely=0.93, anchor='sw')
+
+        self.xbox_label_string = StringVar()
+        self.xbox_label = Label(self.status_frame, textvariable=self.xbox_label_string, font=(
+            FONT, STATUS_SIZE), justify=LEFT)
+        self.xbox_label.pack()
+        self.xbox_label_string.set("Xbox Controller: Inactive")
+        self.xbox_label.place(relx=0.05, rely=0.98, anchor='sw')
 
         # self.calibrate_xbox_button           = Button(self.status_frame, text = "Calibrate Controller", takefocus = False, width = BUTTON_WIDTH + 10, height = BUTTON_HEIGHT,
         #                                      padx = BUTTON_PAD_X, pady = BUTTON_PAD_Y, font = (FONT, BUTTON_SIZE), command = self.base_station.calibrate_controller )
@@ -514,6 +521,19 @@ class Main():
         """ Sets depth text """
         self.depth_string.set(
             "depth: " + str(depth) + "meter")
+
+    def set_xbox_status(self, isActive, isVertical):
+        """ Set xbox controller status text """
+        if not isActive:
+            self.xbox_label_string.set(
+                "Xbox Controller: Inactive")
+            return
+        if isVertical == 1:
+            self.xbox_label_string.set(
+                "Xbox Controller: Sending Vertical")
+        else:
+            self.xbox_label_string.set(
+                "Xbox Controller: Sending Horizontal")
 
     def set_dive(self, depth):
         """ Sets dive command """
