@@ -202,7 +202,7 @@ class MotorController:
         else:
             return min(feedback, MAX_CORRECTION_MOTOR_SPEED)
 
-    def is_moving(self):
+    def is_stopped(self):
         """ Returns if any of the motors are not set to zero. """
         return all([motor.speed == 0 for motor in self.motors])
 
