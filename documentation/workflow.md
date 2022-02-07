@@ -23,7 +23,7 @@ with an AUV and Basestation radio connection before being merged with the develo
  
     You can get the ticket number from the Github issue page. An example branch name would be: `1/first-ticket`. To create the branch, make sure you are in the `main` branch and then use `git checkout -b <BRANCH NAME>`.
 
-2. Work on your ticket within your branch, make occasional pulls and merges from main to make sure your code works with the latest changes:
+2. Work on your ticket within your branch, make occasional pulls and merges from main to make sure your code works with the latest changes (ALWAYS MAKE SURE YOU ARE ACTUALLY ON THE CORRECT BRANCH, you can check this by doing git branch):
     ```
     git checkout develop
     git pull
